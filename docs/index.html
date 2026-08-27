@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#013b32">
-  <title>Peter View – проверка русской документации</title>
-  <meta name="description" content="Vale, pymorphy3 и LanguageTool в одной очереди. Ставится Docker Compose у вас. Модель по желанию.">
+  <title>Peter View. Автоматическая вычитка русской документации</title>
+  <meta name="description" content="Peter View проверяет русскую документацию: грамматику, корпоративный стиль и термины. Список замечаний привязан к фрагментам текста. Устанавливается в вашей инфраструктуре.">
   <link rel="icon" href="favicon.png">
   <link rel="preload" href="fonts/GolosText-cyrillic.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="style.css">
@@ -18,111 +18,147 @@
       Peter View
     </a>
     <nav>
-      <a href="wiki/">Вики</a>
-      <a href="wiki/it/">Для ИТ</a>
+      <a href="wiki/">Документация</a>
       <a href="https://github.com/BadWisher/Peter-View">Код</a>
-      <a class="go" href="wiki/quickstart/">Поставить</a>
+      <a class="go" href="wiki/tutorial/">Установка</a>
     </nav>
   </header>
 
   <main id="main">
     <section class="hero">
-      <div class="hero-copy">
-        <h1>Очередь замечаний по русской документации.</h1>
-        <p class="lead">Вставил текст. Vale, pymorphy3 и LanguageTool разобрали его у вас на машине. Модель можно не подключать.</p>
+      <img class="hero-field" src="screenshots/02-check.png" width="1440" height="900" alt="Результат проверки: документ с подсветкой фрагментов и список замечаний">
+      <div class="hero-plate">
+        <h1>Автоматическая вычитка русской документации</h1>
+        <p class="lead">Peter View проверяет русские тексты по грамматике, корпоративному стилю и единообразию терминов. Результат: список замечаний, каждое привязано к фрагменту документа. Система разворачивается в вашей инфраструктуре. Исходные тексты во внешние сервисы не передаются, пока вы сами не укажете адрес языковой модели.</p>
         <pre class="cmd" tabindex="0"><code>git clone https://github.com/BadWisher/Peter-View.git
 cd Peter-View
 ./deploy.sh</code></pre>
-        <p class="hint">http://localhost:3080 · admin / admin · LanguageTool в первый раз думает около полутора минут.</p>
-      </div>
-      <figure class="hero-shot">
-        <img src="screenshots/02-check.png" width="1440" height="900" alt="Очередь решений: текст слева, замечания Vale и LanguageTool справа">
-      </figure>
-    </section>
-
-    <section class="strip" aria-label="Экраны">
-      <figure>
-        <img src="screenshots/03-check-form.png" width="1440" height="900" alt="Форма вычитки">
-        <figcaption>Текст, файл или URL</figcaption>
-      </figure>
-      <figure>
-        <img src="screenshots/04-guides.png" width="1440" height="900" alt="Style Guide">
-        <figcaption>Гайд правит только admin</figcaption>
-      </figure>
-      <figure>
-        <img src="screenshots/05-insights.png" width="1440" height="900" alt="Аналитика">
-        <figcaption>Какие правила стреляют чаще</figcaption>
-      </figure>
-      <figure>
-        <img src="screenshots/11-mobile-check.png" width="390" height="844" alt="Вычитка на узком экране">
-        <figcaption>Тот же отчёт на телефоне</figcaption>
-      </figure>
-    </section>
-
-    <section class="how">
-      <h2>Как проходит проверка</h2>
-      <ol>
-        <li>
-          <strong>Источник</strong>
-          <p>Вставляешь черновик, загружаешь docx или даёшь URL. Сервис сам ходит за страницей, если так настроили.</p>
-        </li>
-        <li>
-          <strong>Три движка</strong>
-          <p>Vale гоняет Style Guide, pymorphy3 смотрит формы слов, LanguageTool сидит в соседнем контейнере и проверяет грамматику.</p>
-        </li>
-        <li>
-          <strong>Очередь</strong>
-          <p>Каждое замечание отдельно: принять или отвергнуть. Список решений по этому тексту.</p>
-        </li>
-      </ol>
-    </section>
-
-    <section class="onoff">
-      <div>
-        <h2>Сразу после установки</h2>
-        <ul>
-          <li>Вычитка</li>
-          <li>Style Guide</li>
-          <li>История</li>
-          <li>Аналитика</li>
-        </ul>
-      </div>
-      <div>
-        <h2>Выключено, пока не включишь</h2>
-        <ul>
-          <li>Документы</li>
-          <li>OpenAPI</li>
-          <li>Наблюдение за страницами</li>
-          <li>Редактор скриншотов</li>
-        </ul>
-        <p>Флаги <code>FEATURE_*</code> в <code>.env</code>. Образ пересобирать не нужно.</p>
+        <p class="hint">После запуска откройте http://localhost:3080. Учётная запись по умолчанию: <code>admin</code> / <code>admin</code>. Первый запуск занимает около полутора минут: инициализируется проверка языка.</p>
+        <a class="go go-hero" href="wiki/tutorial/">Установка и первый запуск</a>
       </div>
     </section>
 
-    <section class="ops">
-      <h2>Если это понесёт в прод</h2>
+    <section class="job">
+      <h2>Как устроена проверка</h2>
+      <p class="job-lead">Сначала задаётся документ и состав проверки. Затем просматривается список замечаний. Корпоративный стиль хранится отдельно, в том же интерфейсе.</p>
+      <div class="job-shots">
+        <figure class="shot shot-form">
+          <img src="screenshots/03-check-form.png" width="1440" height="900" alt="Раздел Вычитка: выбор источника и параметров проверки">
+          <figcaption><strong>1. Источник и состав проверки.</strong> Раздел «Вычитка». Вкладки «Текст», «Файл» (docx, txt, html, md) и «Ссылка». Справа независимые параметры: «Язык и ясность», «Style Guide», «Термины и согласованность». Запуск: «Начать вычитку».</figcaption>
+        </figure>
+        <figure class="shot shot-queue">
+          <img src="screenshots/02-check.png" width="1440" height="900" alt="Список замечаний рядом с текстом документа">
+          <figcaption><strong>2. Список замечаний.</strong> Экран «Очередь решений»: слева документ, справа карточки «Ошибка», «Замечание», «Совет». Клавиши <kbd>J</kbd> и <kbd>K</kbd> переключают карточки, <kbd>H</kbd> скрывает текущую. «Экспорт» сохраняет видимые замечания в xlsx.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="keys" aria-label="Клавиши в списке замечаний">
+      <p><kbd>J</kbd> далее</p>
+      <p><kbd>K</kbd> назад</p>
+      <p><kbd>H</kbd> скрыть</p>
+    </section>
+
+    <section class="guide">
+      <figure>
+        <img src="screenshots/04-guides.png" width="1440" height="900" alt="Раздел Style Guide">
+        <figcaption><strong>3. Корпоративный стиль.</strong> Раздел «Style Guide». «Использовать» назначает гайд для следующей проверки. Администратор импортирует правила из docx.</figcaption>
+      </figure>
+      <div class="guide-copy">
+        <h2>Style Guide</h2>
+        <p>В поставку входит встроенный набор правил. Собственный гайд загружается из docx: правила и словарь. Редактор выбирает гайд для проверки. Изменять правила может только администратор.</p>
+        <p><a href="wiki/how-to/styleguide/">Назначение и импорт гайда</a></p>
+      </div>
+    </section>
+
+    <section class="spec">
+      <h2>Инфраструктура</h2>
       <table>
         <tbody>
-          <tr><th>Где крутится</th><td>Docker Compose на вашей машине</td></tr>
-          <tr><th>Память</th><td>LanguageTool ~1.5 ГБ, backend до 2 ГБ</td></tr>
-          <tr><th>Данные</th><td>Том <code>backend-data</code>, снимок: <code>make backup</code></td></tr>
-          <tr><th>Модель</th><td>Пусто из коробки. Свой URL в настройках</td></tr>
-          <tr><th>Вход</th><td>Пароль или OIDC (Keycloak, Azure AD)</td></tr>
+          <tr><th>Развёртывание</th><td>Docker Compose. Три контейнера: интерфейс, сервер приложений, проверка языка</td></tr>
+          <tr><th>Память</th><td>Проверка языка около 1.5 ГБ, сервер приложений до 2 ГБ</td></tr>
+          <tr><th>Данные</th><td>Том <code>backend-data</code>. Резервная копия: <code>make backup</code></td></tr>
+          <tr><th>Языковая модель</th><td>Не требуется для грамматики и гайда. Для проверки по смыслу указывается свой API в «Настройках»</td></tr>
+          <tr><th>Аутентификация</th><td>Локальный пароль или OIDC (Keycloak, Azure AD)</td></tr>
           <tr><th>Лицензия</th><td>Apache-2.0</td></tr>
         </tbody>
       </table>
-      <p class="ops-links">
-        <a href="wiki/it/">Для ИТ</a>
-        <a href="wiki/config/">Все переменные</a>
-        <a href="wiki/roles/">Роли</a>
-      </p>
     </section>
 
-    <section class="login">
+    <section class="warn">
       <figure>
         <img src="screenshots/01-login.png" width="1440" height="900" alt="Экран входа">
-        <figcaption>Первый вход admin / admin. Пока пароль заводской, кто видит порт, тот админ.</figcaption>
       </figure>
+      <p>Учётная запись по умолчанию: <code>admin</code> / <code>admin</code>. Пока пароль не изменён, любой, кто имеет доступ к порту, получает права администратора. Смена пароля: меню учётной записи → «Сменить пароль».</p>
+    </section>
+
+    <section class="ops">
+      <h2>Администрирование</h2>
+      <p class="ops-lead">Пользователи, адрес модели и состояние сервисов доступны администратору сразу после установки. Языковая модель не обязательна: грамматика и Style Guide работают без неё.</p>
+      <div class="ops-grid">
+        <figure>
+          <img src="screenshots/06-users.png" width="1440" height="900" alt="Список пользователей">
+          <figcaption><strong>Пользователи.</strong> Логин, роль «Редактор» или «Администратор». Пароль не короче 8 символов. Общий вход <code>admin</code> для рабочей группы не подходит.</figcaption>
+        </figure>
+        <figure>
+          <img src="screenshots/07-settings.png" width="1440" height="900" alt="Настройки языковой модели">
+          <figcaption><strong>Настройки.</strong> Адрес API с протоколом OpenAI, имя модели, ключ. «Проверить подключение» сообщает, отвечает ли сервер.</figcaption>
+        </figure>
+        <figure>
+          <img src="screenshots/09-health.png" width="1440" height="900" alt="Состояние сервисов">
+          <figcaption><strong>Система.</strong> Диск, модель, эмбеддинги, репозиторий, резервная копия. Пустой адрес модели даёт статус «Недоступно»: это ожидаемо, а не поломка грамматики.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="trail">
+      <h2>История и аналитика</h2>
+      <div class="trail-grid">
+        <figure>
+          <img src="screenshots/08-history.png" width="1440" height="900" alt="История проверок">
+          <figcaption><strong>История.</strong> Завершённые проверки: источник, дата, число находок, имя гайда. Стрелка открывает тот же отчёт.</figcaption>
+        </figure>
+        <figure>
+          <img src="screenshots/05-insights.png" width="1440" height="900" alt="Аналитика частых правил">
+          <figcaption><strong>Аналитика.</strong> Какие правила срабатывают чаще и у кого. Счётчики токенов заполняются, если использовалась модель.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="extra">
+      <h2>Дополнительные разделы</h2>
+      <p class="extra-lead">По умолчанию выключены. Включаются флагами в <code>.env</code> без пересборки интерфейса: <code>FEATURE_DOCUMENTS</code>, <code>FEATURE_API</code>, <code>FEATURE_WATCH</code>, <code>FEATURE_SCREENSHOTS</code>.</p>
+      <div class="extra-grid">
+        <figure>
+          <img src="screenshots/10-documents.png" width="1440" height="900" alt="Репозиторий документов">
+          <figcaption><strong>Документы.</strong> Папки, версии файлов, архив, поиск по ключу Jira.</figcaption>
+        </figure>
+        <figure>
+          <img src="screenshots/12-api.png" width="1440" height="900" alt="Связка OpenAPI">
+          <figcaption><strong>API.</strong> Связка русской и английской спецификаций: поля, единообразие, изменения.</figcaption>
+        </figure>
+        <figure>
+          <img src="screenshots/13-watch.png" width="1440" height="900" alt="Наблюдение за страницами">
+          <figcaption><strong>Наблюдение.</strong> Снимки страниц. Статусы: не проверялась, без изменений, изменилась, ошибка.</figcaption>
+        </figure>
+        <figure>
+          <img src="screenshots/14-screenshots.png" width="1440" height="900" alt="Редактор скриншотов">
+          <figcaption><strong>Скриншоты.</strong> Кадрирование, скрытие областей, шаблон ширины, выгрузка PNG.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="map">
+      <h2>Документация</h2>
+      <ul>
+        <li><a href="wiki/tutorial/">Установка и первый запуск</a></li>
+        <li><a href="wiki/how-to/check/">Проверка текста, файла или страницы</a></li>
+        <li><a href="wiki/how-to/review/">Работа со списком замечаний</a></li>
+        <li><a href="wiki/how-to/users/">Пользователи</a></li>
+        <li><a href="wiki/how-to/features/">Дополнительные разделы</a></li>
+        <li><a href="wiki/reference/config/">Переменные окружения</a></li>
+        <li><a href="wiki/explanation/what/">Назначение системы</a></li>
+      </ul>
     </section>
   </main>
 
@@ -130,8 +166,8 @@ cd Peter-View
     <p>© 2026 BadWisher</p>
     <p>
       <a href="https://github.com/BadWisher/Peter-View">GitHub</a>
-      · <a href="wiki/">Вики</a>
-      · <a href="wiki/quickstart/">Поставить</a>
+      · <a href="wiki/">Документация</a>
+      · <a href="wiki/tutorial/">Установка</a>
     </p>
   </footer>
 </body>
