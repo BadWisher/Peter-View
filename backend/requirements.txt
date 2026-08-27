@@ -6,7 +6,7 @@ openpyxl==3.1.5
 httpx==0.28.1
 pymorphy3==2.0.6
 razdel==0.5.0
-beautifulsoup4==4.14.3
+beautifulsoup4==4.15.0
 lxml==6.1.1
 sse-starlette==3.4.4
 bcrypt==5.0.0
