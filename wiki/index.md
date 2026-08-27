@@ -1,19 +1,29 @@
 # Peter View
 
-Проверка русской документации. Ставите Docker Compose у себя. Наружу уходит только то, что админ сам прописал как модель.
+Проверка русской документации. Ставится у вас через Docker Compose.
 
-## Оглавление
+В отчёт попадают Vale (правила Style Guide), pymorphy3 (морфология) и LanguageTool (грамматика). Проверка моделью выключена, пока администратор не укажет свой OpenAI-совместимый сервер.
 
-1. [Что это такое](about.md)
-2. [Быстрый старт](quickstart.md)
-3. [Установка и Docker](install.md)
-4. [Конфигурация](config.md)
-5. [Роли и доступ](roles.md)
-6. [Для ИТ](it.md)
-7. [Разделы](sections.md)
-8. [Языковая модель и RAG](llm.md)
-9. [Скрытие разделов](features.md)
-10. [Архитектура](architecture.md)
-11. [Безопасность](security.md)
-12. [Разработка и тесты](develop.md)
-13. [FAQ](faq.md)
+## С чего начать
+
+1. [Быстрый старт](quickstart.md): `./deploy.sh`, первый вход, первая проверка
+2. [Установка и Docker](install.md): тома, память, прод, обновление
+3. [Для ИТ](it.md): OIDC, SSRF, бэкап, cookie
+
+Сайт проекта: [badwisher.github.io/Peter-View](https://badwisher.github.io/Peter-View/).
+
+## Содержание
+
+- [Что это такое](about.md)
+- [Быстрый старт](quickstart.md)
+- [Установка и Docker](install.md)
+- [Конфигурация](config.md)
+- [Роли и доступ](roles.md)
+- [Для ИТ](it.md)
+- [Разделы](sections.md)
+- [Языковая модель и RAG](llm.md)
+- [Скрытие разделов](features.md)
+- [Архитектура](architecture.md)
+- [Безопасность](security.md)
+- [Разработка и тесты](develop.md)
+- [FAQ](faq.md)
