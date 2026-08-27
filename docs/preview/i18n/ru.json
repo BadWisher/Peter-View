@@ -1,0 +1,45 @@
+{
+  "login": {
+    "title": "Вход",
+    "username": "Логин",
+    "password": "Пароль",
+    "showPassword": "Показать пароль",
+    "submit": "Войти",
+    "oidc": "Войти через организацию",
+    "defaultHint": "Первый вход: admin / admin. Сразу смени пароль."
+  },
+  "account": {
+    "menu": "Учётная запись",
+    "apiDocs": "Документация API",
+    "password": "Сменить пароль",
+    "language": "English",
+    "logout": "Выйти"
+  },
+  "nav": {
+    "check": "Вычитка",
+    "documents": "Документы",
+    "watch": "Наблюдение",
+    "api": "API",
+    "guides": "Style Guide",
+    "screenshots": "Скриншоты",
+    "history": "История",
+    "insights": "Аналитика",
+    "settings": "Настройки",
+    "users": "Пользователи",
+    "health": "Система"
+  },
+  "role": {
+    "admin": "Администратор",
+    "editor": "Редактор"
+  },
+  "users": {
+    "delete": "Удалить пользователя"
+  },
+  "insights": {
+    "tokensTotal": "токенов всего",
+    "tokensToday": "токенов сегодня",
+    "authors": "авторов",
+    "hits": "срабатываний",
+    "empty": "Пока нет данных. Запусти вычитку, и здесь появятся частые замечания."
+  }
+}
