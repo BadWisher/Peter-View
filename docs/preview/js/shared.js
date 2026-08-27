@@ -741,8 +741,8 @@ export function renderShell(content) {
   const title = routeMeta[state.route];
   const username = state.user?.username || "Пользователь";
   app.innerHTML = `
-    ${isPreview ? `<p class="preview-note" role="status">Демонстрация интерфейса. Проверка на сервере не запускается, данные заранее подготовлены.</p>` : ""}
     <div class="app-shell">
+      ${isPreview ? `<p class="preview-note" role="status">Демонстрация интерфейса. Проверка на сервере не запускается, данные заранее подготовлены.</p>` : ""}
       <aside class="sidebar">
         <a class="brand" href="#/check"><img id="brandMark" class="brand-mark" src="logo.png" width="39" height="39" alt=""><span>Peter<br>View</span></a>
         <button class="icon-button sidebar-close" type="button" aria-label="Закрыть меню">${icon("icon-close")}</button>
