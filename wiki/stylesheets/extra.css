@@ -9,6 +9,10 @@
   background-color: #013b32;
 }
 
+.md-typeset {
+  font-family: "Segoe UI", "Liberation Sans", sans-serif;
+}
+
 .md-typeset img {
   border-radius: 8px;
   box-shadow: 0 12px 32px rgba(23, 35, 32, 0.12);

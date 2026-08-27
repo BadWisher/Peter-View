@@ -43,12 +43,6 @@
     
     
       
-        
-        
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
-        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
-      
     
     
       <link rel="stylesheet" href="../../stylesheets/extra.css">
@@ -76,7 +70,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#_1" class="md-skip">
+        <a href="#пользователи" class="md-skip">
           Перейти к содержанию
         </a>
       
@@ -631,7 +625,7 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
+  <a href="#создание" class="md-nav__link">
     <span class="md-ellipsis">
       
         Создание
@@ -642,7 +636,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_3" class="md-nav__link">
+  <a href="#удаление" class="md-nav__link">
     <span class="md-ellipsis">
       
         Удаление
@@ -1373,7 +1367,7 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
+  <a href="#создание" class="md-nav__link">
     <span class="md-ellipsis">
       
         Создание
@@ -1384,7 +1378,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_3" class="md-nav__link">
+  <a href="#удаление" class="md-nav__link">
     <span class="md-ellipsis">
       
         Удаление
@@ -1414,12 +1408,12 @@
   
 
 
-<h1 id="_1">Пользователи<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<h1 id="пользователи">Пользователи<a class="headerlink" href="#пользователи" title="Permanent link">&para;</a></h1>
 <p>Требуется роль администратора. У каждого сотрудника должна быть собственная учётная запись. Общий вход <code>admin</code> для рабочей группы не подходит: история и аналитика тогда сливаются в одного автора, пароль невозможно отозвать точечно.</p>
 <p>Пункт «Пользователи» в левом меню виден только администратору.</p>
 <p><img alt="Список пользователей: логин, роль, удаление" src="../../screenshots/06-users.png" /></p>
 <p>В таблице: аватар из инициалов, логин, роль («Редактор» или «Администратор»), удаление.</p>
-<h2 id="_2">Создание<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<h2 id="создание">Создание<a class="headerlink" href="#создание" title="Permanent link">&para;</a></h2>
 <p>«Добавить». Диалог «Новый пользователь»:</p>
 <ul>
 <li><strong>Логин.</strong> Уникальное имя входа.</li>
@@ -1428,7 +1422,7 @@
 </ul>
 <p>«Создать». Если пароль сгенерирован, скопируйте его до нажатия «Готово»: повторно он не отображается.</p>
 <p>Редактор выполняет проверки, читает гайды и назначает активный гайд. Администратор дополнительно изменяет правила, пользователей, настройки модели и видит состояние сервисов. Полная таблица: <a href="../../reference/roles/">роли</a>.</p>
-<h2 id="_3">Удаление<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<h2 id="удаление">Удаление<a class="headerlink" href="#удаление" title="Permanent link">&para;</a></h2>
 <p>Значок корзины в строке. Подтверждение: «Активные сессии пользователя завершатся». Последнего администратора удалить нельзя, как и собственную учётную запись.</p>
 <p>Пароль своей учётной записи меняет сам пользователь: меню учётной записи (инициалы слева внизу) → «Сменить пароль». Нужны текущий пароль и новый не короче 8 символов.</p>
 <p>У пользователей, вошедших через организацию, локального пароля нет. Их роль задаётся группами IdP: <a href="../oidc/">OIDC</a>.</p>
@@ -1481,7 +1475,7 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.sections", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u0421\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u043d\u043e \u0432 \u0431\u0443\u0444\u0435\u0440", "clipboard.copy": "\u041a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0432 \u0431\u0443\u0444\u0435\u0440", "search.result.more.one": "\u0415\u0449\u0451 1 \u043d\u0430 \u044d\u0442\u043e\u0439 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0435", "search.result.more.other": "\u0415\u0449\u0451 # \u043d\u0430 \u044d\u0442\u043e\u0439 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0435", "search.result.none": "\u0421\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0439 \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d\u043e", "search.result.one": "\u041d\u0430\u0439\u0434\u0435\u043d\u043e 1 \u0441\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0435", "search.result.other": "\u041d\u0430\u0439\u0434\u0435\u043d\u043e \u0441\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0439: #", "search.result.placeholder": "\u041d\u0430\u0447\u043d\u0438\u0442\u0435 \u043f\u0435\u0447\u0430\u0442\u0430\u0442\u044c \u0434\u043b\u044f \u043f\u043e\u0438\u0441\u043a\u0430", "search.result.term.missing": "\u041e\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u0435\u0442", "select.version": "\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0432\u0435\u0440\u0441\u0438\u044e"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u0421\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u043d\u043e \u0432 \u0431\u0443\u0444\u0435\u0440", "clipboard.copy": "\u041a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0432 \u0431\u0443\u0444\u0435\u0440", "search.result.more.one": "\u0415\u0449\u0451 1 \u043d\u0430 \u044d\u0442\u043e\u0439 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0435", "search.result.more.other": "\u0415\u0449\u0451 # \u043d\u0430 \u044d\u0442\u043e\u0439 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0435", "search.result.none": "\u0421\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0439 \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d\u043e", "search.result.one": "\u041d\u0430\u0439\u0434\u0435\u043d\u043e 1 \u0441\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0435", "search.result.other": "\u041d\u0430\u0439\u0434\u0435\u043d\u043e \u0441\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0439: #", "search.result.placeholder": "\u041d\u0430\u0447\u043d\u0438\u0442\u0435 \u043f\u0435\u0447\u0430\u0442\u0430\u0442\u044c \u0434\u043b\u044f \u043f\u043e\u0438\u0441\u043a\u0430", "search.result.term.missing": "\u041e\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u0435\u0442", "select.version": "\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0432\u0435\u0440\u0441\u0438\u044e"}, "version": null}</script>
     
     
       <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>

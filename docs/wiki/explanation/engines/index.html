@@ -43,12 +43,6 @@
     
     
       
-        
-        
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
-        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
-      
     
     
       <link rel="stylesheet" href="../../stylesheets/extra.css">
@@ -76,7 +70,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#_1" class="md-skip">
+        <a href="#откуда-берутся-замечания" class="md-skip">
           Перейти к содержанию
         </a>
       
@@ -1264,7 +1258,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
+  <a href="#морфология" class="md-nav__link">
     <span class="md-ellipsis">
       
         Морфология
@@ -1286,7 +1280,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_3" class="md-nav__link">
+  <a href="#слияние" class="md-nav__link">
     <span class="md-ellipsis">
       
         Слияние
@@ -1297,7 +1291,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
+  <a href="#языковая-модель" class="md-nav__link">
     <span class="md-ellipsis">
       
         Языковая модель
@@ -1308,7 +1302,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
+  <a href="#соответствие-форме-вычитка" class="md-nav__link">
     <span class="md-ellipsis">
       
         Соответствие форме «Вычитка»
@@ -1428,7 +1422,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
+  <a href="#морфология" class="md-nav__link">
     <span class="md-ellipsis">
       
         Морфология
@@ -1450,7 +1444,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_3" class="md-nav__link">
+  <a href="#слияние" class="md-nav__link">
     <span class="md-ellipsis">
       
         Слияние
@@ -1461,7 +1455,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
+  <a href="#языковая-модель" class="md-nav__link">
     <span class="md-ellipsis">
       
         Языковая модель
@@ -1472,7 +1466,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
+  <a href="#соответствие-форме-вычитка" class="md-nav__link">
     <span class="md-ellipsis">
       
         Соответствие форме «Вычитка»
@@ -1502,14 +1496,14 @@
   
 
 
-<h1 id="_1">Откуда берутся замечания<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<h1 id="откуда-берутся-замечания">Откуда берутся замечания<a class="headerlink" href="#откуда-берутся-замечания" title="Permanent link">&para;</a></h1>
 <p>Список замечаний в «Очереди решений» - это не один отчёт, а объединение нескольких проверок. У карточки есть важность, цитата, правило и обозначение источника. Интерфейс не запускает движки по отдельности: их вызывает пайплайн задачи.</p>
 <p>Как задача доходит до этого списка: <a href="../pipeline/">как проходит проверка</a>.</p>
 <h2 id="vale">Vale<a class="headerlink" href="#vale" title="Permanent link">&para;</a></h2>
 <p>Бинарник Vale 3.9.1 лежит в образе backend. Текст пишется во временный файл, Vale отдаёт JSON. Правила берутся из каталога <code>backend/vale/</code> и из выбранного Style Guide.</p>
 <p>Vale ищет то, что записано правилом: запрещённые конструкции, словарь, требования к тону. Он не «понимает» абзац. Если собственного гайда нет, используется встроенный набор из <code>styleguide/rules.yaml</code>.</p>
 <p>Импорт docx разбирает документ на правила и словарь. Формулировки затем правятся вручную.</p>
-<h2 id="_2">Морфология<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<h2 id="морфология">Морфология<a class="headerlink" href="#морфология" title="Permanent link">&para;</a></h2>
 <p><code>custom_checks.py</code>, pymorphy3 и razdel. То, что регуляркой Vale не выразить:</p>
 <ul>
 <li>пассивный залог</li>
@@ -1523,13 +1517,13 @@
 <p>Отдельный контейнер, HTTP <code>/v2/check</code>, язык <code>ru</code>. Грамматика, пунктуация, типовые ошибки. Около 1.5 ГБ RAM и до 90 с на первый старт.</p>
 <p>Пока healthcheck не пройден, этот слой молчит. Пустой список при включённом «Язык и ясность» чаще значит именно это.</p>
 <p>В пайплайне v2 находка LanguageTool привязывается к правилу гайда «Базовая.Орфография». Если такого правила в гайде нет, сигнал в отчёт не попадает.</p>
-<h2 id="_3">Слияние<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<h2 id="слияние">Слияние<a class="headerlink" href="#слияние" title="Permanent link">&para;</a></h2>
 <p>Три движка работают параллельно (<code>checker.check_text</code>). Одинаковые находки по строке, колонке и тексту схлопываются. Если гайд уже пометил фрагмент, повтор LanguageTool на том же месте отбрасывается.</p>
 <p>Пользовательские regex (<code>/api/rules</code>) тоже входят в этот список. Длина паттерна ограничена, на исполнение стоит таймаут, чтобы плохое выражение не подвесило процесс.</p>
-<h2 id="_4">Языковая модель<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<h2 id="языковая-модель">Языковая модель<a class="headerlink" href="#языковая-модель" title="Permanent link">&para;</a></h2>
 <p>Только при непустом адресе с протоколом OpenAI, метод <code>chat/completions</code>. Проходы v2: язык, гайд, структура, термины, согласованность, словарь, верификатор. Верификатор сверяет кандидата с исходным блоком и отсекает слабые.</p>
 <p>Пустой адрес систему не ломает. Галочки на форме по-прежнему выбирают, какие группы замечаний войдут в отчёт.</p>
-<h2 id="_5">Соответствие форме «Вычитка»<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<h2 id="соответствие-форме-вычитка">Соответствие форме «Вычитка»<a class="headerlink" href="#соответствие-форме-вычитка" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -1605,7 +1599,7 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.sections", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u0421\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u043d\u043e \u0432 \u0431\u0443\u0444\u0435\u0440", "clipboard.copy": "\u041a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0432 \u0431\u0443\u0444\u0435\u0440", "search.result.more.one": "\u0415\u0449\u0451 1 \u043d\u0430 \u044d\u0442\u043e\u0439 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0435", "search.result.more.other": "\u0415\u0449\u0451 # \u043d\u0430 \u044d\u0442\u043e\u0439 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0435", "search.result.none": "\u0421\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0439 \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d\u043e", "search.result.one": "\u041d\u0430\u0439\u0434\u0435\u043d\u043e 1 \u0441\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0435", "search.result.other": "\u041d\u0430\u0439\u0434\u0435\u043d\u043e \u0441\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0439: #", "search.result.placeholder": "\u041d\u0430\u0447\u043d\u0438\u0442\u0435 \u043f\u0435\u0447\u0430\u0442\u0430\u0442\u044c \u0434\u043b\u044f \u043f\u043e\u0438\u0441\u043a\u0430", "search.result.term.missing": "\u041e\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u0435\u0442", "select.version": "\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0432\u0435\u0440\u0441\u0438\u044e"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u0421\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u043d\u043e \u0432 \u0431\u0443\u0444\u0435\u0440", "clipboard.copy": "\u041a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0432 \u0431\u0443\u0444\u0435\u0440", "search.result.more.one": "\u0415\u0449\u0451 1 \u043d\u0430 \u044d\u0442\u043e\u0439 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0435", "search.result.more.other": "\u0415\u0449\u0451 # \u043d\u0430 \u044d\u0442\u043e\u0439 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0435", "search.result.none": "\u0421\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0439 \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d\u043e", "search.result.one": "\u041d\u0430\u0439\u0434\u0435\u043d\u043e 1 \u0441\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0435", "search.result.other": "\u041d\u0430\u0439\u0434\u0435\u043d\u043e \u0441\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0439: #", "search.result.placeholder": "\u041d\u0430\u0447\u043d\u0438\u0442\u0435 \u043f\u0435\u0447\u0430\u0442\u0430\u0442\u044c \u0434\u043b\u044f \u043f\u043e\u0438\u0441\u043a\u0430", "search.result.term.missing": "\u041e\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u0435\u0442", "select.version": "\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0432\u0435\u0440\u0441\u0438\u044e"}, "version": null}</script>
     
     
       <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>

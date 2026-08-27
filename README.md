@@ -53,21 +53,7 @@ cd Peter-View
 
 ## Устройство
 
-Три контейнера в одной внутренней сети. С хоста открыт только nginx (`PROOFREADER_PORT`, по умолчанию 3080).
-
-```mermaid
-flowchart LR
-  browser[Браузер] --> nginx[nginx]
-  nginx -->|статика| nginx
-  nginx -->|/api| api[FastAPI]
-  api --> vale[Vale]
-  api --> morph[pymorphy3]
-  api --> lt[LanguageTool]
-  api -.-> llm[Модель по желанию]
-  api --> data[(том backend-data)]
-```
-
-Интерфейс «Вычитка» ставит задачу `POST /api/jobs`. Сначала работают Vale, морфология и LanguageTool. Языковая модель подключается отдельным слоем, если администратор задал адрес. Отчёт пишется в историю на том же томе.
+Три контейнера в одной внутренней сети. С хоста открыт только nginx (`PROOFREADER_PORT`, по умолчанию 3080). Браузер → nginx → FastAPI. Дальше Vale и морфология в том же контейнере, LanguageTool отдельно, модель только если задан адрес. Данные - том `backend-data`. Интерфейс «Вычитка» ставит задачу `POST /api/jobs`.
 
 Подробности: [архитектура](https://badwisher.github.io/Peter-View/wiki/explanation/architecture/), [как проходит проверка](https://badwisher.github.io/Peter-View/wiki/explanation/pipeline/), [хранилище](https://badwisher.github.io/Peter-View/wiki/reference/data/), [HTTP API](https://badwisher.github.io/Peter-View/wiki/reference/http/).
 

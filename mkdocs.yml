@@ -7,11 +7,11 @@ site_dir: docs/wiki
 theme:
   name: material
   language: ru
+  font: false
   palette:
     primary: teal
     accent: teal
   features:
-    - navigation.instant
     - navigation.sections
     - content.code.copy
 extra_css:
@@ -19,13 +19,9 @@ extra_css:
 markdown_extensions:
   - admonition
   - tables
-  - pymdownx.superfences:
-      custom_fences:
-        - name: mermaid
-          class: mermaid
-          format: !!python/name:pymdownx.superfences.fence_code_format
   - toc:
       permalink: true
+      slugify: !!python/name:pymdownx.slugs.uslugify
 nav:
   - Документация: index.md
   - Начало работы:

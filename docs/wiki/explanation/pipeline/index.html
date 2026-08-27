@@ -43,12 +43,6 @@
     
     
       
-        
-        
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
-        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
-      
     
     
       <link rel="stylesheet" href="../../stylesheets/extra.css">
@@ -76,7 +70,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#_1" class="md-skip">
+        <a href="#как-проходит-проверка" class="md-skip">
           Перейти к содержанию
         </a>
       
@@ -1281,7 +1275,7 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
+  <a href="#источник-становится-документом" class="md-nav__link">
     <span class="md-ellipsis">
       
         Источник становится документом
@@ -1292,7 +1286,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_3" class="md-nav__link">
+  <a href="#задача" class="md-nav__link">
     <span class="md-ellipsis">
       
         Задача
@@ -1303,7 +1297,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
+  <a href="#слой-без-модели" class="md-nav__link">
     <span class="md-ellipsis">
       
         Слой без модели
@@ -1314,7 +1308,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
+  <a href="#слой-модели" class="md-nav__link">
     <span class="md-ellipsis">
       
         Слой модели
@@ -1325,7 +1319,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_6" class="md-nav__link">
+  <a href="#отчёт" class="md-nav__link">
     <span class="md-ellipsis">
       
         Отчёт
@@ -1336,7 +1330,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_7" class="md-nav__link">
+  <a href="#что-видит-администратор-после-прогона" class="md-nav__link">
     <span class="md-ellipsis">
       
         Что видит администратор после прогона
@@ -1417,7 +1411,7 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
+  <a href="#источник-становится-документом" class="md-nav__link">
     <span class="md-ellipsis">
       
         Источник становится документом
@@ -1428,7 +1422,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_3" class="md-nav__link">
+  <a href="#задача" class="md-nav__link">
     <span class="md-ellipsis">
       
         Задача
@@ -1439,7 +1433,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
+  <a href="#слой-без-модели" class="md-nav__link">
     <span class="md-ellipsis">
       
         Слой без модели
@@ -1450,7 +1444,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
+  <a href="#слой-модели" class="md-nav__link">
     <span class="md-ellipsis">
       
         Слой модели
@@ -1461,7 +1455,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_6" class="md-nav__link">
+  <a href="#отчёт" class="md-nav__link">
     <span class="md-ellipsis">
       
         Отчёт
@@ -1472,7 +1466,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_7" class="md-nav__link">
+  <a href="#что-видит-администратор-после-прогона" class="md-nav__link">
     <span class="md-ellipsis">
       
         Что видит администратор после прогона
@@ -1502,9 +1496,9 @@
   
 
 
-<h1 id="_1">Как проходит проверка<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<h1 id="как-проходит-проверка">Как проходит проверка<a class="headerlink" href="#как-проходит-проверка" title="Permanent link">&para;</a></h1>
 <p>Этот раздел описывает путь одной вычитки из интерфейса: от кнопки «Начать вычитку» до карточек в «Очереди решений». Настройка модели здесь не разбирается.</p>
-<h2 id="_2">Источник становится документом<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<h2 id="источник-становится-документом">Источник становится документом<a class="headerlink" href="#источник-становится-документом" title="Permanent link">&para;</a></h2>
 <p>Файл читается целиком, не больше 50 МБ. PDF нет.</p>
 <table>
 <thead>
@@ -1534,17 +1528,17 @@
 </table>
 <p>Документ режется на блоки (абзац, заголовок, ячейка). Дальше пайплайн работает с блоками, а не со сырым файлом.</p>
 <p>Вкладка «Ссылка» в «Вычитке» загружает одну страницу. Обход сайта до 200 страниц - это отдельный маршрут <code>/api/check-url</code>, экран его не вызывает.</p>
-<h2 id="_3">Задача<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<h2 id="задача">Задача<a class="headerlink" href="#задача" title="Permanent link">&para;</a></h2>
 <p><code>POST /api/jobs</code> создаёт задачу, сразу возвращает <code>job_id</code>. Пока задача идёт, статус в <code>jobs.db</code> и в памяти. Браузер читает живой вывод воркеров по SSE.</p>
 <p>Таймаут задачи: <code>LLM_JOB_TIMEOUT</code>, по умолчанию 900 с. Незавершённая задача после рестарта backend помечается ошибкой.</p>
 <p>Галочки на форме соответствуют опциям задачи: язык, Style Guide, термины. Хотя бы одна должна быть включена. Дополнительная инструкция (до 4000 знаков) дописывается к выбранному гайду только на этот прогон.</p>
-<h2 id="_4">Слой без модели<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<h2 id="слой-без-модели">Слой без модели<a class="headerlink" href="#слой-без-модели" title="Permanent link">&para;</a></h2>
 <p>Пайплайн по умолчанию <code>v2</code>. Первым делом он собирает <strong>детерминированные сигналы</strong>: Vale, морфология (pymorphy3 + razdel), LanguageTool. Они работают внутри контейнера backend и в контейнере LanguageTool. Исходный текст на адрес модели на этом шаге не уходит.</p>
 <p>Три движка запускаются параллельно и сливаются в один список. Совпадение по строке и колонке убирается. Находка LanguageTool на том же фрагменте, что уже пометил гайд, отбрасывается.</p>
 <p>Сигнал попадает в отчёт, если правило есть в эффективном наборе выбранного гайда. LanguageTool для этой привязки отображается на правило «Базовая.Орфография».</p>
 <p>Этот слой заполняет очередь замечаний и без модели. Пустой список при живом LanguageTool чаще значит, что JVM ещё не прошла healthcheck.</p>
 <p>Состав движков: <a href="../engines/">откуда берутся замечания</a>.</p>
-<h2 id="_5">Слой модели<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<h2 id="слой-модели">Слой модели<a class="headerlink" href="#слой-модели" title="Permanent link">&para;</a></h2>
 <p>Если в «Настройках» или в <code>LLM_BASE_URL</code> задан корень API с протоколом OpenAI, включаются проходы v2. Их список задаёт <code>PIPELINE_V2_STAGES</code>:</p>
 <p><code>evidence, language, guide, structure, terminology, consistency, lexicon, verifier</code></p>
 <table>
@@ -1593,10 +1587,10 @@
 <p>Повтор при сбое или таймауте прохода: <code>PIPELINE_V2_PASS_RETRIES</code> (по умолчанию 2), таймаут прохода <code>PIPELINE_V2_PASS_TIMEOUT</code> (360 с).</p>
 <p><code>PIPELINE_VERSION=v1</code> включает старый набор воркеров. <code>PIPELINE_SHADOW=true</code> гоняет второй вариант рядом для сравнения, в интерфейс уходит основной.</p>
 <p>Без адреса модели эти стадии не вызываются. Галочки на форме по-прежнему включают и выключают соответствующие группы замечаний в отчёте.</p>
-<h2 id="_6">Отчёт<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h2>
+<h2 id="отчёт">Отчёт<a class="headerlink" href="#отчёт" title="Permanent link">&para;</a></h2>
 <p>Готовый JSON: список замечаний (фрагмент, важность, правило, источник, замена если есть), метаданные источника, расход токенов. Интерфейс рисует «Очередь решений». Тот же объект пишется в историю пользователя.</p>
 <p>Экспорт xlsx собирается из замечаний, которые в этот момент не скрыты на экране: <code>POST /api/report-issues</code>. Повторно текст не проверяется.</p>
-<h2 id="_7">Что видит администратор после прогона<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h2>
+<h2 id="что-видит-администратор-после-прогона">Что видит администратор после прогона<a class="headerlink" href="#что-видит-администратор-после-прогона" title="Permanent link">&para;</a></h2>
 <p>История и аналитика читают <code>stats.db</code>: кто запускал, какие <code>rule_id</code> сработали, сколько токенов. Раздел «Система» показывает диск тома, доступность модели и эмбеддингов, дату резервной копии, журнал <code>audit.jsonl</code>.</p>
 
 
@@ -1647,7 +1641,7 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.sections", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u0421\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u043d\u043e \u0432 \u0431\u0443\u0444\u0435\u0440", "clipboard.copy": "\u041a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0432 \u0431\u0443\u0444\u0435\u0440", "search.result.more.one": "\u0415\u0449\u0451 1 \u043d\u0430 \u044d\u0442\u043e\u0439 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0435", "search.result.more.other": "\u0415\u0449\u0451 # \u043d\u0430 \u044d\u0442\u043e\u0439 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0435", "search.result.none": "\u0421\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0439 \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d\u043e", "search.result.one": "\u041d\u0430\u0439\u0434\u0435\u043d\u043e 1 \u0441\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0435", "search.result.other": "\u041d\u0430\u0439\u0434\u0435\u043d\u043e \u0441\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0439: #", "search.result.placeholder": "\u041d\u0430\u0447\u043d\u0438\u0442\u0435 \u043f\u0435\u0447\u0430\u0442\u0430\u0442\u044c \u0434\u043b\u044f \u043f\u043e\u0438\u0441\u043a\u0430", "search.result.term.missing": "\u041e\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u0435\u0442", "select.version": "\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0432\u0435\u0440\u0441\u0438\u044e"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u0421\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u043d\u043e \u0432 \u0431\u0443\u0444\u0435\u0440", "clipboard.copy": "\u041a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0432 \u0431\u0443\u0444\u0435\u0440", "search.result.more.one": "\u0415\u0449\u0451 1 \u043d\u0430 \u044d\u0442\u043e\u0439 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0435", "search.result.more.other": "\u0415\u0449\u0451 # \u043d\u0430 \u044d\u0442\u043e\u0439 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0435", "search.result.none": "\u0421\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0439 \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d\u043e", "search.result.one": "\u041d\u0430\u0439\u0434\u0435\u043d\u043e 1 \u0441\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0435", "search.result.other": "\u041d\u0430\u0439\u0434\u0435\u043d\u043e \u0441\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0439: #", "search.result.placeholder": "\u041d\u0430\u0447\u043d\u0438\u0442\u0435 \u043f\u0435\u0447\u0430\u0442\u0430\u0442\u044c \u0434\u043b\u044f \u043f\u043e\u0438\u0441\u043a\u0430", "search.result.term.missing": "\u041e\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u0435\u0442", "select.version": "\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0432\u0435\u0440\u0441\u0438\u044e"}, "version": null}</script>
     
     
       <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>

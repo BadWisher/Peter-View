@@ -4,25 +4,14 @@ Peter View - три процесса в одной внутренней сети
 
 ## Состав стека
 
-```mermaid
-flowchart LR
-  browser[Браузер]
-  nginx[nginx<br/>статика + /api]
-  api[FastAPI<br/>Python 3.12]
-  vale[Vale CLI]
-  morph[pymorphy3]
-  lt[LanguageTool<br/>JVM]
-  llm[Модель<br/>по желанию]
-  data[(том backend-data)]
-
-  browser --> nginx
-  nginx -->|статика| nginx
-  nginx -->|/api| api
-  api --> vale
-  api --> morph
-  api --> lt
-  api -.-> llm
-  api --> data
+```
+Браузер
+  → nginx (статика и /api, порт на хосте)
+      → FastAPI
+          → Vale, pymorphy3
+          → LanguageTool (отдельный контейнер)
+          → модель, если задан адрес
+          → том backend-data
 ```
 
 | Контейнер | Образ / сборка | Процесс | Память в Compose | С хоста |
