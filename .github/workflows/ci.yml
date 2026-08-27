@@ -1,0 +1,98 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-and-unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            backend/requirements.txt
+            backend/requirements-dev.txt
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements-dev.txt
+      - name: Lint Python
+        run: ruff check --select E9,F63,F7,F82 backend/app backend/eval backend/tests
+      - name: Check Python syntax
+        run: python -m compileall -q backend/app backend/eval
+      - name: Run unit tests
+        run: pytest -q
+
+  compose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare CI environment
+        run: cp .env.example .env
+      - name: Validate Compose configuration
+        run: |
+          docker compose config --quiet
+          docker compose -f docker-compose.yml -f docker-compose.corp-proxy.yml config --quiet
+          IMAGE_SHA=0000000000000000000000000000000000000000 \
+            GHCR_REPOSITORY=badwisher/peter-view \
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml config --quiet
+      - name: Build local images
+        run: docker compose build
+      - name: Start stack
+        run: docker compose up -d
+      - name: Wait for services
+        run: |
+          for attempt in $(seq 1 90); do
+            if curl --fail --silent http://127.0.0.1:3080/api/health >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          exit 1
+      - name: Health smoke test
+        run: |
+          curl --fail --silent --show-error --output /dev/null http://127.0.0.1:3080/
+          curl --fail --silent --show-error http://127.0.0.1:3080/api/health
+      - name: Wait for LanguageTool
+        run: |
+          docker compose exec -T backend python - <<'PY'
+          import time
+          import urllib.parse
+          import urllib.request
+
+          data = urllib.parse.urlencode({"language": "ru", "text": "Проверка."}).encode()
+          for _ in range(90):
+              try:
+                  with urllib.request.urlopen(
+                      "http://languagetool:8010/v2/check", data=data, timeout=3
+                  ) as response:
+                      if response.status == 200:
+                          break
+              except Exception:
+                  time.sleep(2)
+          else:
+              raise SystemExit("LanguageTool did not become ready")
+          PY
+      - name: Run deterministic regression
+        run: docker compose exec -T backend python -m app.regression_checks
+      - name: Show service logs
+        if: failure()
+        run: docker compose logs --no-color --tail=200
+      - name: Stop stack
+        if: always()
+        run: docker compose down -v
