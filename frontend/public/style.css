@@ -150,7 +150,20 @@ img {
   transform: translateY(0);
 }
 
+.app-shell {
+  display: grid;
+  width: 100vw;
+  height: 100vh;
+  grid-template-columns: var(--nav-width) minmax(0, 1fr);
+  overflow: hidden;
+}
+
+.app-shell:has(.preview-note) {
+  grid-template-rows: auto 1fr;
+}
+
 .preview-note {
+  grid-column: 1 / -1;
   margin: 0;
   padding: 8px 16px;
   background: var(--pine);
@@ -158,27 +171,6 @@ img {
   font-size: 0.875rem;
   line-height: 1.4;
   text-align: center;
-}
-
-body:has(.preview-note) {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-}
-
-body:has(.preview-note) .app-shell {
-  flex: 1;
-  width: 100%;
-  height: auto;
-  min-height: 0;
-}
-
-.app-shell {
-  display: grid;
-  width: 100vw;
-  height: 100vh;
-  grid-template-columns: var(--nav-width) minmax(0, 1fr);
-  overflow: hidden;
 }
 
 .sidebar {
