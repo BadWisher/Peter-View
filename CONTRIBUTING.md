@@ -16,7 +16,7 @@ make config
 
 Интерфейс: обычный JS в `frontend/public/js/`, по файлу на раздел. Строки: `frontend/public/i18n/`.
 
-Документация сайта: Markdown в `wiki/`, сборка `mkdocs build` в `docs/wiki/`. Лендинг: `landing/`, копия в `docs/` для GitHub Pages.
+Документация сайта: Markdown в `wiki/`, сборка `mkdocs build` в `docs/wiki/`. Лендинг: `landing/`, копия в `docs/` для GitHub Pages. Устройство: `wiki/explanation/architecture.md`.
 
 ## Стиль
 

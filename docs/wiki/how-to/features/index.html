@@ -1053,6 +1053,62 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/data/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Хранилище
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/http/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1175,6 +1231,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../explanation/pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Как проходит проверка
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../explanation/architecture/" class="md-nav__link">
         
   
@@ -1182,7 +1266,7 @@
   <span class="md-ellipsis">
     
   
-    Почему три контейнера
+    Архитектура
   
 
     
@@ -1244,11 +1328,11 @@
 <h1 id="_1">Включение дополнительных разделов<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
 <p>После установки в меню нет пунктов «Документы», «API», «Наблюдение» и «Скриншоты». Вычитка, Style Guide, история и аналитика от флагов не зависят.</p>
 <p>Флаги задаются в <code>.env</code> рядом с <code>docker-compose.yml</code>. Можно включить один флаг или несколько. Интерфейс пересобирать не требуется.</p>
-<pre><code class="language-env">FEATURE_DOCUMENTS=true
+<div class="highlight"><pre><span></span><code>FEATURE_DOCUMENTS=true
 FEATURE_API=true
 FEATURE_WATCH=true
 FEATURE_SCREENSHOTS=true
-</code></pre>
+</code></pre></div>
 <p>Затем <code>./deploy.sh</code>.</p>
 <p>Выключенный раздел исчезает из меню. Запрос к его адресу <code>/api/...</code> возвращает 404. Прежний хеш <code>#/documents</code> перенаправляет в «Вычитку».</p>
 <table>

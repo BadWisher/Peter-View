@@ -1134,6 +1134,62 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/data/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Хранилище
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/http/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1256,6 +1312,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../explanation/pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Как проходит проверка
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../explanation/architecture/" class="md-nav__link">
         
   
@@ -1263,7 +1347,7 @@
   <span class="md-ellipsis">
     
   
-    Почему три контейнера
+    Архитектура
   
 
     
@@ -1379,10 +1463,10 @@
 <p>Требуются Docker Engine и плагин Compose.</p>
 <h2 id="1">1. Установка<a class="headerlink" href="#1" title="Permanent link">&para;</a></h2>
 <p>В терминале:</p>
-<pre><code class="language-bash">git clone https://github.com/BadWisher/Peter-View.git
-cd Peter-View
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/BadWisher/Peter-View.git
+<span class="nb">cd</span><span class="w"> </span>Peter-View
 ./deploy.sh
-</code></pre>
+</code></pre></div>
 <p>Если файла <code>.env</code> ещё нет, скрипт копирует пример. Запускаются три контейнера: интерфейс, сервер приложений, проверка языка. Проверка языка при первом запуске занимает около полутора минут: это отдельный Java-процесс.</p>
 <p>Когда в терминале появится «Готово», откройте http://localhost:3080. Должен отображаться экран входа.</p>
 <p><img alt="Экран входа" src="../screenshots/01-login.png" /></p>
@@ -1394,8 +1478,8 @@ cd Peter-View
 <p>Смените пароль сразу. Инициалы слева внизу → «Сменить пароль». Текущий пароль: <code>admin</code>. Новый: не короче 8 символов. Пока действует заводской пароль, любой доступ к порту даёт права администратора.</p>
 <h2 id="3">3. Контрольная проверка<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
 <p>Откройте вкладку «Текст». Вставьте этот фрагмент:</p>
-<pre><code>Для того чтобы произвести установку, кликните на кнопку Далее.
-</code></pre>
+<div class="highlight"><pre><span></span><code>Для того чтобы произвести установку, кликните на кнопку Далее.
+</code></pre></div>
 <p>Оставьте включёнными все три параметра справа. Список гайдов не меняйте.</p>
 <p>Нажмите «Начать вычитку». Появится индикатор выполнения. По завершении откроется экран «Очередь решений».</p>
 <p><img alt="Очередь решений" src="../screenshots/02-check.png" /></p>

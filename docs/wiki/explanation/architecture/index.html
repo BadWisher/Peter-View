@@ -11,7 +11,7 @@
         <link rel="canonical" href="https://badwisher.github.io/Peter-View/wiki/explanation/architecture/">
       
       
-        <link rel="prev" href="../engines/">
+        <link rel="prev" href="../pipeline/">
       
       
       
@@ -23,7 +23,7 @@
     
     
       
-        <title>Почему три контейнера - Peter View</title>
+        <title>Архитектура - Peter View</title>
       
     
     
@@ -110,7 +110,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Почему три контейнера
+              Архитектура
             
           </span>
         </div>
@@ -1039,6 +1039,62 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/data/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Хранилище
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/http/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1160,6 +1216,34 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Как проходит проверка
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -1179,7 +1263,7 @@
   <span class="md-ellipsis">
     
   
-    Почему три контейнера
+    Архитектура
   
 
     
@@ -1197,7 +1281,7 @@
   <span class="md-ellipsis">
     
   
-    Почему три контейнера
+    Архитектура
   
 
     
@@ -1226,7 +1310,7 @@
   <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Проверка языка
+        Состав стека
       
     </span>
   </a>
@@ -1237,7 +1321,7 @@
   <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Сервер приложений
+        Зачем три процесса
       
     </span>
   </a>
@@ -1248,7 +1332,7 @@
   <a href="#_4" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Интерфейс
+        Путь запроса из браузера
       
     </span>
   </a>
@@ -1259,7 +1343,40 @@
   <a href="#_5" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Сеть
+        Как устроена проверка в интерфейсе
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backend: модули
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Данные
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Сеть и границы
       
     </span>
   </a>
@@ -1312,7 +1429,7 @@
   <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Проверка языка
+        Состав стека
       
     </span>
   </a>
@@ -1323,7 +1440,7 @@
   <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Сервер приложений
+        Зачем три процесса
       
     </span>
   </a>
@@ -1334,7 +1451,7 @@
   <a href="#_4" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Интерфейс
+        Путь запроса из браузера
       
     </span>
   </a>
@@ -1345,7 +1462,40 @@
   <a href="#_5" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Сеть
+        Как устроена проверка в интерфейсе
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backend: модули
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Данные
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Сеть и границы
       
     </span>
   </a>
@@ -1372,20 +1522,179 @@
   
 
 
-<h1 id="_1">Почему три контейнера<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
-<p>Стек состоит из трёх процессов, потому что у них разный срок жизни и разный объём памяти.</p>
-<h2 id="_2">Проверка языка<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
-<p>LanguageTool вынесен отдельно: это JVM с длительным запуском и собственной кучей. При совместном падении с API вычитка останавливалась бы целиком. Интервал healthcheck увеличен: Java не успевает стартовать за десять секунд. На хосте под этот контейнер лучше держать около 1.5 ГБ RAM.</p>
-<h2 id="_3">Сервер приложений<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
-<p>FastAPI хранит сессии, задания, гайды и файлы. Состояние находится в томе <code>backend-data</code>, не в образе: обновление контейнера не должно удалять пользователей. Резервная копия снимает этот том в tar.</p>
-<p>Языковая модель в этот контейнер не входит. Сервер обращается к адресу, который задал администратор.</p>
-<h2 id="_4">Интерфейс<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
-<p>Статическая сборка в nginx. Маршруты страниц задаются hash. Отдельный процесс Node в производственной среде не нужен. Набор пунктов меню интерфейс получает от сервера (<code>/api/config</code>). Флаг в <code>.env</code> меняет меню без пересборки скриптов.</p>
-<h2 id="_5">Сеть<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
-<p>С хоста открыт только порт nginx. Backend и LanguageTool слушают во внутренней сети Compose.</p>
-<p>Загрузка страницы по ссылке ограничена фильтром: иначе вкладка «Ссылка» стала бы открытым прокси. Для внутренней сети <code>PROOFREADER_SSRF_ALLOW_PRIVATE=true</code>. Для узла, доступного из интернета, <code>false</code>.</p>
-<p>Локальный пароль и вход организации сводятся к одной сессии, чтобы в интерфейсе был один ответ на вопрос, кто вошёл.</p>
-<p>Команды на хосте: <a href="../../reference/compose/">Compose</a>.</p>
+<h1 id="_1">Архитектура<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<p>Peter View - три процесса в одной внутренней сети Compose и том с данными. С хоста открыт один порт nginx. Браузер не ходит на FastAPI и LanguageTool напрямую.</p>
+<h2 id="_2">Состав стека<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>flowchart LR
+  browser[Браузер]
+  nginx[nginx&lt;br/&gt;статика + /api]
+  api[FastAPI&lt;br/&gt;Python 3.12]
+  vale[Vale CLI]
+  morph[pymorphy3]
+  lt[LanguageTool&lt;br/&gt;JVM]
+  llm[Модель&lt;br/&gt;по желанию]
+  data[(том backend-data)]
+
+  browser --&gt; nginx
+  nginx --&gt;|статика| nginx
+  nginx --&gt;|/api| api
+  api --&gt; vale
+  api --&gt; morph
+  api --&gt; lt
+  api -.-&gt; llm
+  api --&gt; data</code></pre>
+<table>
+<thead>
+<tr>
+<th>Контейнер</th>
+<th>Образ / сборка</th>
+<th>Процесс</th>
+<th>Память в Compose</th>
+<th>С хоста</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>frontend</code></td>
+<td>nginx:alpine, <code>frontend/public</code></td>
+<td>nginx, порт 80 внутри</td>
+<td>без лимита</td>
+<td><code>PROOFREADER_PORT</code>, по умолчанию 3080</td>
+</tr>
+<tr>
+<td><code>backend</code></td>
+<td>python:3.12-slim, Vale 3.9.1, uvicorn</td>
+<td>FastAPI <code>app.main:app</code>, порт 8000</td>
+<td>до 2 ГБ</td>
+<td>нет</td>
+</tr>
+<tr>
+<td><code>languagetool</code></td>
+<td><code>erikvl87/languagetool</code>, только <code>ru</code></td>
+<td>HTTP <code>/v2/check</code> на 8010</td>
+<td>1.5 ГБ, куча 512 МБ–1 ГБ</td>
+<td>нет</td>
+</tr>
+</tbody>
+</table>
+<p>Сеть <code>internal</code>, драйвер bridge. LanguageTool должен пройти healthcheck (до 90 с на старт), затем backend, затем frontend.</p>
+<p>Языковая модель в стек не входит. Backend вызывает адрес из «Настроек» или из <code>LLM_*</code>. Пустой адрес: слой модели не вызывается, Vale / морфология / LanguageTool остаются.</p>
+<p>Опционально <code>PROOFREADER_CORP_PROXY=true</code>: контейнер <code>proxy-bridge</code> (socat) прокидывает корпоративный прокси хоста, backend ходит в модель через <code>host.docker.internal</code>.</p>
+<h2 id="_3">Зачем три процесса<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<p>LanguageTool - отдельная JVM с длинным стартом. Если держать её в том же процессе, что и API, падение грамматики останавливает вход и гайды. Healthcheck специально растянут: перезапуск каждые десять секунд только мешает разгону.</p>
+<p>Данные лежат в томе, не в образе. Обновление контейнера не должно стирать пользователей и гайды.</p>
+<p>Интерфейс - статические файлы. Node в производственной среде не нужен. Пункты меню backend отдаёт в <code>/api/config</code>; флаг <code>FEATURE_*</code> меняет меню без пересборки фронта.</p>
+<h2 id="_4">Путь запроса из браузера<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Браузер открывает <code>http://хост:3080</code>. nginx отдаёт <code>index.html</code>, скрипты ES-модулей, стили.</li>
+<li>Маршруты страниц - hash: <code>#/check</code>, <code>#/review</code>, <code>#/guides</code>. Обновление страницы не спрашивает сервер о пути.</li>
+<li>Все данные идут на тот же origin: <code>/api/...</code>. nginx проксирует на <code>backend:8000</code>. Загрузка до 50 МБ, таймаут 600 с.</li>
+<li>Проверка и стрим воркеров идут как SSE: <code>/api/jobs/{id}/stream</code> и устаревший <code>/api/check-url</code>. Для них nginx отключает буферизацию (<code>X-Accel-Buffering: no</code>), иначе карточки появятся пачкой в конце.</li>
+<li>Cookie сессии <code>proofreader_session</code> HttpOnly, SameSite=lax. Флаг Secure: <code>PROOFREADER_COOKIE_SECURE</code>. Живые сессии хранятся в памяти backend. Рестарт контейнера разлогинивает всех; <code>users.json</code> при этом остаётся.</li>
+</ol>
+<p>CSP на статике: скрипты только <code>'self'</code>. Исключение: <code>/api/docs</code> и <code>/api/redoc</code>, если <code>PROOFREADER_DOCS=true</code>.</p>
+<h2 id="_5">Как устроена проверка в интерфейсе<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<p>Раздел «Вычитка» не вызывает <code>/api/check</code>. Он ставит задачу:</p>
+<ol>
+<li>Источник разбирается в блоки документа: DOCX / TXT / HTML / MD, либо одна страница по URL (<code>parse_url</code>). Обход сайта на 200 страниц (<code>/api/check-url</code>) в этом экране не используется.</li>
+<li><code>POST /api/jobs</code> с галочками языка, гайда, терминов, идентификатором Style Guide и необязательной инструкцией.</li>
+<li>Задача живёт в памяти и дублируется в <code>jobs.db</code>. Рестарт помечает незавершённые задачи ошибкой «Прервано рестартом сервера».</li>
+<li>Браузер подписан на SSE и по окончании забирает отчёт <code>GET /api/jobs/{id}/report</code>.</li>
+<li>Отчёт пишется в историю (<code>stats.db</code>).</li>
+</ol>
+<p>Внутри задачи работает пайплайн <code>PIPELINE_VERSION=v2</code> (v1 остаётся для отката). Сначала детерминированные движки, затем при наличии модели - проходы LLM. Подробности: <a href="../pipeline/">как проходит проверка</a>.</p>
+<p>Прямые <code>POST /api/check</code>, <code>/api/check-text</code>, <code>/api/check-url</code> остаются в HTTP API: те же Vale / морфология / LanguageTool без очереди jobs. Их вызывает не экран «Вычитка», а отчёт xlsx и краулер.</p>
+<h2 id="backend">Backend: модули<a class="headerlink" href="#backend" title="Permanent link">&para;</a></h2>
+<p>Код сервера: <code>backend/app/</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Модуль</th>
+<th>Роль</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>main.py</code></td>
+<td>Маршруты HTTP</td>
+</tr>
+<tr>
+<td><code>auth.py</code>, <code>oidc.py</code></td>
+<td>Пароль, сессия, вход организации</td>
+</tr>
+<tr>
+<td><code>features.py</code></td>
+<td>Флаги разделов, 404 если выключено</td>
+</tr>
+<tr>
+<td><code>extractors.py</code></td>
+<td>Текст из файла и HTML</td>
+</tr>
+<tr>
+<td><code>checker.py</code></td>
+<td>Параллельно Vale, pymorphy3, LanguageTool</td>
+</tr>
+<tr>
+<td><code>vale_runner.py</code></td>
+<td>Vale CLI, JSON</td>
+</tr>
+<tr>
+<td><code>custom_checks.py</code></td>
+<td>Морфология: пассив, «Вы», длина предложения, согласование</td>
+</tr>
+<tr>
+<td><code>lt_client.py</code></td>
+<td>HTTP к контейнеру LanguageTool</td>
+</tr>
+<tr>
+<td><code>net_guard.py</code></td>
+<td>SSRF при загрузке URL</td>
+</tr>
+<tr>
+<td><code>crawler.py</code></td>
+<td>Обход сайта, до 200 страниц</td>
+</tr>
+<tr>
+<td><code>llm/jobs.py</code></td>
+<td>Очередь проверок, SSE</td>
+</tr>
+<tr>
+<td><code>llm/pipeline.py</code>, <code>pipeline_v2.py</code></td>
+<td>Сборка отчёта и проходы модели</td>
+</tr>
+<tr>
+<td><code>llm/styleguide_store.py</code></td>
+<td>YAML гайдов на томе</td>
+</tr>
+<tr>
+<td><code>llm/settings.py</code></td>
+<td>Адрес модели, перекрывает <code>.env</code></td>
+</tr>
+<tr>
+<td><code>llm/repo_store.py</code></td>
+<td>Репозиторий документов</td>
+</tr>
+<tr>
+<td><code>llm/watch_store.py</code>, <code>watch_run.py</code></td>
+<td>Наблюдение за страницами</td>
+</tr>
+<tr>
+<td><code>backups.py</code></td>
+<td>tar тома</td>
+</tr>
+<tr>
+<td><code>audit.py</code></td>
+<td>Журнал действий администратора</td>
+</tr>
+</tbody>
+</table>
+<p>Интерфейс: <code>frontend/public/js/</code>, по файлу на раздел (<code>check.js</code>, <code>guides.js</code>, <code>users.js</code>, …). Оболочка и вход: <code>app.js</code>. Общие запросы: <code>shared.js</code>. Строки ru/en: <code>frontend/public/i18n/</code>.</p>
+<h2 id="_6">Данные<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h2>
+<p>Том <code>backend-data</code> монтируется в <code>/app/data</code>. Состав файлов: <a href="../../reference/data/">хранилище</a>. Резервная копия снимает этот каталог в <code>./backups</code> на хосте.</p>
+<h2 id="_7">Сеть и границы<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h2>
+<p>Загрузка страницы по ссылке проходит <code>net_guard</code>: схема только http(s), запрещены loopback, link-local (в том числе 169.254.169.254), multicast. Адреса RFC1918 по умолчанию разрешены (<code>PROOFREADER_SSRF_ALLOW_PRIVATE=true</code>), потому что документация часто живёт во внутренней сети. На узле из интернета поставьте <code>false</code>.</p>
+<p>Модель и эмбеддинги - исходящие запросы backend по адресу, который задал администратор. На GitHub и на сайт автора проверка ничего не отправляет.</p>
+<p>HTTP-группы: <a href="../../reference/http/">справка API</a>. Команды Compose: <a href="../../reference/compose/">справка</a>.</p>
 
 
 

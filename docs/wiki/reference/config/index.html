@@ -1042,6 +1042,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Пайплайн
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#oidc" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1053,7 +1064,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
+  <a href="#_5" class="md-nav__link">
     <span class="md-ellipsis">
       
         Прочее
@@ -1143,6 +1154,62 @@
     
   
     Compose и команды
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Хранилище
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../http/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP API
   
 
     
@@ -1278,6 +1345,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../explanation/pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Как проходит проверка
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../explanation/architecture/" class="md-nav__link">
         
   
@@ -1285,7 +1380,7 @@
   <span class="md-ellipsis">
     
   
-    Почему три контейнера
+    Архитектура
   
 
     
@@ -1377,6 +1472,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Пайплайн
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#oidc" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1388,7 +1494,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
+  <a href="#_5" class="md-nav__link">
     <span class="md-ellipsis">
       
         Прочее
@@ -1569,6 +1675,48 @@
 </tbody>
 </table>
 <p>Администратор может задать те же поля в разделе «Настройки». Сохранённые там значения перекрывают файл.</p>
+<h2 id="_4">Пайплайн<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Переменная</th>
+<th>По умолчанию</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>PIPELINE_VERSION</code></td>
+<td><code>v2</code></td>
+<td><code>v1</code> включает старый набор воркеров</td>
+</tr>
+<tr>
+<td><code>PIPELINE_SHADOW</code></td>
+<td><code>false</code></td>
+<td>Второй вариант пайплайна рядом, в интерфейс не уходит</td>
+</tr>
+<tr>
+<td><code>PIPELINE_V2_STAGES</code></td>
+<td><code>evidence,language,guide,structure,terminology,consistency,lexicon,verifier</code></td>
+<td>Какие стадии v2 включать</td>
+</tr>
+<tr>
+<td><code>PIPELINE_V2_PASS_TIMEOUT</code></td>
+<td><code>360</code></td>
+<td>Секунды на один проход модели</td>
+</tr>
+<tr>
+<td><code>PIPELINE_V2_PASS_RETRIES</code></td>
+<td><code>2</code></td>
+<td>Повторы при сбое прохода</td>
+</tr>
+<tr>
+<td><code>LLM_JOB_TIMEOUT</code></td>
+<td><code>900</code></td>
+<td>Секунды на всю задачу вычитки</td>
+</tr>
+</tbody>
+</table>
 <h2 id="oidc">OIDC<a class="headerlink" href="#oidc" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -1600,7 +1748,7 @@
 </tr>
 </tbody>
 </table>
-<h2 id="_4">Прочее<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<h2 id="_5">Прочее<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -1620,6 +1768,14 @@
 <tr>
 <td><code>DOCX_MAX_UNCOMPRESSED_BYTES</code></td>
 <td>Потолок распаковки docx</td>
+</tr>
+<tr>
+<td><code>REPO_MAX_FILE_BYTES</code></td>
+<td>Потолок файла в репозитории документов, по умолчанию 25 МБ</td>
+</tr>
+<tr>
+<td><code>REPO_STORE_DIR</code></td>
+<td>Каталог репозитория, по умолчанию <code>/app/data/repo</code></td>
 </tr>
 </tbody>
 </table>

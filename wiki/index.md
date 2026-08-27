@@ -39,9 +39,12 @@ Peter View - система автоматической вычитки русс
 - [Роли](reference/roles.md)
 - [Разделы интерфейса](reference/sections.md)
 - [Команды Compose](reference/compose.md)
+- [Хранилище](reference/data.md)
+- [HTTP API](reference/http.md)
 
 ## Устройство
 
 - [Назначение системы](explanation/what.md)
 - [Откуда берутся замечания](explanation/engines.md)
-- [Почему три контейнера](explanation/architecture.md)
+- [Как проходит проверка](explanation/pipeline.md)
+- [Архитектура](explanation/architecture.md)

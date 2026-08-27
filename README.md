@@ -51,6 +51,26 @@ cd Peter-View
 
 Образы: `ghcr.io/badwisher/peter-view/backend` и `ghcr.io/badwisher/peter-view/frontend`. Данные хранятся в томе `backend-data`.
 
+## Устройство
+
+Три контейнера в одной внутренней сети. С хоста открыт только nginx (`PROOFREADER_PORT`, по умолчанию 3080).
+
+```mermaid
+flowchart LR
+  browser[Браузер] --> nginx[nginx]
+  nginx -->|статика| nginx
+  nginx -->|/api| api[FastAPI]
+  api --> vale[Vale]
+  api --> morph[pymorphy3]
+  api --> lt[LanguageTool]
+  api -.-> llm[Модель по желанию]
+  api --> data[(том backend-data)]
+```
+
+Интерфейс «Вычитка» ставит задачу `POST /api/jobs`. Сначала работают Vale, морфология и LanguageTool. Языковая модель подключается отдельным слоем, если администратор задал адрес. Отчёт пишется в историю на том же томе.
+
+Подробности: [архитектура](https://badwisher.github.io/Peter-View/wiki/explanation/architecture/), [как проходит проверка](https://badwisher.github.io/Peter-View/wiki/explanation/pipeline/), [хранилище](https://badwisher.github.io/Peter-View/wiki/reference/data/), [HTTP API](https://badwisher.github.io/Peter-View/wiki/reference/http/).
+
 ## Первый запуск
 
 ![Экран входа](docs/screenshots/01-login.png)
@@ -145,6 +165,10 @@ FEATURE_SCREENSHOTS=true
 | Пользователи и роли | [Пользователи](https://badwisher.github.io/Peter-View/wiki/how-to/users/) |
 | Вход организации (Keycloak, Azure AD) | [OIDC](https://badwisher.github.io/Peter-View/wiki/how-to/oidc/) |
 | Имена переменных | [Справка .env](https://badwisher.github.io/Peter-View/wiki/reference/config/) |
+| Состав стека и путь запроса | [Архитектура](https://badwisher.github.io/Peter-View/wiki/explanation/architecture/) |
+| Как из кнопки получается список | [Проверка](https://badwisher.github.io/Peter-View/wiki/explanation/pipeline/) |
+| Файлы на томе | [Хранилище](https://badwisher.github.io/Peter-View/wiki/reference/data/) |
+| HTTP API | [Справка API](https://badwisher.github.io/Peter-View/wiki/reference/http/) |
 | Зачем система устроена так | [Назначение](https://badwisher.github.io/Peter-View/wiki/explanation/what/) |
 
 Полный указатель: [документация](https://badwisher.github.io/Peter-View/wiki/).
