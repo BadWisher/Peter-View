@@ -1,0 +1,85 @@
+openapi: 3.0.3
+info:
+  title: Library catalog
+  version: 0.1.0
+  description: Sample OpenAPI with no personal data and no keys.
+servers:
+  - url: https://library.example.test/api
+paths:
+  /books:
+    get:
+      summary: List books
+      operationId: listBooks
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+          description: Search by title
+      responses:
+        "200":
+          description: Catalog page
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookList"
+    post:
+      summary: Add a book
+      operationId: createBook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookInput"
+      responses:
+        "201":
+          description: Book created
+  /books/{bookId}:
+    get:
+      summary: Book card
+      operationId: getBook
+      parameters:
+        - in: path
+          name: bookId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Book
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Book"
+        "404":
+          description: Book not found
+components:
+  schemas:
+    BookInput:
+      type: object
+      required: [title, author]
+      properties:
+        title:
+          type: string
+          description: Title
+        author:
+          type: string
+          description: Author
+        year:
+          type: integer
+          description: Year of publication
+    Book:
+      allOf:
+        - $ref: "#/components/schemas/BookInput"
+        - type: object
+          properties:
+            id:
+              type: string
+    BookList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Book"

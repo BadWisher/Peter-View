@@ -1,0 +1,12 @@
+extends: substitution
+message: "Используйте '%s' вместо '%s'."
+level: error
+ignorecase: false
+swap:
+  ip-адрес: IP-адрес
+  ip адрес: IP-адрес
+  Ip-адрес: IP-адрес
+  Ip адрес: IP-адрес
+  IP адрес: IP-адрес
+  ip-адреса: IP-адреса
+  ip-адресов: IP-адресов

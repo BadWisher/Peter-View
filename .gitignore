@@ -1,0 +1,14 @@
+.env
+.deployed-image-sha
+__pycache__/
+*.pyc
+backups/
+.incoming/
+backend/data/
+.pytest_cache/
+.ruff_cache/
+.audit-screens/
+.impeccable/
+.cursor/
+site/
+.mkdocs-venv/

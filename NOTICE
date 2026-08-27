@@ -1,0 +1,21 @@
+Peter View
+Copyright 2026 BadWisher
+
+This product includes software developed at the Peter View project.
+
+Third-party notices:
+
+Golos Text
+Copyright ParaType. Licensed under the SIL Open Font License 1.1.
+See frontend/public/fonts/OFL-GolosText.txt
+
+JetBrains Mono
+Copyright JetBrains. Licensed under the SIL Open Font License 1.1.
+See frontend/public/fonts/OFL-JetBrainsMono.txt
+
+LanguageTool (runtime Docker image erikvl87/languagetool)
+LanguageTool is licensed under the GNU Lesser General Public License.
+The image is pulled at deploy time and is not vendored in this repository.
+
+Vale
+The Vale CLI is used inside the backend image. See Vale's own license.

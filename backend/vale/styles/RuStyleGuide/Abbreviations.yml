@@ -1,0 +1,49 @@
+extends: existence
+message: "Убедитесь, что аббревиатура расшифрована при первом использовании в тексте."
+level: suggestion
+nonword: true
+raw:
+  - '\b[А-ЯЁ]{2,}\b'
+exceptions:
+  - IP
+  - URL
+  - HTTP
+  - HTTPS
+  - API
+  - DNS
+  - DDoS
+  - SMS
+  - HTML
+  - CSS
+  - PDF
+  - SQL
+  - USB
+  - ПО
+  - ОС
+  - БД
+  - МБ
+  - ГБ
+  - ТБ
+  - КБ
+  - ИТ
+  - ЦП
+  - ОЗУ
+  - ПЗУ
+  - ЛВС
+  - ВМ
+  - РФ
+  - ЕС
+  - США
+  - СНГ
+  - ФИО
+  - СМИ
+  - ООО
+  - АО
+  - ФСТЭК
+  - SOC
+  - SLA
+  - WAF
+  - CDN
+  - ML
+  - GDPR
+  - PoP

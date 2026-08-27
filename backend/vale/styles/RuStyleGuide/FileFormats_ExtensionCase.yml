@@ -1,0 +1,6 @@
+extends: existence
+message: "Расширение файла пишется строчными буквами с точкой: .txt, .pdf, .json и т.д."
+level: error
+nonword: true
+raw:
+  - '\.(TXT|PDF|JSON|CSV|YAML|PNG|JPG|JPEG|SVG|ZIP|SQL|MD|SH|PY|HTML|XML)\b'

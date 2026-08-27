@@ -1,0 +1,45 @@
+{
+  "login": {
+    "title": "Sign in",
+    "username": "Username",
+    "password": "Password",
+    "showPassword": "Show password",
+    "submit": "Sign in",
+    "oidc": "Sign in with organization",
+    "defaultHint": "First login: admin / admin. Change the password immediately."
+  },
+  "account": {
+    "menu": "Account",
+    "apiDocs": "API docs",
+    "password": "Change password",
+    "language": "Русский",
+    "logout": "Log out"
+  },
+  "nav": {
+    "check": "Proofread",
+    "documents": "Documents",
+    "watch": "Watch",
+    "api": "API",
+    "guides": "Style Guide",
+    "screenshots": "Screenshots",
+    "history": "History",
+    "insights": "Insights",
+    "settings": "Settings",
+    "users": "Users",
+    "health": "System"
+  },
+  "role": {
+    "admin": "Administrator",
+    "editor": "Editor"
+  },
+  "users": {
+    "delete": "Delete user"
+  },
+  "insights": {
+    "tokensTotal": "tokens total",
+    "tokensToday": "tokens today",
+    "authors": "authors",
+    "hits": "hits",
+    "empty": "Nothing yet. Run a check and frequent findings will show up here."
+  }
+}

@@ -1,0 +1,38 @@
+site_name: Peter View
+site_url: https://badwisher.github.io/Peter-View/wiki/
+repo_url: https://github.com/BadWisher/Peter-View
+repo_name: BadWisher/Peter-View
+docs_dir: wiki
+site_dir: site/wiki
+theme:
+  name: material
+  language: ru
+  palette:
+    primary: teal
+    accent: teal
+  features:
+    - navigation.instant
+    - navigation.sections
+    - content.code.copy
+extra_css:
+  - stylesheets/extra.css
+markdown_extensions:
+  - admonition
+  - tables
+  - toc:
+      permalink: true
+nav:
+  - Главная: index.md
+  - Что это такое: about.md
+  - Быстрый старт: quickstart.md
+  - Установка и Docker: install.md
+  - Конфигурация: config.md
+  - Роли и доступ: roles.md
+  - Для ИТ: it.md
+  - Разделы: sections.md
+  - Языковая модель и RAG: llm.md
+  - Скрытие разделов: features.md
+  - Архитектура: architecture.md
+  - Безопасность: security.md
+  - Разработка и тесты: develop.md
+  - FAQ: faq.md

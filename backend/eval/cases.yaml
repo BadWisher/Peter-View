@@ -1,0 +1,255 @@
+# Capability corpus for scheduled/manual live evaluation.
+# Text is intentionally paraphrased and paired with a nearby clean example.
+version: 2
+thresholds:
+  min_case_pass_rate: 0.70
+  min_rule_recall: 0.80
+  min_block_recall: 0.70
+  min_span_recall: 0.70
+  min_suggestion_recall: 0.60
+  max_forbidden_violations: 0
+  max_clean_failures: 0
+  min_rule_recall_at_k: 0.90
+  min_finder_rule_recall: 0.80
+  min_verifier_rule_recall: 0.80
+
+cases:
+  - name: precedence_formal_you_mid_sentence
+    capability: style-guide-precedence
+    tags: [positive, paraphrase]
+    text: "После регистрации сервис сохранит Ваши параметры."
+    expect:
+      rules:
+        - rule_id: RuStyleGuide.FormalYou
+          severity: error
+      blocks:
+        - rule_id: RuStyleGuide.FormalYou
+          block_index: 0
+      spans:
+        - rule_id: RuStyleGuide.FormalYou
+          block_index: 0
+          text: "Ваши"
+      suggestions:
+        - rule_id: RuStyleGuide.FormalYou
+          value: "ваши"
+
+  - name: precedence_formal_you_sentence_start_clean
+    capability: style-guide-precedence
+    tags: [negative, clean]
+    text: "Вы можете изменить параметры после регистрации."
+    clean: true
+    forbid:
+      rules: [RuStyleGuide.FormalYou]
+      suggestions:
+        - value: "вы можете"
+
+  - name: retrieval_non_obvious_tab_verb
+    capability: non-obvious-rule-retrieval
+    tags: [positive, paraphrase, held-out]
+    text: "Для продолжения откройте вкладку «Сеть»."
+    expect:
+      rules: [RuStyleGuide.UITerms_Tab]
+      blocks:
+        - rule_id: RuStyleGuide.UITerms_Tab
+          block_index: 0
+      spans:
+        - rule_id: RuStyleGuide.UITerms_Tab
+          text: "откройте вкладку"
+      suggestions:
+        - rule_id: RuStyleGuide.UITerms_Tab
+          value: "выберите вкладку"
+
+  - name: retrieval_non_obvious_tab_clean
+    capability: non-obvious-rule-retrieval
+    tags: [negative, clean, held-out]
+    text: "Для продолжения выберите вкладку «Сеть»."
+    clean: true
+    forbid:
+      rules: [RuStyleGuide.UITerms_Tab]
+      suggestions:
+        - value: "откройте вкладку"
+
+  - name: formatting_service_separator
+    capability: formatting-evidence
+    tags: [positive, formatting]
+    text: "Настройка состоит из двух этапов: сначала добавьте узел."
+    expect:
+      rules: [RuStyleGuide.Formatting_LineSeparator]
+      blocks:
+        - rule_id: RuStyleGuide.Formatting_LineSeparator
+          block_index: 0
+      spans:
+        - rule_id: RuStyleGuide.Formatting_LineSeparator
+          text: " "
+
+  - name: formatting_normal_line_break_clean
+    capability: formatting-evidence
+    tags: [negative, clean, formatting]
+    text: |-
+      Настройка состоит из двух этапов:
+
+      Сначала добавьте узел.
+    clean: true
+    forbid:
+      rules: [RuStyleGuide.Formatting_LineSeparator]
+
+  - name: ui_context_click_action
+    capability: ui-context-interpretation
+    tags: [positive, paraphrase]
+    text: "Чтобы закрыть окно, кликните по значку справа."
+    expect:
+      rules: [RuStyleGuide.UITerms_Click]
+      blocks:
+        - rule_id: RuStyleGuide.UITerms_Click
+          block_index: 0
+      spans:
+        - rule_id: RuStyleGuide.UITerms_Click
+          text: "кликните"
+      suggestions:
+        - rule_id: RuStyleGuide.UITerms_Click
+          value: "нажмите"
+
+  - name: ui_context_response_time_clean
+    capability: ui-context-interpretation
+    tags: [negative, clean]
+    text: "На панели показано среднее время отклика сервера."
+    clean: true
+    forbid:
+      rules: [RuStyleGuide.UITerms_Click]
+      suggestions:
+        - value: "нажат"
+
+  - name: cross_block_term_inconsistency
+    capability: cross-block-structure
+    tags: [positive, multi-block, held-out]
+    text: |-
+      Создайте учетную запись администратора.
+
+      Для входа используйте новый аккаунт.
+    expect:
+      rules: [RuStyleGuide.Consistency]
+      blocks:
+        - rule_id: RuStyleGuide.Consistency
+          block_index: 1
+      spans:
+        - rule_id: RuStyleGuide.Consistency
+          block_index: 1
+          text: "аккаунт"
+      suggestions:
+        - rule_id: RuStyleGuide.Consistency
+          value: "учетн"
+
+  - name: cross_block_term_consistent_clean
+    capability: cross-block-structure
+    tags: [negative, clean, multi-block, held-out]
+    text: |-
+      Создайте учетную запись администратора.
+
+      Для входа используйте новую учетную запись.
+    clean: true
+    forbid:
+      rules: [RuStyleGuide.Consistency]
+      suggestions:
+        - value: "аккаунт"
+
+  - name: policy_en_dash_must_not_be_replaced
+    capability: style-guide-precedence
+    tags: [negative, clean, reported-class, held-out]
+    text: "Система анализирует все признаки вместе – так точнее определяется угроза."
+    clean: true
+    forbid:
+      rules: [RuStyleGuide.Dash_EmDash]
+      suggestions:
+        - value: "—"
+
+  - name: policy_em_dash_direction
+    capability: style-guide-precedence
+    tags: [positive, paraphrase, reported-class]
+    text: "Система анализирует все признаки вместе — так точнее определяется угроза."
+    expect:
+      rules: [RuStyleGuide.Dash_EmDash]
+      suggestions:
+        - rule_id: RuStyleGuide.Dash_EmDash
+          value: "–"
+    forbid:
+      suggestions:
+        - value: "—"
+
+  - name: policy_do_not_introduce_yo
+    capability: style-guide-precedence
+    tags: [negative, clean, reported-class]
+    text: "Проверка объединяет результаты четырех методов."
+    clean: true
+    forbid:
+      rules: [RuStyleGuide.LetterYo]
+      suggestions:
+        - value: "ё"
+
+  - name: policy_remove_non_ambiguous_yo
+    capability: style-guide-precedence
+    tags: [positive, paraphrase, reported-class]
+    text: "Проверка объединяет результаты четырёх методов."
+    expect:
+      rules: [RuStyleGuide.LetterYo]
+      suggestions:
+        - rule_id: RuStyleGuide.LetterYo
+          value: "четырех"
+
+  - name: cross_reference_requires_link
+    capability: formatting-evidence
+    tags: [positive, structure, reported-class]
+    format: markdown
+    text: "Дополнительные параметры описаны в разделе Настройка фильтрации."
+    expect:
+      rules: [RuStyleGuide.CrossRef_Link]
+      spans:
+        - rule_id: RuStyleGuide.CrossRef_Link
+          text: "разделе Настройка фильтрации"
+
+  - name: linked_cross_reference_clean
+    capability: formatting-evidence
+    tags: [negative, clean, structure, reported-class]
+    format: markdown
+    text: "Дополнительные параметры описаны в разделе [Настройка фильтрации](settings.md)."
+    clean: true
+    forbid:
+      rules: [RuStyleGuide.CrossRef_Link]
+
+  - name: ui_button_label_requires_quotes
+    capability: ui-context-interpretation
+    tags: [positive, paraphrase, reported-class]
+    text: "Кнопка Создать открывает окно настройки правила."
+    expect:
+      rules: [RuStyleGuide.UITerms_QuotedLabels]
+      suggestions:
+        - rule_id: RuStyleGuide.UITerms_QuotedLabels
+          value: "«Создать»"
+
+  - name: quoted_ui_button_label_clean
+    capability: ui-context-interpretation
+    tags: [negative, clean, reported-class]
+    text: "Кнопка «Создать» открывает окно настройки правила."
+    clean: true
+    forbid:
+      rules: [RuStyleGuide.UITerms_QuotedLabels]
+
+  - name: list_introduction_with_items_clean
+    capability: cross-block-structure
+    tags: [negative, clean, structure, reported-class]
+    format: markdown
+    text: |-
+      Система учитывает такие признаки:
+
+      - адрес источника;
+      - частоту запросов;
+      - заголовки протокола.
+    clean: true
+    forbid:
+      rules: [Базовая.Грамматика]
+
+  - name: unfinished_list_introduction
+    capability: cross-block-structure
+    tags: [positive, structure, reported-class]
+    text: "Система учитывает такие признаки:"
+    expect:
+      rules: [Базовая.Грамматика]

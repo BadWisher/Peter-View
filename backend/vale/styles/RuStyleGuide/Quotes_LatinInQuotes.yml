@@ -1,0 +1,6 @@
+extends: existence
+message: "Иностранные названия на латинице пишутся без кавычек."
+level: error
+nonword: true
+raw:
+  - '[«„"][A-Za-z][^»"„]*[»""]'

@@ -1,0 +1,6 @@
+extends: existence
+message: "Поставьте пробел между «от» и суммой."
+level: error
+nonword: true
+raw:
+  - '\b[Оо]т(?=\d)'

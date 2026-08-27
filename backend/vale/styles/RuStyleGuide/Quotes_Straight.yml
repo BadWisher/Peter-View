@@ -1,0 +1,6 @@
+extends: existence
+message: "Используйте кавычки-«ёлочки» вместо прямых кавычек."
+level: error
+nonword: true
+raw:
+  - '"[^"]*"'

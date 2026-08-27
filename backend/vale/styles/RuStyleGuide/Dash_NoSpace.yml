@@ -1,0 +1,6 @@
+extends: existence
+message: "Ставьте пробелы до и после тире (–)."
+level: error
+nonword: true
+raw:
+  - '[а-яА-ЯёЁ]–|–[а-яА-ЯёЁ]'

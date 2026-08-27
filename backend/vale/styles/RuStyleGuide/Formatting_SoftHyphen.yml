@@ -1,0 +1,6 @@
+extends: existence
+message: "Удалите мягкий перенос внутри слова."
+level: error
+nonword: true
+raw:
+  - '\u00ad'

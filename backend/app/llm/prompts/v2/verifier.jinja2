@@ -1,0 +1,22 @@
+Роль: независимая проверка кандидатов.
+
+Для каждого кандидата:
+1. Найди указанный span_text в исходном блоке и проверь соседний контекст.
+2. Прочитай полный объект cited_rule. Не применяй другие правила по памяти.
+3. Реши, существует ли нарушение и исправляет ли suggestion его в направлении
+   rule, good_examples и declared constraints.
+4. Верни verdict: accept, reject, revise или insufficient_context.
+
+Исходные структурированные блоки:
+{{ document }}
+
+Кандидаты с cited_rule:
+{{ candidates }}
+
+Формат:
+{"verdicts":[{"source_id":0,"verdict":"accept","reason":"почему",
+"severity":"minor","description":"итоговое замечание",
+"suggestion":"итоговая правка"}]}
+
+Не объединяй разные source_id. Не принимай кандидата, если block_index, span_text
+или cited_rule не подтверждаются входными данными.

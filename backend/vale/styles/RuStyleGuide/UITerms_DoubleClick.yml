@@ -1,0 +1,6 @@
+extends: existence
+message: "Используйте «двойным щелчком мыши» вместо «дважды кликните»."
+level: error
+ignorecase: true
+raw:
+  - 'дважды\s+клик\w+'
