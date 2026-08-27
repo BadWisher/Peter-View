@@ -16,6 +16,8 @@ theme:
     - content.code.copy
 extra_css:
   - stylesheets/extra.css
+extra_javascript:
+  - javascripts/nav.js
 markdown_extensions:
   - admonition
   - tables
@@ -26,6 +28,11 @@ nav:
   - Документация: index.md
   - Начало работы:
       - Установка и первый запуск: tutorial.md
+  - Устройство:
+      - Назначение системы: explanation/what.md
+      - Откуда замечания: explanation/engines.md
+      - Как проходит проверка: explanation/pipeline.md
+      - Архитектура: explanation/architecture.md
   - Проверка документов:
       - Текст, файл или страница: how-to/check.md
       - Список замечаний: how-to/review.md
@@ -50,8 +57,3 @@ nav:
       - Compose и команды: reference/compose.md
       - Хранилище: reference/data.md
       - HTTP API: reference/http.md
-  - Устройство:
-      - Назначение системы: explanation/what.md
-      - Откуда замечания: explanation/engines.md
-      - Как проходит проверка: explanation/pipeline.md
-      - Архитектура: explanation/architecture.md
