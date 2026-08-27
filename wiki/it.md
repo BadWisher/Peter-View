@@ -2,32 +2,46 @@
 
 ## Поток данных
 
-Браузер ходит только на ваш хост. Backend вызывает LanguageTool в Docker-сети. Модель и эмбеддинги вызываются только по адресам, которые задал администратор. Сбора статистики нет.
+Браузер ходит только на ваш хост (nginx на `PROOFREADER_PORT`). `/api` проксируется на FastAPI. LanguageTool доступен backend только из Docker-сети, с хоста его порта нет.
+
+Модель и эмбеддинги вызываются, только если администратор задал URL. Сбора статистики нет, аккаунтов у автора проекта вы не создаёте.
 
 ## Ресурсы
 
-LanguageTool любит ~1.5 ГБ RAM. Backend ограничьте 2 ГБ. Диск: том `backend-data` плюс `./backups`.
+LanguageTool: лимит 1.5 ГБ, `Java_Xmx=1g`, старт до ~90 секунд. Backend: лимит 2 ГБ. Диск: том `backend-data` плюс `./backups`.
 
 ## Бэкап
 
-`make backup` кладёт tar в `./backups`. Храните том отдельно от образов.
+`make backup` кладёт tar в `./backups`. Восстановление: остановить стек, развернуть tar в данные тома, поднять снова. Образы сами по себе состояние не содержат.
 
 ## OIDC
 
 Authorization code. Discovery: `OIDC_ISSUER/.well-known/openid-configuration`.
 
-Redirect URI: `https://<хост>/api/auth/oidc/callback`.
+Redirect URI, один в один:
 
-Пример клиента Keycloak: confidential, standard flow, valid redirect как выше, группы в токене. Впиши имена групп админов в `OIDC_ADMIN_GROUPS`.
+```
+https://<хост>/api/auth/oidc/callback
+```
 
-Пример Azure AD: App Registration, Web redirect URI тот же, client secret, issuer `https://login.microsoftonline.com/<tenant>/v2.0`. Группы отдайте в ID token или userinfo.
+**Keycloak.** Клиент confidential, standard flow, Valid redirect URIs как выше. Группы должны попасть в токен. Имена админских групп впиши в `OIDC_ADMIN_GROUPS` через запятую.
 
-SAML, LDAP и SCIM в этом выпуске нет.
+**Azure AD.** App registration, платформа Web, redirect URI тот же, client secret. Issuer:
+
+```
+https://login.microsoftonline.com/<tenant>/v2.0
+```
+
+Группы отдайте в ID token или userinfo.
+
+SAML, LDAP и SCIM в 0.1 нет.
 
 ## SSRF
 
-`PROOFREADER_SSRF_ALLOW_PRIVATE=true` удобен для интранета: вычитка ходит на внутренние wiki и порталы. Если сервис торчит в интернет, поставьте `false`.
+Вычитка умеет забирать страницу по URL. `PROOFREADER_SSRF_ALLOW_PRIVATE=true` пускает на RFC1918: удобно для внутренней wiki. Если тот же инстанс торчит в интернет, поставьте `false`.
 
 ## Cookie
 
-За HTTPS: `PROOFREADER_COOKIE_SECURE=true`.
+За HTTPS: `PROOFREADER_COOKIE_SECURE=true`. Иначе браузер не сохранит сессию.
+
+На изменяющих запросах Origin должен совпадать с Host (CSRF).

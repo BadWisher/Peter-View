@@ -2,13 +2,15 @@
 
 <img src="frontend/public/logo.png" width="72" height="72" alt="Peter View">
 
-Проверка русской документации. Ставится через Docker Compose. Текст и отчёты лежат в томе на вашей машине.
+Проверка русской документации у себя. Vale, pymorphy3 и LanguageTool в одной очереди. Модель подключается отдельно, если она вам нужна.
 
-В отчёт идут Vale, pymorphy3 и LanguageTool. Модель не вызывается, пока в настройках не пропишут URL.
+[Сайт](https://badwisher.github.io/Peter-View/) · [Вики](https://badwisher.github.io/Peter-View/wiki/) · [Apache-2.0](LICENSE)
 
-![Проверка текста](docs/screenshots/02-check.png)
+![Очередь решений](docs/screenshots/02-check.png)
 
 ## Поставить
+
+Нужны Docker и Compose. Первый старт LanguageTool занимает около полутора минут.
 
 ```bash
 git clone https://github.com/BadWisher/Peter-View.git
@@ -16,22 +18,31 @@ cd Peter-View
 ./deploy.sh
 ```
 
-Адрес: `http://localhost:3080`  
-Логин `admin`, пароль `admin`. Пароль смени в тот же день.
+Открой http://localhost:3080. Логин `admin`, пароль `admin`. Пароль смени в тот же день.
 
-## Разделы
+Пошагово: [быстрый старт](wiki/quickstart.md).
 
-Сразу доступны вычитка, Style Guide, история и аналитика. Пользователей и настройки модели видит только администратор.
+## Что видно после входа
 
-Документы, OpenAPI, наблюдение и скриншоты выключены. В `.env`:
+Вычитка, Style Guide, история, аналитика. Пользователей и настройки модели видит только администратор.
 
-```env
-FEATURE_DOCUMENTS=true
-FEATURE_API=true
-FEATURE_WATCH=true
-FEATURE_SCREENSHOTS=true
-```
+| Раздел | По умолчанию |
+|---|---|
+| Вычитка | включена |
+| Style Guide | чтение у всех, правки у admin |
+| История, аналитика | включены |
+| Документы, OpenAPI, наблюдение, скриншоты | выключены, флаги `FEATURE_*` |
 
-Лицензия [Apache-2.0](LICENSE). Образы: `ghcr.io/badwisher/peter-view/backend` и `.../frontend`.
+<p>
+<img src="docs/screenshots/03-check-form.png" width="32%" alt="Форма проверки">
+<img src="docs/screenshots/04-guides.png" width="32%" alt="Style Guide">
+<img src="docs/screenshots/05-insights.png" width="32%" alt="Аналитика">
+</p>
 
-Роли, OIDC и остальные переменные: [вики](wiki/index.md).
+## Данные
+
+Том Docker `backend-data`. На адрес автора проекта ничего не уходит. LanguageTool сидит в вашей сети. Модель вызывается только по URL, который задал администратор.
+
+Роли, OIDC, память, бэкап: [для ИТ](wiki/it.md). Все переменные: [конфигурация](wiki/config.md).
+
+Образы: `ghcr.io/badwisher/peter-view/backend` и `.../frontend`.

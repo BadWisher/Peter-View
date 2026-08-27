@@ -3,7 +3,7 @@ site_url: https://badwisher.github.io/Peter-View/wiki/
 repo_url: https://github.com/BadWisher/Peter-View
 repo_name: BadWisher/Peter-View
 docs_dir: wiki
-site_dir: site/wiki
+site_dir: docs/wiki
 theme:
   name: material
   language: ru
