@@ -1053,6 +1053,62 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/data/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Хранилище
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/http/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1175,6 +1231,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../explanation/pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Как проходит проверка
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../explanation/architecture/" class="md-nav__link">
         
   
@@ -1182,7 +1266,7 @@
   <span class="md-ellipsis">
     
   
-    Почему три контейнера
+    Архитектура
   
 
     
@@ -1243,8 +1327,8 @@
 
 <h1 id="_1">Резервная копия данных<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
 <p>Результат: в каталоге <code>./backups</code> на хосте появляется tar с пользователями, гайдами и отчётами.</p>
-<pre><code class="language-bash">make backup
-</code></pre>
+<div class="highlight"><pre><span></span><code>make<span class="w"> </span>backup
+</code></pre></div>
 <p>Команда выполняется внутри контейнера backend и записывает архив в <code>/app/backups</code>. На машине это каталог <code>./backups</code>.</p>
 <p>Том <code>backend-data</code> не входит в образы. Обновление образа не удаляет пользователей.</p>
 <p>Состояние последней копии видно администратору в разделе «Система».</p>

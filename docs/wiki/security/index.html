@@ -1037,6 +1037,62 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/data/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Хранилище
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/http/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1159,6 +1215,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../explanation/pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Как проходит проверка
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../explanation/architecture/" class="md-nav__link">
         
   
@@ -1166,7 +1250,7 @@
   <span class="md-ellipsis">
     
   
-    Почему три контейнера
+    Архитектура
   
 
     
@@ -1226,7 +1310,12 @@
 
 
 <h1 id="_1">Безопасность<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
-<p>Cookie, роли и OIDC: <a href="../reference/roles/">Роли</a>. Fetch URL: <code>PROOFREADER_SSRF_ALLOW_PRIVATE</code> в <a href="../reference/config/">переменных</a>.</p>
+<p>Сессия: cookie <code>proofreader_session</code>, HttpOnly, SameSite=lax, 12 часов. Живые сессии в памяти процесса: рестарт backend разлогинивает всех. Пароли: bcrypt, минимум 8 символов. После нескольких неверных попыток вход с IP закрывается на 5 минут.</p>
+<p>Роли и OIDC: <a href="../reference/roles/">роли</a>.</p>
+<p>Загрузка URL проходит проверку SSRF (<code>net_guard</code>): запрещены loopback, link-local, multicast. Адреса RFC1918 по умолчанию разрешены. На публичном хосте: <code>PROOFREADER_SSRF_ALLOW_PRIVATE=false</code>.</p>
+<p>С хоста открыт только nginx. CSP на статике: скрипты <code>'self'</code>. Загрузки до 50 МБ.</p>
+<p>Модель вызывается только по адресу, который задал администратор. На адрес репозитория проекта проверка ничего не отправляет.</p>
+<p>Сообщить об уязвимости: <a href="https://github.com/BadWisher/Peter-View/blob/main/SECURITY.md">SECURITY.md</a>.</p>
 
 
 

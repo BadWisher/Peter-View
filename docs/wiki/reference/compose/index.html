@@ -14,7 +14,7 @@
         <link rel="prev" href="../sections/">
       
       
-        <link rel="next" href="../../explanation/what/">
+        <link rel="next" href="../data/">
       
       
         
@@ -1085,7 +1085,29 @@
   <a href="#_1" class="md-nav__link">
     <span class="md-ellipsis">
       
+        Сервисы
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
         Команды на хосте
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Сборка backend
       
     </span>
   </a>
@@ -1096,6 +1118,62 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Хранилище
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../http/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -1223,6 +1301,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../explanation/pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Как проходит проверка
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../explanation/architecture/" class="md-nav__link">
         
   
@@ -1230,7 +1336,7 @@
   <span class="md-ellipsis">
     
   
-    Почему три контейнера
+    Архитектура
   
 
     
@@ -1281,7 +1387,29 @@
   <a href="#_1" class="md-nav__link">
     <span class="md-ellipsis">
       
+        Сервисы
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
         Команды на хосте
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Сборка backend
       
     </span>
   </a>
@@ -1309,37 +1437,53 @@
 
 
 <h1 id="compose">Compose и команды<a class="headerlink" href="#compose" title="Permanent link">&para;</a></h1>
-<p>Три контейнера в <code>docker-compose.yml</code>.</p>
+<p>Файл <code>docker-compose.yml</code>. Три сервиса в сети <code>internal</code>. С хоста опубликован только nginx.</p>
+<h2 id="_1">Сервисы<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
 <th>Сервис</th>
-<th>Процесс</th>
-<th>Зачем отдельно</th>
+<th>Сборка</th>
+<th>Процесс внутри</th>
+<th>Healthcheck</th>
+<th>Память</th>
 </tr>
 </thead>
 <tbody>
 <tr>
+<td><code>languagetool</code></td>
+<td>образ <code>erikvl87/languagetool</code>, pin по sha256, <code>ENABLED_LANGUAGES=ru</code></td>
+<td>JVM, <code>:8010/v2/check</code></td>
+<td><code>/v2/languages</code>, start_period 90 с</td>
+<td>1536 МБ, <code>-Xms512m -Xmx1g</code></td>
+</tr>
+<tr>
 <td><code>backend</code></td>
-<td>FastAPI</td>
-<td>Сессии, задания, гайды, файлы</td>
+<td><code>backend/Dockerfile</code>: Python 3.12, Vale 3.9.1, uvicorn</td>
+<td><code>app.main:app</code> <code>:8000</code></td>
+<td><code>/api/health</code></td>
+<td>2 ГБ</td>
 </tr>
 <tr>
 <td><code>frontend</code></td>
-<td>nginx</td>
-<td>Статический интерфейс</td>
-</tr>
-<tr>
-<td><code>languagetool</code></td>
-<td>JVM</td>
-<td>Грамматика. Долгий старт, своя куча</td>
+<td><code>frontend/Dockerfile</code>: nginx:alpine</td>
+<td>статика + прокси <code>/api</code></td>
+<td><code>GET /</code></td>
+<td>без лимита</td>
 </tr>
 </tbody>
 </table>
-<p>Том <code>backend-data</code> монтируется в backend. Снимки: каталог <code>./backups</code> на хосте → <code>/app/backups</code> в контейнере.</p>
+<p>Порядок: LanguageTool healthy → backend healthy → frontend. Backend ходит в LanguageTool по <code>http://languagetool:8010/v2/check</code>.</p>
+<p>Тома:</p>
+<ul>
+<li><code>backend-data</code> → <code>/app/data</code></li>
+<li><code>./backups</code> → <code>/app/backups</code></li>
+<li><code>./backend/styleguide/rules.yaml</code> → <code>/app/styleguide/rules.yaml</code> (только чтение)</li>
+</ul>
+<p>Порт хоста: <code>${PROOFREADER_PORT:-3080}:80</code> на frontend.</p>
 <p>Образы публикации: <code>ghcr.io/badwisher/peter-view/backend</code> и <code>ghcr.io/badwisher/peter-view/frontend</code>.</p>
-<p>С хоста открыт только порт nginx, по умолчанию <code>3080</code> (<code>PROOFREADER_PORT</code>).</p>
-<h2 id="_1">Команды на хосте<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>Логи: json-file, 10 МБ × 3 файла на сервис.</p>
+<h2 id="_2">Команды на хосте<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -1350,7 +1494,7 @@
 <tbody>
 <tr>
 <td><code>./deploy.sh</code></td>
-<td><code>.env</code> при отсутствии, <code>compose up -d --build</code></td>
+<td><code>.env</code> при отсутствии, <code>compose up -d --build</code>, ждёт ответ на порту</td>
 </tr>
 <tr>
 <td><code>make down</code></td>
@@ -1366,7 +1510,7 @@
 </tr>
 <tr>
 <td><code>make backup</code></td>
-<td>tar данных в <code>./backups</code></td>
+<td>tar <code>/app/data</code> в <code>./backups</code></td>
 </tr>
 <tr>
 <td><code>make update</code></td>
@@ -1374,18 +1518,18 @@
 </tr>
 <tr>
 <td><code>make lint</code></td>
-<td>Проверка кода (для разработки)</td>
+<td>ruff (разработка)</td>
 </tr>
 <tr>
 <td><code>make test</code></td>
-<td>Тесты backend (для разработки)</td>
+<td>pytest backend (разработка)</td>
 </tr>
 </tbody>
 </table>
-<p><code>PROOFREADER_CORP_PROXY=true</code> в <code>.env</code> подключает <code>docker-compose.corp-proxy.yml</code>.</p>
-<p>Первый запуск LanguageTool занимает около полутора минут. Не перезапускайте контейнер каждые десять секунд: healthcheck рассчитан на длинный старт.</p>
-<p>Данные пользователей не входят в образ. Обновление образа не удаляет учётные записи, пока том на месте.</p>
-<p>Зачем три процесса: <a href="../../explanation/architecture/">почему три контейнера</a>.</p>
+<p><code>PROOFREADER_CORP_PROXY=true</code> подключает <code>docker-compose.corp-proxy.yml</code>: контейнер <code>proxy-bridge</code> (socat) и HTTP_PROXY у backend на <code>host.docker.internal</code>. Нужно, когда корпоративный прокси слушает только 127.0.0.1 на хосте, а контейнер туда не достаёт.</p>
+<h2 id="backend">Сборка backend<a class="headerlink" href="#backend" title="Permanent link">&para;</a></h2>
+<p>Непривилегированный пользователь <code>appuser</code> (uid 10001). Vale скачивается с GitHub Releases, контрольная сумма архива проверяется на этапе сборки. Entrypoint: <code>/entrypoint.sh</code>, затем uvicorn <code>--timeout-keep-alive 300</code>.</p>
+<p>Устройство стека: <a href="../../explanation/architecture/">архитектура</a>. Файлы на томе: <a href="../data/">хранилище</a>.</p>
 
 
 

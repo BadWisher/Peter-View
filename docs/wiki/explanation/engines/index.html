@@ -14,7 +14,7 @@
         <link rel="prev" href="../what/">
       
       
-        <link rel="next" href="../architecture/">
+        <link rel="next" href="../pipeline/">
       
       
         
@@ -1041,6 +1041,62 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/data/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Хранилище
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/http/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1208,17 +1264,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#languagetool" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        LanguageTool
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1230,10 +1275,21 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#languagetool" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LanguageTool
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Языковая модель
+        Слияние
       
     </span>
   </a>
@@ -1244,7 +1300,18 @@
   <a href="#_4" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Соответствие параметрам формы
+        Языковая модель
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Соответствие форме «Вычитка»
       
     </span>
   </a>
@@ -1267,6 +1334,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Как проходит проверка
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../architecture/" class="md-nav__link">
         
   
@@ -1274,7 +1369,7 @@
   <span class="md-ellipsis">
     
   
-    Почему три контейнера
+    Архитектура
   
 
     
@@ -1333,17 +1428,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#languagetool" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        LanguageTool
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1355,10 +1439,21 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#languagetool" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LanguageTool
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Языковая модель
+        Слияние
       
     </span>
   </a>
@@ -1369,7 +1464,18 @@
   <a href="#_4" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Соответствие параметрам формы
+        Языковая модель
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Соответствие форме «Вычитка»
       
     </span>
   </a>
@@ -1397,41 +1503,59 @@
 
 
 <h1 id="_1">Откуда берутся замечания<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
-<p>Список замечаний объединяет результаты нескольких проверок, чтобы не сопоставлять отдельные отчёты. У карточки есть важность, цитата и обозначение источника.</p>
+<p>Список замечаний в «Очереди решений» - это не один отчёт, а объединение нескольких проверок. У карточки есть важность, цитата, правило и обозначение источника. Интерфейс не запускает движки по отдельности: их вызывает пайплайн задачи.</p>
+<p>Как задача доходит до этого списка: <a href="../pipeline/">как проходит проверка</a>.</p>
 <h2 id="vale">Vale<a class="headerlink" href="#vale" title="Permanent link">&para;</a></h2>
-<p>Применяет Style Guide как набор правил: запрещённые конструкции, словарь, требования к тону. Это правила, которые организация уже зафиксировала. Если собственного гайда нет, используется встроенный набор.</p>
-<p>Импорт docx разбирает документ на правила и словарь. Формулировки затем можно править вручную. Vale не «понимает» текст: он ищет то, что записано правилом.</p>
-<h2 id="languagetool">LanguageTool<a class="headerlink" href="#languagetool" title="Permanent link">&para;</a></h2>
-<p>Проверяет язык: грамматику, пунктуацию, типовые ошибки. Отдельный Java-процесс требует около 1.5 ГБ памяти именно поэтому. Пока процесс не прошёл healthcheck, проверка языка не даёт находок, даже если текст содержит ошибки.</p>
+<p>Бинарник Vale 3.9.1 лежит в образе backend. Текст пишется во временный файл, Vale отдаёт JSON. Правила берутся из каталога <code>backend/vale/</code> и из выбранного Style Guide.</p>
+<p>Vale ищет то, что записано правилом: запрещённые конструкции, словарь, требования к тону. Он не «понимает» абзац. Если собственного гайда нет, используется встроенный набор из <code>styleguide/rules.yaml</code>.</p>
+<p>Импорт docx разбирает документ на правила и словарь. Формулировки затем правятся вручную.</p>
 <h2 id="_2">Морфология<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
-<p>pymorphy3 используется, когда правило зависит от словоформы, а не от точной строки: падежи, согласование. На карточке это видно по источнику.</p>
-<h2 id="_3">Языковая модель<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
-<p>Включается только при заданном адресе с протоколом OpenAI, метод <code>chat/completions</code>. Она находит то, что не выражается правилом: сбивчивый абзац, термин не в том контексте.</p>
-<p>Пустой <code>LLM_BASE_URL</code> и пустые поля в «Настройках» систему не отключают: грамматика и гайд уже заполняют список. Дополнительная инструкция на форме вычитки передаётся в этот слой. Без модели поле можно оставить пустым.</p>
-<h2 id="_4">Соответствие параметрам формы<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<p><code>custom_checks.py</code>, pymorphy3 и razdel. То, что регуляркой Vale не выразить:</p>
+<ul>
+<li>пассивный залог</li>
+<li>антропоморфизм (система «думает», сервер «хочет»)</li>
+<li>слишком длинное предложение</li>
+<li>«Вы» с заглавной в неуместном месте</li>
+<li>согласование прилагательного с существительным и подлежащего со сказуемым</li>
+</ul>
+<p>На карточке источник виден как морфология / style-guide, в зависимости от правила.</p>
+<h2 id="languagetool">LanguageTool<a class="headerlink" href="#languagetool" title="Permanent link">&para;</a></h2>
+<p>Отдельный контейнер, HTTP <code>/v2/check</code>, язык <code>ru</code>. Грамматика, пунктуация, типовые ошибки. Около 1.5 ГБ RAM и до 90 с на первый старт.</p>
+<p>Пока healthcheck не пройден, этот слой молчит. Пустой список при включённом «Язык и ясность» чаще значит именно это.</p>
+<p>В пайплайне v2 находка LanguageTool привязывается к правилу гайда «Базовая.Орфография». Если такого правила в гайде нет, сигнал в отчёт не попадает.</p>
+<h2 id="_3">Слияние<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<p>Три движка работают параллельно (<code>checker.check_text</code>). Одинаковые находки по строке, колонке и тексту схлопываются. Если гайд уже пометил фрагмент, повтор LanguageTool на том же месте отбрасывается.</p>
+<p>Пользовательские regex (<code>/api/rules</code>) тоже входят в этот список. Длина паттерна ограничена, на исполнение стоит таймаут, чтобы плохое выражение не подвесило процесс.</p>
+<h2 id="_4">Языковая модель<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<p>Только при непустом адресе с протоколом OpenAI, метод <code>chat/completions</code>. Проходы v2: язык, гайд, структура, термины, согласованность, словарь, верификатор. Верификатор сверяет кандидата с исходным блоком и отсекает слабые.</p>
+<p>Пустой адрес систему не ломает. Галочки на форме по-прежнему выбирают, какие группы замечаний войдут в отчёт.</p>
+<h2 id="_5">Соответствие форме «Вычитка»<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Параметр на форме</th>
-<th>Что запускается</th>
+<th>Параметр</th>
+<th>Без модели</th>
+<th>С моделью</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>Язык и ясность</td>
-<td>LanguageTool, часть языковых правил</td>
+<td>LanguageTool, часть морфологии</td>
+<td>плюс проход language</td>
 </tr>
 <tr>
 <td>Style Guide</td>
 <td>Vale по выбранному гайду</td>
+<td>плюс проходы guide и lexicon</td>
 </tr>
 <tr>
 <td>Термины и согласованность</td>
-<td>словарь гайда, единообразие наименований</td>
+<td>словарь гайда, морфология</td>
+<td>плюс terminology и consistency</td>
 </tr>
 </tbody>
 </table>
-<p>Пустой список при всех включённых параметрах чаще означает, что LanguageTool ещё не завершил запуск, а не то, что в тексте нет ошибок. Подождите около минуты и повторите контрольный фрагмент из <a href="../../tutorial/">установки</a>.</p>
 
 
 

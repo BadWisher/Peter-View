@@ -19,6 +19,11 @@ extra_css:
 markdown_extensions:
   - admonition
   - tables
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - toc:
       permalink: true
 nav:
@@ -47,7 +52,10 @@ nav:
       - Роли: reference/roles.md
       - Разделы: reference/sections.md
       - Compose и команды: reference/compose.md
+      - Хранилище: reference/data.md
+      - HTTP API: reference/http.md
   - Устройство:
       - Назначение системы: explanation/what.md
       - Откуда замечания: explanation/engines.md
-      - Почему три контейнера: explanation/architecture.md
+      - Как проходит проверка: explanation/pipeline.md
+      - Архитектура: explanation/architecture.md

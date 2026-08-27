@@ -1123,6 +1123,62 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/data/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Хранилище
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/http/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1245,6 +1301,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../explanation/pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Как проходит проверка
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../explanation/architecture/" class="md-nav__link">
         
   
@@ -1252,7 +1336,7 @@
   <span class="md-ellipsis">
     
   
-    Почему три контейнера
+    Архитектура
   
 
     
@@ -1356,12 +1440,12 @@
 <p>Нужен IdP с authorization code: Keycloak, Azure AD, Okta. Задача: на экране входа кнопка «Войти через организацию», люди без пароля в Peter View.</p>
 <h2 id="_2">Что прописать<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
 <p>В <code>.env</code>:</p>
-<pre><code class="language-env">OIDC_ISSUER=https://idp.example.ru/realms/docs
+<div class="highlight"><pre><span></span><code>OIDC_ISSUER=https://idp.example.ru/realms/docs
 OIDC_CLIENT_ID=
 OIDC_CLIENT_SECRET=
 OIDC_REDIRECT_URI=https://&lt;хост&gt;/api/auth/oidc/callback
 OIDC_ADMIN_GROUPS=docs-admins
-</code></pre>
+</code></pre></div>
 <p><code>OIDC_ISSUER</code> без слэша на конце. Redirect в клиенте IdP должен совпасть с <code>OIDC_REDIRECT_URI</code> символ в символ.</p>
 <p>Пересоздайте стек. На экране входа появится вторая кнопка «Войти через организацию». Пока <code>OIDC_ISSUER</code> пуст, кнопки нет: вход только логином и паролем.</p>
 <p><img alt="Экран входа. Вторая кнопка появляется после настройки OIDC" src="../../screenshots/01-login.png" /></p>
@@ -1371,8 +1455,8 @@ OIDC_ADMIN_GROUPS=docs-admins
 <p>Клиент confidential, standard flow. Valid redirect URIs как <code>OIDC_REDIRECT_URI</code>. Группы должны попасть в токен.</p>
 <h2 id="azure-ad">Azure AD<a class="headerlink" href="#azure-ad" title="Permanent link">&para;</a></h2>
 <p>App registration, платформа Web, тот же redirect. Issuer:</p>
-<pre><code>https://login.microsoftonline.com/&lt;tenant&gt;/v2.0
-</code></pre>
+<div class="highlight"><pre><span></span><code>https://login.microsoftonline.com/&lt;tenant&gt;/v2.0
+</code></pre></div>
 <p>Группы в ID token или userinfo.</p>
 <p>SAML и LDAP этим выпуском не включаются.</p>
 

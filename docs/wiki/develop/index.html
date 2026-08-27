@@ -1037,6 +1037,62 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/data/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Хранилище
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/http/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1159,6 +1215,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../explanation/pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Как проходит проверка
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../explanation/architecture/" class="md-nav__link">
         
   
@@ -1166,7 +1250,7 @@
   <span class="md-ellipsis">
     
   
-    Почему три контейнера
+    Архитектура
   
 
     
@@ -1226,7 +1310,15 @@
 
 
 <h1 id="_1">Разработка и тесты<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
-<p>Сборка и тесты для тех, кто правит код: <a href="https://github.com/BadWisher/Peter-View/blob/main/CONTRIBUTING.md">CONTRIBUTING</a>.</p>
+<p>Сборка и тесты: <a href="https://github.com/BadWisher/Peter-View/blob/main/CONTRIBUTING.md">CONTRIBUTING</a>.</p>
+<p>Код сервера: <code>backend/app/</code>. Интерфейс: <code>frontend/public/js/</code>, по файлу на раздел. Стек: <a href="../explanation/architecture/">архитектура</a>. Маршруты: <a href="../reference/http/">HTTP API</a>.</p>
+<p>Локально без Docker:</p>
+<div class="highlight"><pre><span></span><code>cp<span class="w"> </span>.env.example<span class="w"> </span>.env
+python3<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>backend/requirements-dev.txt
+make<span class="w"> </span>lint
+make<span class="w"> </span><span class="nb">test</span>
+</code></pre></div>
+<p>Весь стек: <code>./deploy.sh</code>. LanguageTool в этом случае всё равно нужен как контейнер или внешний <code>LANGUAGETOOL_URL</code>.</p>
 
 
 
