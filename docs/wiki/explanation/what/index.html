@@ -43,12 +43,6 @@
     
     
       
-        
-        
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
-        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
-      
     
     
       <link rel="stylesheet" href="../../stylesheets/extra.css">
@@ -76,7 +70,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#_1" class="md-skip">
+        <a href="#назначение-системы" class="md-skip">
           Перейти к содержанию
         </a>
       
@@ -1225,7 +1219,7 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
+  <a href="#что-система-делает" class="md-nav__link">
     <span class="md-ellipsis">
       
         Что система делает
@@ -1236,7 +1230,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_3" class="md-nav__link">
+  <a href="#чего-система-не-делает" class="md-nav__link">
     <span class="md-ellipsis">
       
         Чего система не делает
@@ -1247,7 +1241,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
+  <a href="#как-читать-дальше" class="md-nav__link">
     <span class="md-ellipsis">
       
         Как читать дальше
@@ -1384,7 +1378,7 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
+  <a href="#что-система-делает" class="md-nav__link">
     <span class="md-ellipsis">
       
         Что система делает
@@ -1395,7 +1389,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_3" class="md-nav__link">
+  <a href="#чего-система-не-делает" class="md-nav__link">
     <span class="md-ellipsis">
       
         Чего система не делает
@@ -1406,7 +1400,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
+  <a href="#как-читать-дальше" class="md-nav__link">
     <span class="md-ellipsis">
       
         Как читать дальше
@@ -1436,10 +1430,10 @@
   
 
 
-<h1 id="_1">Назначение системы<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<h1 id="назначение-системы">Назначение системы<a class="headerlink" href="#назначение-системы" title="Permanent link">&para;</a></h1>
 <p>Peter View - система автоматической вычитки русской документации. Она нужна команде, которая перед публикацией должна проверить грамматику, корпоративный стиль и термины и при этом не отправлять исходные тексты во внешний сервис вычитки.</p>
 <p>Типичный читатель этой документации: технический писатель или редактор, которому поручили выбрать или внедрить автоматическую проверку русских руководств, API-описаний, регламентов.</p>
-<h2 id="_2">Что система делает<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<h2 id="что-система-делает">Что система делает<a class="headerlink" href="#что-система-делает" title="Permanent link">&para;</a></h2>
 <p>Результат работы: не интегральная оценка качества, а список конкретных мест в документе. Каждое замечание привязано к фрагменту текста и к правилу либо языковой проверке.</p>
 <p>Проверяются три независимых слоя:</p>
 <ol>
@@ -1448,11 +1442,11 @@
 <li>Термины: словарь гайда и единообразие наименований.</li>
 </ol>
 <p>Языковую модель подключать не обязательно. Грамматика и гайд заполняют список замечаний и без неё. Модель нужна, когда требуется найти то, что не выражается правилом: сбивчивый абзац, термин не в том контексте.</p>
-<h2 id="_3">Чего система не делает<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<h2 id="чего-система-не-делает">Чего система не делает<a class="headerlink" href="#чего-система-не-делает" title="Permanent link">&para;</a></h2>
 <p>Тексты в интерфейсе не редактируются. Список замечаний служит для решения, что перенести в исходный файл вручную. Скрытая карточка остаётся в отчёте: она только убрана с экрана на время просмотра.</p>
 <p>Peter View не заменяет систему управления документами. Репозиторий файлов, наблюдение за сайтами и редактор иллюстраций включаются отдельно и не обязательны для вычитки.</p>
 <p>Проверка не отправляется на адрес репозитория проекта. Данные хранятся в томе Docker. Адрес модели, если он задан, и вход через организацию принадлежат вашей инфраструктуре.</p>
-<h2 id="_4">Как читать дальше<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<h2 id="как-читать-дальше">Как читать дальше<a class="headerlink" href="#как-читать-дальше" title="Permanent link">&para;</a></h2>
 <p>Сначала <a href="../../tutorial/">установка и первый запуск</a>: один контролируемый сценарий. Затем инструкции по задаче: файл, гайд, пользователи. Устройство системы: <a href="../architecture/">архитектура</a>, <a href="../pipeline/">как проходит проверка</a>. Справка <code>.env</code> и роли нужны, когда уже ясно, что именно настраивается.</p>
 
 
@@ -1503,7 +1497,7 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.sections", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u0421\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u043d\u043e \u0432 \u0431\u0443\u0444\u0435\u0440", "clipboard.copy": "\u041a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0432 \u0431\u0443\u0444\u0435\u0440", "search.result.more.one": "\u0415\u0449\u0451 1 \u043d\u0430 \u044d\u0442\u043e\u0439 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0435", "search.result.more.other": "\u0415\u0449\u0451 # \u043d\u0430 \u044d\u0442\u043e\u0439 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0435", "search.result.none": "\u0421\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0439 \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d\u043e", "search.result.one": "\u041d\u0430\u0439\u0434\u0435\u043d\u043e 1 \u0441\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0435", "search.result.other": "\u041d\u0430\u0439\u0434\u0435\u043d\u043e \u0441\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0439: #", "search.result.placeholder": "\u041d\u0430\u0447\u043d\u0438\u0442\u0435 \u043f\u0435\u0447\u0430\u0442\u0430\u0442\u044c \u0434\u043b\u044f \u043f\u043e\u0438\u0441\u043a\u0430", "search.result.term.missing": "\u041e\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u0435\u0442", "select.version": "\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0432\u0435\u0440\u0441\u0438\u044e"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u0421\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u043d\u043e \u0432 \u0431\u0443\u0444\u0435\u0440", "clipboard.copy": "\u041a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0432 \u0431\u0443\u0444\u0435\u0440", "search.result.more.one": "\u0415\u0449\u0451 1 \u043d\u0430 \u044d\u0442\u043e\u0439 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0435", "search.result.more.other": "\u0415\u0449\u0451 # \u043d\u0430 \u044d\u0442\u043e\u0439 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0435", "search.result.none": "\u0421\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0439 \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d\u043e", "search.result.one": "\u041d\u0430\u0439\u0434\u0435\u043d\u043e 1 \u0441\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0435", "search.result.other": "\u041d\u0430\u0439\u0434\u0435\u043d\u043e \u0441\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0439: #", "search.result.placeholder": "\u041d\u0430\u0447\u043d\u0438\u0442\u0435 \u043f\u0435\u0447\u0430\u0442\u0430\u0442\u044c \u0434\u043b\u044f \u043f\u043e\u0438\u0441\u043a\u0430", "search.result.term.missing": "\u041e\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u0435\u0442", "select.version": "\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0432\u0435\u0440\u0441\u0438\u044e"}, "version": null}</script>
     
     
       <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>

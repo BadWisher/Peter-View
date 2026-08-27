@@ -43,12 +43,6 @@
     
     
       
-        
-        
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
-        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
-      
     
     
       <link rel="stylesheet" href="../../stylesheets/extra.css">
@@ -76,7 +70,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#_1" class="md-skip">
+        <a href="#проверка-текста-файла-или-страницы" class="md-skip">
           Перейти к содержанию
         </a>
       
@@ -460,7 +454,7 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
+  <a href="#источник" class="md-nav__link">
     <span class="md-ellipsis">
       
         Источник
@@ -471,7 +465,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_3" class="md-nav__link">
+  <a href="#состав-проверки" class="md-nav__link">
     <span class="md-ellipsis">
       
         Состав проверки
@@ -482,7 +476,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
+  <a href="#запуск" class="md-nav__link">
     <span class="md-ellipsis">
       
         Запуск
@@ -1384,7 +1378,7 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
+  <a href="#источник" class="md-nav__link">
     <span class="md-ellipsis">
       
         Источник
@@ -1395,7 +1389,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_3" class="md-nav__link">
+  <a href="#состав-проверки" class="md-nav__link">
     <span class="md-ellipsis">
       
         Состав проверки
@@ -1406,7 +1400,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
+  <a href="#запуск" class="md-nav__link">
     <span class="md-ellipsis">
       
         Запуск
@@ -1436,11 +1430,11 @@
   
 
 
-<h1 id="_1">Проверка текста, файла или страницы<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<h1 id="проверка-текста-файла-или-страницы">Проверка текста, файла или страницы<a class="headerlink" href="#проверка-текста-файла-или-страницы" title="Permanent link">&para;</a></h1>
 <p>Требуется вход в систему. Результат: экран «Очередь решений» с замечаниями по выбранному источнику.</p>
 <p>Откройте раздел «Вычитка» в левом меню.</p>
 <p><img alt="Раздел «Вычитка»: источник слева, состав проверки справа" src="../../screenshots/03-check-form.png" /></p>
-<h2 id="_2">Источник<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<h2 id="источник">Источник<a class="headerlink" href="#источник" title="Permanent link">&para;</a></h2>
 <p>Три вкладки над полем ввода. Заполните одну.</p>
 <p><strong>Файл.</strong> Форматы DOCX, TXT, HTML, MD. Максимальный размер 50 МБ. PDF не поддерживается. Файл можно перетащить в пунктирную область или выбрать с диска. Имя выбранного файла появляется над кнопкой запуска.</p>
 <p><strong>Ссылка.</strong> Адрес страницы со схемой <code>http://</code> или <code>https://</code>. Система загружает текст самостоятельно. Для страниц во внутренней сети в <code>.env</code> должно быть <code>PROOFREADER_SSRF_ALLOW_PRIVATE=true</code>. На узле, доступном из интернета, поставьте <code>false</code>.</p>
@@ -1448,13 +1442,13 @@
 <p>Если все источники пустые, кнопка «Начать вычитку» показывает уведомление и запрос не отправляет.</p>
 <p>Кнопка «Последний результат» в шапке раздела открывает отчёт текущей сессии, если проверка уже выполнялась.</p>
 <p>Экран ставит задачу <code>POST /api/jobs</code> и ждёт SSE. Обход сайта на много страниц (<code>/api/check-url</code>, до 200 адресов) этим разделом не вызывается: вкладка «Ссылка» загружает одну страницу.</p>
-<h2 id="_3">Состав проверки<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<h2 id="состав-проверки">Состав проверки<a class="headerlink" href="#состав-проверки" title="Permanent link">&para;</a></h2>
 <p>Справа три независимых параметра. Включите хотя бы один.</p>
 <p><strong>Язык и ясность.</strong> Грамматика, пунктуация, неудачные формулировки.</p>
 <p><strong>Style Guide.</strong> Правила выбранного гайда. Список гайдов доступен только при включённом параметре. Активный гайд назначается в разделе «Style Guide» кнопкой «Использовать».</p>
 <p><strong>Термины и согласованность.</strong> Словарь гайда и единообразие наименований.</p>
 <p>Блок «Дополнительная инструкция» раскрывается по щелчку. Текст из него передаётся в проверку языковой моделью. Если модель не настроена, поле можно оставить пустым.</p>
-<h2 id="_4">Запуск<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<h2 id="запуск">Запуск<a class="headerlink" href="#запуск" title="Permanent link">&para;</a></h2>
 <p>Нажмите «Начать вычитку». Во время выполнения отображается индикатор. Готовый результат: «Очередь решений».</p>
 <p>Далее: <a href="../review/">работа со списком замечаний</a>.</p>
 
@@ -1506,7 +1500,7 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.sections", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u0421\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u043d\u043e \u0432 \u0431\u0443\u0444\u0435\u0440", "clipboard.copy": "\u041a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0432 \u0431\u0443\u0444\u0435\u0440", "search.result.more.one": "\u0415\u0449\u0451 1 \u043d\u0430 \u044d\u0442\u043e\u0439 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0435", "search.result.more.other": "\u0415\u0449\u0451 # \u043d\u0430 \u044d\u0442\u043e\u0439 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0435", "search.result.none": "\u0421\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0439 \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d\u043e", "search.result.one": "\u041d\u0430\u0439\u0434\u0435\u043d\u043e 1 \u0441\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0435", "search.result.other": "\u041d\u0430\u0439\u0434\u0435\u043d\u043e \u0441\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0439: #", "search.result.placeholder": "\u041d\u0430\u0447\u043d\u0438\u0442\u0435 \u043f\u0435\u0447\u0430\u0442\u0430\u0442\u044c \u0434\u043b\u044f \u043f\u043e\u0438\u0441\u043a\u0430", "search.result.term.missing": "\u041e\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u0435\u0442", "select.version": "\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0432\u0435\u0440\u0441\u0438\u044e"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u0421\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u043d\u043e \u0432 \u0431\u0443\u0444\u0435\u0440", "clipboard.copy": "\u041a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0432 \u0431\u0443\u0444\u0435\u0440", "search.result.more.one": "\u0415\u0449\u0451 1 \u043d\u0430 \u044d\u0442\u043e\u0439 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0435", "search.result.more.other": "\u0415\u0449\u0451 # \u043d\u0430 \u044d\u0442\u043e\u0439 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0435", "search.result.none": "\u0421\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0439 \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d\u043e", "search.result.one": "\u041d\u0430\u0439\u0434\u0435\u043d\u043e 1 \u0441\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0435", "search.result.other": "\u041d\u0430\u0439\u0434\u0435\u043d\u043e \u0441\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0439: #", "search.result.placeholder": "\u041d\u0430\u0447\u043d\u0438\u0442\u0435 \u043f\u0435\u0447\u0430\u0442\u0430\u0442\u044c \u0434\u043b\u044f \u043f\u043e\u0438\u0441\u043a\u0430", "search.result.term.missing": "\u041e\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u0435\u0442", "select.version": "\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0432\u0435\u0440\u0441\u0438\u044e"}, "version": null}</script>
     
     
       <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>

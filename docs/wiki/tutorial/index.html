@@ -43,12 +43,6 @@
     
     
       
-        
-        
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
-        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
-      
     
     
       <link rel="stylesheet" href="../stylesheets/extra.css">
@@ -76,7 +70,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#_1" class="md-skip">
+        <a href="#установка-и-первый-запуск" class="md-skip">
           Перейти к содержанию
         </a>
       
@@ -373,7 +367,7 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1" class="md-nav__link">
+  <a href="#1-установка" class="md-nav__link">
     <span class="md-ellipsis">
       
         1. Установка
@@ -384,7 +378,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2" class="md-nav__link">
+  <a href="#2-вход-и-смена-пароля" class="md-nav__link">
     <span class="md-ellipsis">
       
         2. Вход и смена пароля
@@ -395,7 +389,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3" class="md-nav__link">
+  <a href="#3-контрольная-проверка" class="md-nav__link">
     <span class="md-ellipsis">
       
         3. Контрольная проверка
@@ -406,7 +400,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4" class="md-nav__link">
+  <a href="#4-просмотр-замечаний" class="md-nav__link">
     <span class="md-ellipsis">
       
         4. Просмотр замечаний
@@ -1395,7 +1389,7 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1" class="md-nav__link">
+  <a href="#1-установка" class="md-nav__link">
     <span class="md-ellipsis">
       
         1. Установка
@@ -1406,7 +1400,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2" class="md-nav__link">
+  <a href="#2-вход-и-смена-пароля" class="md-nav__link">
     <span class="md-ellipsis">
       
         2. Вход и смена пароля
@@ -1417,7 +1411,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3" class="md-nav__link">
+  <a href="#3-контрольная-проверка" class="md-nav__link">
     <span class="md-ellipsis">
       
         3. Контрольная проверка
@@ -1428,7 +1422,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4" class="md-nav__link">
+  <a href="#4-просмотр-замечаний" class="md-nav__link">
     <span class="md-ellipsis">
       
         4. Просмотр замечаний
@@ -1458,34 +1452,34 @@
   
 
 
-<h1 id="_1">Установка и первый запуск<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<h1 id="установка-и-первый-запуск">Установка и первый запуск<a class="headerlink" href="#установка-и-первый-запуск" title="Permanent link">&para;</a></h1>
 <p>В этом разделе вы установите Peter View и выполните одну проверку на контрольном фрагменте. Другие источники и настройки здесь не рассматриваются.</p>
 <p>Требуются Docker Engine и плагин Compose.</p>
-<h2 id="1">1. Установка<a class="headerlink" href="#1" title="Permanent link">&para;</a></h2>
+<h2 id="1-установка">1. Установка<a class="headerlink" href="#1-установка" title="Permanent link">&para;</a></h2>
 <p>В терминале:</p>
-<div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/BadWisher/Peter-View.git
-<span class="nb">cd</span><span class="w"> </span>Peter-View
+<pre><code class="language-bash">git clone https://github.com/BadWisher/Peter-View.git
+cd Peter-View
 ./deploy.sh
-</code></pre></div>
+</code></pre>
 <p>Если файла <code>.env</code> ещё нет, скрипт копирует пример. Запускаются три контейнера: интерфейс, сервер приложений, проверка языка. Проверка языка при первом запуске занимает около полутора минут: это отдельный Java-процесс.</p>
 <p>Когда в терминале появится «Готово», откройте http://localhost:3080. Должен отображаться экран входа.</p>
 <p><img alt="Экран входа" src="../screenshots/01-login.png" /></p>
-<h2 id="2">2. Вход и смена пароля<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
+<h2 id="2-вход-и-смена-пароля">2. Вход и смена пароля<a class="headerlink" href="#2-вход-и-смена-пароля" title="Permanent link">&para;</a></h2>
 <p>Логин <code>admin</code>, пароль <code>admin</code>, кнопка «Войти».</p>
 <p>Откроется раздел «Вычитка».</p>
 <p><img alt="Форма вычитки" src="../screenshots/03-check-form.png" /></p>
 <p>Слева вкладки источника, справа параметры «Язык и ясность», «Style Guide», «Термины и согласованность».</p>
 <p>Смените пароль сразу. Инициалы слева внизу → «Сменить пароль». Текущий пароль: <code>admin</code>. Новый: не короче 8 символов. Пока действует заводской пароль, любой доступ к порту даёт права администратора.</p>
-<h2 id="3">3. Контрольная проверка<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
+<h2 id="3-контрольная-проверка">3. Контрольная проверка<a class="headerlink" href="#3-контрольная-проверка" title="Permanent link">&para;</a></h2>
 <p>Откройте вкладку «Текст». Вставьте этот фрагмент:</p>
-<div class="highlight"><pre><span></span><code>Для того чтобы произвести установку, кликните на кнопку Далее.
-</code></pre></div>
+<pre><code>Для того чтобы произвести установку, кликните на кнопку Далее.
+</code></pre>
 <p>Оставьте включёнными все три параметра справа. Список гайдов не меняйте.</p>
 <p>Нажмите «Начать вычитку». Появится индикатор выполнения. По завершении откроется экран «Очередь решений».</p>
 <p><img alt="Очередь решений" src="../screenshots/02-check.png" /></p>
 <p>Слева фрагмент с рамками на найденных местах, справа карточки «Ошибка», «Замечание», «Совет».</p>
 <p>На этом фрагменте обычно находятся канцелярит («произвести установку») и глагол интерфейса («кликните»). Если карточек нет, подождите ещё около минуты: проверка языка могла не завершить запуск.</p>
-<h2 id="4">4. Просмотр замечаний<a class="headerlink" href="#4" title="Permanent link">&para;</a></h2>
+<h2 id="4-просмотр-замечаний">4. Просмотр замечаний<a class="headerlink" href="#4-просмотр-замечаний" title="Permanent link">&para;</a></h2>
 <p><code>J</code> - следующая карточка, <code>K</code> - предыдущая, <code>H</code> - скрыть текущую, если замечание не будет учитываться.</p>
 <p>Над списком фильтры «Ошибки», «Замечания», «Советы». «Экспорт» сохраняет видимые карточки в xlsx.</p>
 <p>На узком экране тот же сценарий:</p>
@@ -1540,7 +1534,7 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.sections", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u0421\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u043d\u043e \u0432 \u0431\u0443\u0444\u0435\u0440", "clipboard.copy": "\u041a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0432 \u0431\u0443\u0444\u0435\u0440", "search.result.more.one": "\u0415\u0449\u0451 1 \u043d\u0430 \u044d\u0442\u043e\u0439 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0435", "search.result.more.other": "\u0415\u0449\u0451 # \u043d\u0430 \u044d\u0442\u043e\u0439 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0435", "search.result.none": "\u0421\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0439 \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d\u043e", "search.result.one": "\u041d\u0430\u0439\u0434\u0435\u043d\u043e 1 \u0441\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0435", "search.result.other": "\u041d\u0430\u0439\u0434\u0435\u043d\u043e \u0441\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0439: #", "search.result.placeholder": "\u041d\u0430\u0447\u043d\u0438\u0442\u0435 \u043f\u0435\u0447\u0430\u0442\u0430\u0442\u044c \u0434\u043b\u044f \u043f\u043e\u0438\u0441\u043a\u0430", "search.result.term.missing": "\u041e\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u0435\u0442", "select.version": "\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0432\u0435\u0440\u0441\u0438\u044e"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u0421\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u043d\u043e \u0432 \u0431\u0443\u0444\u0435\u0440", "clipboard.copy": "\u041a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0432 \u0431\u0443\u0444\u0435\u0440", "search.result.more.one": "\u0415\u0449\u0451 1 \u043d\u0430 \u044d\u0442\u043e\u0439 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0435", "search.result.more.other": "\u0415\u0449\u0451 # \u043d\u0430 \u044d\u0442\u043e\u0439 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0435", "search.result.none": "\u0421\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0439 \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d\u043e", "search.result.one": "\u041d\u0430\u0439\u0434\u0435\u043d\u043e 1 \u0441\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0435", "search.result.other": "\u041d\u0430\u0439\u0434\u0435\u043d\u043e \u0441\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0439: #", "search.result.placeholder": "\u041d\u0430\u0447\u043d\u0438\u0442\u0435 \u043f\u0435\u0447\u0430\u0442\u0430\u0442\u044c \u0434\u043b\u044f \u043f\u043e\u0438\u0441\u043a\u0430", "search.result.term.missing": "\u041e\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u0435\u0442", "select.version": "\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0432\u0435\u0440\u0441\u0438\u044e"}, "version": null}</script>
     
     
       <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>

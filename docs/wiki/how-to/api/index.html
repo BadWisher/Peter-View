@@ -43,12 +43,6 @@
     
     
       
-        
-        
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
-        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
-      
     
     
       <link rel="stylesheet" href="../../stylesheets/extra.css">
@@ -76,7 +70,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#openapi" class="md-skip">
+        <a href="#связка-openapi" class="md-skip">
           Перейти к содержанию
         </a>
       
@@ -771,7 +765,7 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#_1" class="md-nav__link">
+  <a href="#создание-связки" class="md-nav__link">
     <span class="md-ellipsis">
       
         Создание связки
@@ -782,7 +776,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
+  <a href="#вкладка-поля" class="md-nav__link">
     <span class="md-ellipsis">
       
         Вкладка «Поля»
@@ -793,7 +787,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_3" class="md-nav__link">
+  <a href="#вкладка-единообразие" class="md-nav__link">
     <span class="md-ellipsis">
       
         Вкладка «Единообразие»
@@ -804,7 +798,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
+  <a href="#вкладка-изменения" class="md-nav__link">
     <span class="md-ellipsis">
       
         Вкладка «Изменения»
@@ -815,7 +809,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
+  <a href="#действия-в-шапке" class="md-nav__link">
     <span class="md-ellipsis">
       
         Действия в шапке
@@ -1406,7 +1400,7 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#_1" class="md-nav__link">
+  <a href="#создание-связки" class="md-nav__link">
     <span class="md-ellipsis">
       
         Создание связки
@@ -1417,7 +1411,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
+  <a href="#вкладка-поля" class="md-nav__link">
     <span class="md-ellipsis">
       
         Вкладка «Поля»
@@ -1428,7 +1422,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_3" class="md-nav__link">
+  <a href="#вкладка-единообразие" class="md-nav__link">
     <span class="md-ellipsis">
       
         Вкладка «Единообразие»
@@ -1439,7 +1433,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
+  <a href="#вкладка-изменения" class="md-nav__link">
     <span class="md-ellipsis">
       
         Вкладка «Изменения»
@@ -1450,7 +1444,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
+  <a href="#действия-в-шапке" class="md-nav__link">
     <span class="md-ellipsis">
       
         Действия в шапке
@@ -1480,11 +1474,11 @@
   
 
 
-<h1 id="openapi">Связка OpenAPI<a class="headerlink" href="#openapi" title="Permanent link">&para;</a></h1>
+<h1 id="связка-openapi">Связка OpenAPI<a class="headerlink" href="#связка-openapi" title="Permanent link">&para;</a></h1>
 <p>Требуется <code>FEATURE_API=true</code>. Для выбора файлов нужен также <code>FEATURE_DOCUMENTS=true</code>. Раздел «API» сравнивает русскую и английскую спецификации одной службы.</p>
 <p><img alt="Рабочая область связки: поля RU и EN" src="../../screenshots/12-api.png" /></p>
 <p>Учебные файлы лежат в исходниках: <code>examples/openapi/library-ru.yaml</code> и <code>library-en.yaml</code>. Загрузите их в «Документы», затем создайте связку.</p>
-<h2 id="_1">Создание связки<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<h2 id="создание-связки">Создание связки<a class="headerlink" href="#создание-связки" title="Permanent link">&para;</a></h2>
 <p>«Добавить связку». Поля:</p>
 <ul>
 <li>название связки</li>
@@ -1494,20 +1488,20 @@
 <p>Список документов берётся из репозитория. Если документов нет, сначала загрузите YAML в «Документы».</p>
 <p>Переключатель связок в шапке, если связок несколько. Значок карандаша меняет название и документы. Корзина удаляет связку.</p>
 <p>Пустой раздел: «Связок пока нет».</p>
-<h2 id="_2">Вкладка «Поля»<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<h2 id="вкладка-поля">Вкладка «Поля»<a class="headerlink" href="#вкладка-поля" title="Permanent link">&para;</a></h2>
 <p>Таблица сегментов: путь в спецификации, русский текст, английский текст. Поиск по пути или формулировке. Если сегментов больше 50, внизу листалка.</p>
 <p>Правка текста в ячейке помечает поле как изменённое. Щелчок по пути копирует его в буфер.</p>
 <p>В подписи: число полей и версии документов RU и EN.</p>
-<h2 id="_3">Вкладка «Единообразие»<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<h2 id="вкладка-единообразие">Вкладка «Единообразие»<a class="headerlink" href="#вкладка-единообразие" title="Permanent link">&para;</a></h2>
 <p>Два вида расхождений:</p>
 <ul>
 <li>одно и то же сказано по-разному</li>
 <li>поле с одним именем описано разными формулировками</li>
 </ul>
 <p>Кнопка «N в полях» открывает вкладку «Поля» с этим текстом в поиске.</p>
-<h2 id="_4">Вкладка «Изменения»<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<h2 id="вкладка-изменения">Вкладка «Изменения»<a class="headerlink" href="#вкладка-изменения" title="Permanent link">&para;</a></h2>
 <p>Разница после обновления русской версии. Если предыдущей версии RU нет, страница сообщает об этом.</p>
-<h2 id="_5">Действия в шапке<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<h2 id="действия-в-шапке">Действия в шапке<a class="headerlink" href="#действия-в-шапке" title="Permanent link">&para;</a></h2>
 <p><strong>Проверить изменения.</strong> Сравнение текущих версий.</p>
 <p><strong>Перевести.</strong> Заполняет английскую сторону по русской. Нужна настроенная языковая модель.</p>
 <p><strong>Скачать.</strong> Русский YAML или English YAML с правками, которые сейчас в ячейках.</p>
@@ -1561,7 +1555,7 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.sections", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u0421\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u043d\u043e \u0432 \u0431\u0443\u0444\u0435\u0440", "clipboard.copy": "\u041a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0432 \u0431\u0443\u0444\u0435\u0440", "search.result.more.one": "\u0415\u0449\u0451 1 \u043d\u0430 \u044d\u0442\u043e\u0439 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0435", "search.result.more.other": "\u0415\u0449\u0451 # \u043d\u0430 \u044d\u0442\u043e\u0439 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0435", "search.result.none": "\u0421\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0439 \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d\u043e", "search.result.one": "\u041d\u0430\u0439\u0434\u0435\u043d\u043e 1 \u0441\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0435", "search.result.other": "\u041d\u0430\u0439\u0434\u0435\u043d\u043e \u0441\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0439: #", "search.result.placeholder": "\u041d\u0430\u0447\u043d\u0438\u0442\u0435 \u043f\u0435\u0447\u0430\u0442\u0430\u0442\u044c \u0434\u043b\u044f \u043f\u043e\u0438\u0441\u043a\u0430", "search.result.term.missing": "\u041e\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u0435\u0442", "select.version": "\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0432\u0435\u0440\u0441\u0438\u044e"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u0421\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u043d\u043e \u0432 \u0431\u0443\u0444\u0435\u0440", "clipboard.copy": "\u041a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0432 \u0431\u0443\u0444\u0435\u0440", "search.result.more.one": "\u0415\u0449\u0451 1 \u043d\u0430 \u044d\u0442\u043e\u0439 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0435", "search.result.more.other": "\u0415\u0449\u0451 # \u043d\u0430 \u044d\u0442\u043e\u0439 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0435", "search.result.none": "\u0421\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0439 \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d\u043e", "search.result.one": "\u041d\u0430\u0439\u0434\u0435\u043d\u043e 1 \u0441\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0435", "search.result.other": "\u041d\u0430\u0439\u0434\u0435\u043d\u043e \u0441\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0439: #", "search.result.placeholder": "\u041d\u0430\u0447\u043d\u0438\u0442\u0435 \u043f\u0435\u0447\u0430\u0442\u0430\u0442\u044c \u0434\u043b\u044f \u043f\u043e\u0438\u0441\u043a\u0430", "search.result.term.missing": "\u041e\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u0435\u0442", "select.version": "\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0432\u0435\u0440\u0441\u0438\u044e"}, "version": null}</script>
     
     
       <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>

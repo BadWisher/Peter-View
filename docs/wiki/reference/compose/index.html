@@ -43,12 +43,6 @@
     
     
       
-        
-        
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
-        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
-      
     
     
       <link rel="stylesheet" href="../../stylesheets/extra.css">
@@ -76,7 +70,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#compose" class="md-skip">
+        <a href="#compose-и-команды" class="md-skip">
           Перейти к содержанию
         </a>
       
@@ -1082,7 +1076,7 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#_1" class="md-nav__link">
+  <a href="#сервисы" class="md-nav__link">
     <span class="md-ellipsis">
       
         Сервисы
@@ -1093,7 +1087,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
+  <a href="#команды-на-хосте" class="md-nav__link">
     <span class="md-ellipsis">
       
         Команды на хосте
@@ -1104,7 +1098,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#backend" class="md-nav__link">
+  <a href="#сборка-backend" class="md-nav__link">
     <span class="md-ellipsis">
       
         Сборка backend
@@ -1384,7 +1378,7 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#_1" class="md-nav__link">
+  <a href="#сервисы" class="md-nav__link">
     <span class="md-ellipsis">
       
         Сервисы
@@ -1395,7 +1389,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
+  <a href="#команды-на-хосте" class="md-nav__link">
     <span class="md-ellipsis">
       
         Команды на хосте
@@ -1406,7 +1400,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#backend" class="md-nav__link">
+  <a href="#сборка-backend" class="md-nav__link">
     <span class="md-ellipsis">
       
         Сборка backend
@@ -1436,9 +1430,9 @@
   
 
 
-<h1 id="compose">Compose и команды<a class="headerlink" href="#compose" title="Permanent link">&para;</a></h1>
+<h1 id="compose-и-команды">Compose и команды<a class="headerlink" href="#compose-и-команды" title="Permanent link">&para;</a></h1>
 <p>Файл <code>docker-compose.yml</code>. Три сервиса в сети <code>internal</code>. С хоста опубликован только nginx.</p>
-<h2 id="_1">Сервисы<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<h2 id="сервисы">Сервисы<a class="headerlink" href="#сервисы" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -1483,7 +1477,7 @@
 <p>Порт хоста: <code>${PROOFREADER_PORT:-3080}:80</code> на frontend.</p>
 <p>Образы публикации: <code>ghcr.io/badwisher/peter-view/backend</code> и <code>ghcr.io/badwisher/peter-view/frontend</code>.</p>
 <p>Логи: json-file, 10 МБ × 3 файла на сервис.</p>
-<h2 id="_2">Команды на хосте<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<h2 id="команды-на-хосте">Команды на хосте<a class="headerlink" href="#команды-на-хосте" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -1527,7 +1521,7 @@
 </tbody>
 </table>
 <p><code>PROOFREADER_CORP_PROXY=true</code> подключает <code>docker-compose.corp-proxy.yml</code>: контейнер <code>proxy-bridge</code> (socat) и HTTP_PROXY у backend на <code>host.docker.internal</code>. Нужно, когда корпоративный прокси слушает только 127.0.0.1 на хосте, а контейнер туда не достаёт.</p>
-<h2 id="backend">Сборка backend<a class="headerlink" href="#backend" title="Permanent link">&para;</a></h2>
+<h2 id="сборка-backend">Сборка backend<a class="headerlink" href="#сборка-backend" title="Permanent link">&para;</a></h2>
 <p>Непривилегированный пользователь <code>appuser</code> (uid 10001). Vale скачивается с GitHub Releases, контрольная сумма архива проверяется на этапе сборки. Entrypoint: <code>/entrypoint.sh</code>, затем uvicorn <code>--timeout-keep-alive 300</code>.</p>
 <p>Устройство стека: <a href="../../explanation/architecture/">архитектура</a>. Файлы на томе: <a href="../data/">хранилище</a>.</p>
 
@@ -1579,7 +1573,7 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.sections", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u0421\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u043d\u043e \u0432 \u0431\u0443\u0444\u0435\u0440", "clipboard.copy": "\u041a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0432 \u0431\u0443\u0444\u0435\u0440", "search.result.more.one": "\u0415\u0449\u0451 1 \u043d\u0430 \u044d\u0442\u043e\u0439 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0435", "search.result.more.other": "\u0415\u0449\u0451 # \u043d\u0430 \u044d\u0442\u043e\u0439 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0435", "search.result.none": "\u0421\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0439 \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d\u043e", "search.result.one": "\u041d\u0430\u0439\u0434\u0435\u043d\u043e 1 \u0441\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0435", "search.result.other": "\u041d\u0430\u0439\u0434\u0435\u043d\u043e \u0441\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0439: #", "search.result.placeholder": "\u041d\u0430\u0447\u043d\u0438\u0442\u0435 \u043f\u0435\u0447\u0430\u0442\u0430\u0442\u044c \u0434\u043b\u044f \u043f\u043e\u0438\u0441\u043a\u0430", "search.result.term.missing": "\u041e\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u0435\u0442", "select.version": "\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0432\u0435\u0440\u0441\u0438\u044e"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u0421\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u043d\u043e \u0432 \u0431\u0443\u0444\u0435\u0440", "clipboard.copy": "\u041a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0432 \u0431\u0443\u0444\u0435\u0440", "search.result.more.one": "\u0415\u0449\u0451 1 \u043d\u0430 \u044d\u0442\u043e\u0439 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0435", "search.result.more.other": "\u0415\u0449\u0451 # \u043d\u0430 \u044d\u0442\u043e\u0439 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0435", "search.result.none": "\u0421\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0439 \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d\u043e", "search.result.one": "\u041d\u0430\u0439\u0434\u0435\u043d\u043e 1 \u0441\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0435", "search.result.other": "\u041d\u0430\u0439\u0434\u0435\u043d\u043e \u0441\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0439: #", "search.result.placeholder": "\u041d\u0430\u0447\u043d\u0438\u0442\u0435 \u043f\u0435\u0447\u0430\u0442\u0430\u0442\u044c \u0434\u043b\u044f \u043f\u043e\u0438\u0441\u043a\u0430", "search.result.term.missing": "\u041e\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u0435\u0442", "select.version": "\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0432\u0435\u0440\u0441\u0438\u044e"}, "version": null}</script>
     
     
       <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
