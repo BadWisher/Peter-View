@@ -1,0 +1,6 @@
+extends: existence
+message: "Используйте «переместить окно» вместо «перетащить/передвинуть окно»."
+level: error
+ignorecase: true
+raw:
+  - '(перетащ\w+|передвин\w+)\s+окн\w+'

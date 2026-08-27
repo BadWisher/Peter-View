@@ -1,0 +1,11 @@
+extends: substitution
+message: "Используйте полное название '%s' вместо сокращения '%s'."
+level: error
+ignorecase: false
+swap:
+  ГСП: Harbor Shield
+  HSP: Harbor Shield
+  HarborShield: Harbor Shield
+  DDOS: DDoS
+  ИДК: Издательский дом
+  Изддом: Издательский дом

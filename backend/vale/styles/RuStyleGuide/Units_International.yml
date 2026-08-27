@@ -1,0 +1,6 @@
+extends: existence
+message: "В русскоязычных текстах используйте русские обозначения единиц измерения: МБ, ГБ, ТБ, КБ, Мбит, Гбит, кбит, МГц, ГГц, кГц, ТГц."
+level: error
+nonword: true
+raw:
+  - '\b(MB|GB|TB|KB|Mbit|Gbit|kbit|MHz|GHz|kHz|THz)\b'

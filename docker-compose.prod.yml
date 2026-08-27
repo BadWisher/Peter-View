@@ -1,0 +1,8 @@
+services:
+  backend:
+    image: ghcr.io/${GHCR_REPOSITORY:?set GHCR_REPOSITORY}/backend:${IMAGE_SHA:?set IMAGE_SHA}
+    pull_policy: always
+
+  frontend:
+    image: ghcr.io/${GHCR_REPOSITORY:?set GHCR_REPOSITORY}/frontend:${IMAGE_SHA:?set IMAGE_SHA}
+    pull_policy: always

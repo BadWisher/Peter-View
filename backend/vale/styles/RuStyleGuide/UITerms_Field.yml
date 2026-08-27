@@ -1,0 +1,6 @@
+extends: existence
+message: "Используйте «указать» или «ввести» значение вместо «определить значение»."
+level: error
+ignorecase: true
+raw:
+  - 'определ\w+\s+значени\w+'

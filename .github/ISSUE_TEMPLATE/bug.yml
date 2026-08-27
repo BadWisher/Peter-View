@@ -1,0 +1,24 @@
+name: Ошибка
+description: Что-то сломалось в сервисе
+title: "[ошибка] "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: Что произошло
+      placeholder: Ожидал одно, получил другое.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Как повторить
+      placeholder: Шаги, версия, роль (admin/editor), браузер.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Логи
+      description: Без паролей и ключей LLM.

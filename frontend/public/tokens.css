@@ -1,0 +1,110 @@
+@font-face {
+  font-family: "Golos Text";
+  src: url("fonts/GolosText-cyrillic.woff2") format("woff2");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Golos Text";
+  src: url("fonts/GolosText-cyrillic-ext.woff2") format("woff2");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("fonts/JetBrainsMono-cyrillic.woff2") format("woff2");
+  font-display: swap;
+}
+
+@property --page { syntax: "<color>"; inherits: true; initial-value: #e8efed; }
+@property --surface { syntax: "<color>"; inherits: true; initial-value: #ffffff; }
+@property --surface-soft { syntax: "<color>"; inherits: true; initial-value: #f6f9f8; }
+@property --ink { syntax: "<color>"; inherits: true; initial-value: #172320; }
+@property --ink-soft { syntax: "<color>"; inherits: true; initial-value: #344541; }
+@property --muted { syntax: "<color>"; inherits: true; initial-value: #61716d; }
+@property --primary { syntax: "<color>"; inherits: true; initial-value: #00a88e; }
+@property --primary-dark { syntax: "<color>"; inherits: true; initial-value: #013b32; }
+@property --primary-soft { syntax: "<color>"; inherits: true; initial-value: #e1f5f1; }
+@property --line { syntax: "<color>"; inherits: true; initial-value: #d9e2df; }
+@property --nav { syntax: "<color>"; inherits: true; initial-value: #043f36; }
+@property --nav-deep { syntax: "<color>"; inherits: true; initial-value: #022c26; }
+
+:root {
+  color-scheme: light;
+  --primary: #00a88e;
+  --primary-hover: #00917a;
+  --primary-dark: #013b32;
+  --pine: #013b32;
+  --primary-ink: #075c4e;
+  --primary-soft: #e1f5f1;
+  --primary-wash: #f0faf8;
+  --error: #d52a1d;
+  --error-bg: #fdf1f0;
+  --warning: #c2820b;
+  --warning-bg: #fdf7ec;
+  --suggestion: #2563eb;
+  --suggestion-bg: #eef4ff;
+  --ink: #172320;
+  --ink-soft: #344541;
+  --muted: #61716d;
+  --muted-2: #87938f;
+  --page: #e8efed;
+  --surface: #ffffff;
+  --surface-soft: #f6f9f8;
+  --line: #d9e2df;
+  --line-strong: #bdcbc7;
+  --nav: #043f36;
+  --nav-deep: #022c26;
+  --nav-text: #c4dfda;
+  --focus: rgba(0, 168, 142, .36);
+  --shadow-sm: 0 5px 16px rgba(1, 59, 50, .09);
+  --shadow-md: 0 16px 40px rgba(1, 59, 50, .14);
+  --shadow-lg: 0 30px 80px rgba(0, 0, 0, .24);
+  --radius-sm: 8px;
+  --radius-md: 13px;
+  --radius-lg: 18px;
+  --nav-width: 252px;
+  --header-height: 64px;
+  --text-meta: 13px;
+  --text-ui: 15px;
+  --text-body: 16px;
+  --text-title: 20px;
+  --ease-out: cubic-bezier(.16, 1, .3, 1);
+  font-family: "Golos Text", sans-serif;
+  font-size: 16px;
+  line-height: 1.45;
+  font-synthesis: none;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --primary: #00a88e;
+  --primary-hover: #12b89d;
+  --primary-dark: #8ed9cc;
+  --pine: #0a1f1b;
+  --primary-ink: #9ee4d8;
+  --primary-soft: #16352f;
+  --primary-wash: #102824;
+  --error: #f07167;
+  --error-bg: #3a1816;
+  --warning: #e0a43a;
+  --warning-bg: #3a2e12;
+  --suggestion: #7aa2ff;
+  --suggestion-bg: #152038;
+  --ink: #e7efed;
+  --ink-soft: #c5d4d0;
+  --muted: #8fa39e;
+  --muted-2: #6f837e;
+  --page: #101918;
+  --surface: #182422;
+  --surface-soft: #1e2c29;
+  --line: #2a3c38;
+  --line-strong: #3d524d;
+  --nav: #032e28;
+  --nav-deep: #021f1b;
+  --nav-text: #c4dfda;
+  --focus: rgba(0, 168, 142, .45);
+  --shadow-sm: 0 5px 16px rgba(0, 0, 0, .38);
+  --shadow-md: 0 16px 40px rgba(0, 0, 0, .46);
+  --shadow-lg: 0 30px 80px rgba(0, 0, 0, .55);
+}

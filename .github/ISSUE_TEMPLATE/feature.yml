@@ -1,0 +1,16 @@
+name: Предложение
+description: Новая возможность или упрощение
+title: "[предложение] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: Зачем
+      placeholder: Какую задачу редактора или администратора это закрывает.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Как это может выглядеть

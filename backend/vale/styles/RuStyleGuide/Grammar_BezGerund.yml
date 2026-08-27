@@ -1,0 +1,7 @@
+extends: existence
+message: "После «без» используйте существительное: например, «без нарушения», а не «без нарушая»."
+level: error
+ignorecase: true
+nonword: true
+raw:
+  - '\bбез\s+[а-яё]+(?:ая|яя)\b'
