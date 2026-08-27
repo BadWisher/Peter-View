@@ -431,7 +431,27 @@ export async function previewApi(path, options = {}) {
   }
   if (path === "/api/checks/top-rules" || path === "/api/checks/insights") {
     return {
-      users: [{ user: "Предпросмотр", total_hits: 31, distinct_rules: 3, rules: [{ rule_id: "Bureaucracy", title: "Отглагольные существительные", description: "Заменяйте конструкцию прямым действием.", count: 14 }, { rule_id: "UITerms_Click", title: "Действия в интерфейсе", description: "Используйте точные названия действий.", count: 10 }, { rule_id: "Dash_NoSpace", title: "Пробелы рядом с тире", description: "Проверяйте пробелы вокруг знака.", count: 7 }] }],
+      users: [
+        {
+          user: "Редактор",
+          total_hits: 31,
+          distinct_rules: 3,
+          rules: [
+            { rule_id: "Bureaucracy", title: "Отглагольные существительные", description: "Заменяйте конструкцию прямым действием.", count: 14 },
+            { rule_id: "UITerms_Click", title: "Действия в интерфейсе", description: "Используйте точные названия действий.", count: 10 },
+            { rule_id: "Dash_NoSpace", title: "Пробелы рядом с тире", description: "Проверяйте пробелы вокруг знака.", count: 7 },
+          ],
+        },
+        {
+          user: "Администратор",
+          total_hits: 12,
+          distinct_rules: 2,
+          rules: [
+            { rule_id: "Quotes_LatinInQuotes", title: "Латиница без кавычек", description: "Иностранные названия пишутся без кавычек.", count: 8 },
+            { rule_id: "Please", title: "Слово «пожалуйста»", description: "В интерфейсных текстах обходитесь без «пожалуйста».", count: 4 },
+          ],
+        },
+      ],
       tokens: { total: { tokens: 1248650 }, today: { tokens: 42100 } },
     };
   }

@@ -900,7 +900,7 @@ button.chip:hover,
 
 .stat-strip {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
   margin-bottom: 18px;
   overflow: hidden;
   background: var(--pine);
@@ -1561,6 +1561,11 @@ button.chip:hover,
 
 .page > .panel {
   flex: 1 1 auto;
+}
+
+.insights-panel {
+  flex: 0 0 auto;
+  padding: 8px 20px 12px;
 }
 
 .page:has(.api-workbench) {
@@ -3272,12 +3277,31 @@ button.chip:hover,
 }
 
 .frequent-rule {
+  position: relative;
   display: grid;
   grid-template-columns: 28px minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
   padding: 11px 0;
   border-top: 1px solid var(--line);
+}
+
+.frequent-rule::before {
+  position: absolute;
+  inset: 6px 0 6px 40px;
+  z-index: 0;
+  background: var(--primary-soft);
+  border-radius: 8px;
+  opacity: .55;
+  transform-origin: left center;
+  transform: scaleX(var(--share, 0));
+  content: "";
+  pointer-events: none;
+}
+
+.frequent-rule > * {
+  position: relative;
+  z-index: 1;
 }
 
 .frequent-rule > span {
