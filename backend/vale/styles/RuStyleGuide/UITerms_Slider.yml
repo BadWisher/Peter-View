@@ -1,0 +1,7 @@
+extends: substitution
+message: "Используйте '%s' вместо '%s' для обозначения элемента интерфейса."
+level: error
+ignorecase: true
+swap:
+  бегунок: ползунок
+  бегунка: ползунка

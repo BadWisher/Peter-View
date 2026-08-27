@@ -1,0 +1,6 @@
+extends: existence
+message: "Уберите лишний пробел."
+level: error
+nonword: true
+raw:
+  - '[^\n ] {2,}[^\n ]'

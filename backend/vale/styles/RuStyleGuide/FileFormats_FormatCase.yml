@@ -1,0 +1,7 @@
+extends: existence
+message: "Название формата файла пишется прописными буквами: TXT, PDF, JSON и т.д."
+level: error
+ignorecase: false
+nonword: true
+raw:
+  - 'формат\w*\s+(txt|pdf|json|csv|yaml|png|jpg|jpeg|svg|zip|sql|md|sh|py|html|xml)\b'

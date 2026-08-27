@@ -1,0 +1,38 @@
+# Опциональный override для VDI/корп-сети: корпоративный HTTP-прокси слушает только
+# 127.0.0.1:3128 на хосте, а backend в Docker до него не достучится.
+#
+# Включение: PROOFREADER_CORP_PROXY=true в .env, затем ./deploy.sh
+# (или docker compose -f docker-compose.yml -f docker-compose.corp-proxy.yml up -d)
+#
+# proxy-bridge слушает на docker0 (172.17.0.1 по умолчанию) и пересылает на локальный
+# прокси хоста. backend ходит в LLM/эмбеддинги через host.docker.internal.
+
+services:
+  proxy-bridge:
+    image: alpine/socat:1.0.5
+    restart: unless-stopped
+    network_mode: host
+    command:
+      - TCP-LISTEN:${CORP_PROXY_BRIDGE_PORT:-3128},bind=${CORP_PROXY_BRIDGE_BIND:-172.17.0.1},fork,reuseaddr
+      - TCP:${CORP_PROXY_UPSTREAM:-127.0.0.1:3128}
+
+  backend:
+    build:
+      context: ./backend
+      # Сборка с apt-get: BuildKit наследует HTTP_PROXY=127.0.0.1:3128 с VDI, но внутри
+      # build-контейнера 127.0.0.1 — не хост. network: host даёт apt доступ к локальному прокси.
+      network: host
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      languagetool:
+        condition: service_started
+      proxy-bridge:
+        condition: service_started
+    environment:
+      - HTTP_PROXY=http://host.docker.internal:${CORP_PROXY_BRIDGE_PORT:-3128}
+      - HTTPS_PROXY=http://host.docker.internal:${CORP_PROXY_BRIDGE_PORT:-3128}
+      - http_proxy=http://host.docker.internal:${CORP_PROXY_BRIDGE_PORT:-3128}
+      - https_proxy=http://host.docker.internal:${CORP_PROXY_BRIDGE_PORT:-3128}
+      - NO_PROXY=localhost,127.0.0.1,backend,languagetool
+      - no_proxy=localhost,127.0.0.1,backend,languagetool

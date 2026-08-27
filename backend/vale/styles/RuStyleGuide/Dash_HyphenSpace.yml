@@ -1,0 +1,6 @@
+extends: existence
+message: "Не ставьте пробелы вокруг дефиса. Если имеется в виду тире, используйте среднее тире (–) с пробелами."
+level: warning
+nonword: true
+raw:
+  - '\w\s+-\s+\w'

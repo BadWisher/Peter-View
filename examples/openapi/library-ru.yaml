@@ -1,0 +1,85 @@
+openapi: 3.0.3
+info:
+  title: Каталог библиотеки
+  version: 0.1.0
+  description: Учебный пример OpenAPI без персональных данных и ключей.
+servers:
+  - url: https://library.example.test/api
+paths:
+  /books:
+    get:
+      summary: Список книг
+      operationId: listBooks
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+          description: Поиск по названию
+      responses:
+        "200":
+          description: Страница каталога
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookList"
+    post:
+      summary: Добавить книгу
+      operationId: createBook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookInput"
+      responses:
+        "201":
+          description: Книга создана
+  /books/{bookId}:
+    get:
+      summary: Карточка книги
+      operationId: getBook
+      parameters:
+        - in: path
+          name: bookId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Книга
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Book"
+        "404":
+          description: Нет такой книги
+components:
+  schemas:
+    BookInput:
+      type: object
+      required: [title, author]
+      properties:
+        title:
+          type: string
+          description: Название
+        author:
+          type: string
+          description: Автор
+        year:
+          type: integer
+          description: Год издания
+    Book:
+      allOf:
+        - $ref: "#/components/schemas/BookInput"
+        - type: object
+          properties:
+            id:
+              type: string
+    BookList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Book"

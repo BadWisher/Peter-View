@@ -1,0 +1,104 @@
+services:
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - LANGUAGETOOL_URL=http://languagetool:8010/v2/check
+      - STYLEGUIDE_PATH=/app/styleguide/rules.yaml
+      - STYLEGUIDE_STORE_DIR=/app/data/styleguides
+      - PROOFREADER_DOCS=false
+    volumes:
+      - backend-data:/app/data
+      - ./backups:/app/backups
+      - ./backend/styleguide/rules.yaml:/app/styleguide/rules.yaml:ro
+    depends_on:
+      languagetool:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - wget
+        - --quiet
+        - --tries=1
+        - --output-document=/dev/null
+        - http://localhost:8000/api/health
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    mem_limit: 2g
+    networks:
+      - internal
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    ports:
+      # Слушаем на всех интерфейсах, поэтому сервис доступен по всей корп-сети
+      # (http://<ip-сервера>:<порт>). Порт настраивается через PROOFREADER_PORT
+      # в .env: поставь 80 для доступа по http://<хост> без порта в адресе.
+      - "${PROOFREADER_PORT:-3080}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - wget
+        - --quiet
+        - --tries=1
+        - --output-document=/dev/null
+        - http://127.0.0.1/
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 5s
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    networks:
+      - internal
+
+  languagetool:
+    image: erikvl87/languagetool@sha256:ef8fa12cbd485166c9ceeb7139d76d56d07707a624da6bb1fc1fbb5411750527
+    restart: unless-stopped
+    environment:
+      - Java_Xms=512m
+      - Java_Xmx=1g
+      - ENABLED_LANGUAGES=ru
+    healthcheck:
+      test:
+        - CMD
+        - wget
+        - --quiet
+        - --tries=1
+        - --output-document=/dev/null
+        - http://localhost:8010/v2/languages
+      interval: 15s
+      timeout: 10s
+      retries: 20
+      # Java долго разгоняется, ранний рестарт только мешает.
+      start_period: 90s
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    mem_limit: 1536m
+    networks:
+      - internal
+
+volumes:
+  backend-data:
+
+networks:
+  internal:
+    driver: bridge

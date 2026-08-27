@@ -1,0 +1,7 @@
+extends: existence
+message: "Используйте русское написание «веб-» вместо латинского «web-»."
+level: error
+ignorecase: true
+nonword: true
+raw:
+  - '\bweb-[А-Яа-яЁё]+'

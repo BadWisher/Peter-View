@@ -1,0 +1,6 @@
+extends: existence
+message: "Используйте «элементы списка» вместо «позиции/строки/пункты списка»."
+level: warning
+ignorecase: true
+raw:
+  - '(позици\w+|строк\w+|пункт\w+)\s+списк\w+'

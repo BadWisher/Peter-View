@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#013b32">
+  <title>Peter View</title>
+  <meta name="description" content="Проверка русской документации. Ставится у себя. Vale, pymorphy3, LanguageTool.">
+  <link rel="icon" href="favicon.png">
+  <link rel="preload" href="fonts/GolosText-cyrillic.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a class="skip" href="#main">К содержанию</a>
+  <header class="top">
+    <a class="mark" href="./">
+      <img src="logo.png" width="40" height="40" alt="">
+      Peter View
+    </a>
+    <nav>
+      <a href="wiki/">Вики</a>
+      <a href="https://github.com/BadWisher/Peter-View">GitHub</a>
+      <a class="go" href="wiki/quickstart/">Поставить</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="hero">
+      <h1>Проверка русской документации у себя на сервере.</h1>
+      <p class="lead">Vale, pymorphy3, LanguageTool. Модель подключаешь сам, если она вообще нужна.</p>
+      <p class="actions">
+        <a class="go" href="wiki/quickstart/">Поставить</a>
+        <a class="quiet" href="wiki/">Вики</a>
+      </p>
+      <figure class="shot">
+        <img src="assets/02-check.png" width="1440" height="900" alt="Проверка текста в Peter View">
+      </figure>
+    </section>
+
+    <section class="engines">
+      <ul>
+        <li><strong>Vale</strong>: правила Style Guide</li>
+        <li><strong>pymorphy3</strong>: морфология</li>
+        <li><strong>LanguageTool</strong>: грамматика</li>
+      </ul>
+    </section>
+
+    <section class="trust">
+      <h2>Коротко</h2>
+      <dl>
+        <div><dt>Где крутится</dt><dd>Docker Compose у вас</dd></div>
+        <div><dt>Лицензия</dt><dd>Apache-2.0</dd></div>
+        <div><dt>Сбор статистики</dt><dd>Нет</dd></div>
+        <div><dt>Модель</dt><dd>Только ваш URL</dd></div>
+        <div><dt>Вход</dt><dd>Пароль или OIDC</dd></div>
+      </dl>
+    </section>
+
+    <section class="proof">
+      <figure>
+        <img src="assets/01-login.png" width="1440" height="900" alt="Экран входа">
+        <figcaption>Логин admin / admin. Пароль смени сразу.</figcaption>
+      </figure>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2026 BadWisher · <a href="https://github.com/BadWisher/Peter-View">репозиторий</a> · <a href="wiki/it/">для ИТ</a></p>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,11 @@
+extends: substitution
+message: "Используйте полное название '%s' вместо сокращения '%s'."
+level: error
+ignorecase: false
+swap:
+  КДП: Kaspersky DDoS Protection
+  KDP: Kaspersky DDoS Protection
+  KasperskyDDoS: Kaspersky DDoS
+  DDOS: DDoS
+  ЛК: Лаборатория Касперского
+  Касперский: Лаборатория Касперского

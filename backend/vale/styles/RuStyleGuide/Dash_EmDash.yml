@@ -1,0 +1,6 @@
+extends: existence
+message: "Найдено длинное тире (—). Используйте среднее тире (–)."
+level: error
+nonword: true
+raw:
+  - '—'

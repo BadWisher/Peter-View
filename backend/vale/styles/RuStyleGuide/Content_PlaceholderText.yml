@@ -1,0 +1,6 @@
+extends: existence
+message: "Похоже на служебную заглушку CMS. Уберите слово «текст» или замените его реальным содержанием."
+level: error
+nonword: true
+raw:
+  - '(?m)^текст$'
