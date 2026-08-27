@@ -188,6 +188,8 @@ nav a:hover { color: var(--teal); }
   font-size: 0.9em;
 }
 
+.hint a { color: var(--teal); }
+
 .go-hero { padding: 12px 18px; }
 
 .job {

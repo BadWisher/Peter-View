@@ -10,6 +10,7 @@
 </p>
 
 <p align="center">
+  <a href="https://badwisher.github.io/Peter-View/preview/"><img src="https://img.shields.io/badge/превью-интерфейс-00a88e?style=flat-square" alt="Превью"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/лицензия-Apache%202.0-013b32?style=flat-square" alt="Apache-2.0"></a>
   <a href="https://badwisher.github.io/Peter-View/wiki/"><img src="https://img.shields.io/badge/документация-вики-00a88e?style=flat-square" alt="Документация"></a>
   <a href="https://badwisher.github.io/Peter-View/"><img src="https://img.shields.io/badge/сайт-лендинг-00a88e?style=flat-square" alt="Сайт"></a>
@@ -18,7 +19,7 @@
 
 Peter View проверяет тексты по грамматике, корпоративному стилю и единообразию терминов. Результат проверки: список замечаний, каждое привязано к фрагменту документа. Языковая модель не обязательна: грамматика и Style Guide работают без неё. Исходные тексты во внешние сервисы не передаются, пока администратор сам не укажет адрес модели.
 
-[Сайт](https://badwisher.github.io/Peter-View/) · [Документация](https://badwisher.github.io/Peter-View/wiki/) · [Установка и первый запуск](https://badwisher.github.io/Peter-View/wiki/tutorial/) · [Apache-2.0](LICENSE)
+[Превью](https://badwisher.github.io/Peter-View/preview/) · [Сайт](https://badwisher.github.io/Peter-View/) · [Документация](https://badwisher.github.io/Peter-View/wiki/) · [Установка и первый запуск](https://badwisher.github.io/Peter-View/wiki/tutorial/) · [Apache-2.0](LICENSE)
 
 ![Список замечаний рядом с текстом документа](docs/screenshots/02-check.png)
 
