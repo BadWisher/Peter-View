@@ -22,17 +22,32 @@ markdown_extensions:
   - toc:
       permalink: true
 nav:
-  - Главная: index.md
-  - Что это такое: about.md
-  - Быстрый старт: quickstart.md
-  - Установка и Docker: install.md
-  - Конфигурация: config.md
-  - Роли и доступ: roles.md
-  - Для ИТ: it.md
-  - Разделы: sections.md
-  - Языковая модель и RAG: llm.md
-  - Скрытие разделов: features.md
-  - Архитектура: architecture.md
-  - Безопасность: security.md
-  - Разработка и тесты: develop.md
-  - FAQ: faq.md
+  - Документация: index.md
+  - Начало работы:
+      - Установка и первый запуск: tutorial.md
+  - Проверка документов:
+      - Текст, файл или страница: how-to/check.md
+      - Список замечаний: how-to/review.md
+      - Style Guide: how-to/styleguide.md
+      - История и аналитика: how-to/history.md
+  - Администрирование:
+      - Пользователи: how-to/users.md
+      - Языковая модель: how-to/llm.md
+      - Состояние сервисов: how-to/health.md
+      - Дополнительные разделы: how-to/features.md
+      - Документы: how-to/documents.md
+      - OpenAPI: how-to/api.md
+      - Наблюдение: how-to/watch.md
+      - Скриншоты: how-to/screenshots.md
+      - Вход через организацию: how-to/oidc.md
+      - Резервная копия: how-to/backup.md
+      - Не запускается: how-to/troubleshoot.md
+  - Справка:
+      - Переменные .env: reference/config.md
+      - Роли: reference/roles.md
+      - Разделы: reference/sections.md
+      - Compose и команды: reference/compose.md
+  - Устройство:
+      - Назначение системы: explanation/what.md
+      - Откуда замечания: explanation/engines.md
+      - Почему три контейнера: explanation/architecture.md

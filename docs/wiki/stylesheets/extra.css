@@ -8,3 +8,23 @@
 .md-header {
   background-color: #013b32;
 }
+
+.md-typeset img {
+  border-radius: 8px;
+  box-shadow: 0 12px 32px rgba(23, 35, 32, 0.12);
+}
+
+.md-typeset figure {
+  margin: 1.25em 0 1.75em;
+}
+
+.md-typeset figcaption {
+  color: #4d635e;
+  font-size: 0.9em;
+  margin-top: 0.5em;
+}
+
+.md-typeset table img {
+  border-radius: 6px;
+  box-shadow: none;
+}
