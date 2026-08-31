@@ -1,7 +1,7 @@
 # Кодекс поведения
 
-Этот проект следует [Contributor Covenant](https://www.contributor-covenant.org/version/2/1/code_of_conduct/).
+Данный проект придерживается принципов [Contributor Covenant](https://www.contributor-covenant.org/version/2/1/code_of_conduct/).
 
-Кратко: будьте уважительны, не травите и не унижайте. Споры решаем по существу.
+Проявляйте уважение друг к другу, избегайте травли, унижений - не делайте плохого, делайте хорошего и т.д.
 
-Жалобы: профиль мейнтейнера [BadWisher](https://github.com/BadWisher).
+Пожаловаться на поведение участников можно мейнтейнеру проекта - [BadWisher](https://github.com/BadWisher).
