@@ -27,7 +27,6 @@ export function renderLogin(error = "") {
         <label class="field"><span>${t("login.password")}</span><span class="password-field"><input name="password" type="password" autocomplete="current-password" required><button class="icon-button password-toggle" type="button" aria-label="${t("login.showPassword")}">${icon("icon-eye")}</button></span></label>
         <button class="button primary login-submit" type="submit">${t("login.submit")}</button>
         ${state.config?.oidc ? `<a class="button secondary" href="/api/auth/oidc/start">${t("login.oidc")}</a>` : ""}
-        <p class="field-hint">${t("login.defaultHint")}</p>
       </form>
     </main>`;
   const form = document.querySelector("#login-form");
