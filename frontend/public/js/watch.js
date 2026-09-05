@@ -199,39 +199,76 @@ export function renderWatchLine(hunk) {
   // Пословная подсветка: backend помечает неизменившиеся слова флагом same.
   if (hunk.op === "add" && hunk.words?.length && hunk.same?.length === hunk.words.length) {
     const words = hunk.words.map((word, i) => hunk.same[i] ? escapeHTML(word) : `<mark>${escapeHTML(word)}</mark>`).join(" ");
-    return `<div class="watch-add">+ ${words}</div>`;
+    return `<div class="watch-line watch-add"><span class="watch-sign" aria-hidden="true">+</span><span class="watch-text">${words}</span></div>`;
   }
   const prefix = hunk.op === "add" ? "+" : hunk.op === "del" ? "−" : " ";
-  return (hunk.lines || []).map((line) => `<div class="watch-${hunk.op}">${prefix} ${escapeHTML(line)}</div>`).join("");
+  const cls = hunk.op === "eq" ? "watch-eq" : hunk.op === "add" ? "watch-add" : "watch-del";
+  return (hunk.lines || []).map((line) => `<div class="watch-line ${cls}"><span class="watch-sign" aria-hidden="true">${prefix}</span><span class="watch-text">${escapeHTML(line)}</span></div>`).join("");
+}
+
+export function watchChangeSummary(diff) {
+  const hunks = diff?.hunks || [];
+  const ui = diff?.ui || [];
+  const adds = hunks.filter((h) => h.op === "add").reduce((n, h) => n + (h.lines?.length || 0), 0);
+  const dels = hunks.filter((h) => h.op === "del").reduce((n, h) => n + (h.lines?.length || 0), 0);
+  const bits = [];
+  if (adds || dels) {
+    const words = [];
+    if (adds) words.push(`+${adds} ${plural(adds, "строка", "строки", "строк")}`);
+    if (dels) words.push(`−${dels} ${plural(dels, "строка", "строки", "строк")}`);
+    bits.push(`текст: ${words.join(", ")}`);
+  }
+  if (ui.length) bits.push(`интерфейс: ${ui.length} ${plural(ui.length, "событие", "события", "событий")}`);
+  return bits.join(" · ");
+}
+
+function plural(n, one, few, many) {
+  const mod10 = Number(n) % 10;
+  const mod100 = Number(n) % 100;
+  if (mod10 === 1 && mod100 !== 11) return one;
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return few;
+  return many;
 }
 
 export function renderWatchHunks(hunks, { status = "", error = "" } = {}) {
-  if (error) return `<div class="empty-state"><div><h3>Страница не загрузилась</h3><p>${escapeHTML(error)}</p></div></div>`;
+  if (error) return `<div class="empty-state">${icon("icon-eye-off")}<div><h3>Страница не загрузилась</h3><p>${escapeHTML(error)}</p><p class="empty-hint">Проверь адрес и вход группы, затем нажми «Проверить».</p></div></div>`;
   if (!hunks?.length) {
-    if (status === "pending") return `<div class="empty-state"><div><h3>Ещё не проверялась</h3><p>Нажми «Проверить», чтобы снять первый текст.</p></div></div>`;
-    if (status === "same") return `<div class="empty-state"><div><h3>Без изменений</h3><p>Текст и интерфейс совпали с прошлым снимком.</p></div></div>`;
-    return `<div class="empty-state"><div><h3>Сравнить пока нечего</h3><p>Нужны два снимка: проверь страницу дважды.</p></div></div>`;
+    if (status === "pending") return `<div class="empty-state">${icon("icon-clock")}<div><h3>Ещё не проверялась</h3><p>Нажми «Проверить», чтобы снять первый снимок.</p></div></div>`;
+    if (status === "same") return `<div class="empty-state">${icon("icon-check")}<div><h3>Без изменений</h3><p>Текст и интерфейс совпали с прошлым снимком.</p></div></div>`;
+    return `<div class="empty-state">${icon("icon-eye")}<div><h3>Сравнить пока нечего</h3><p>Нужны два снимка: проверь страницу дважды.</p></div></div>`;
   }
-  return `<pre class="watch-diff">${hunks.map((hunk) => {
-    if (hunk.op === "skip") return `<div class="watch-skip">… ${hunk.count} строк без изменений …</div>`;
+  return `<div class="watch-diff" role="group" aria-label="Изменения текста">${hunks.map((hunk) => {
+    if (hunk.op === "skip") return `<div class="watch-skip" aria-hidden="true"><span>… ${hunk.count} ${plural(hunk.count, "строка", "строки", "строк")} без изменений …</span></div>`;
     return renderWatchLine(hunk);
-  }).join("")}</pre>`;
+  }).join("")}</div>`;
 }
 
-const UI_KIND_LABEL = {
-  added: "появилось", removed: "пропало", moved: "переехало",
-  tag: "тег сменён", attr: "атрибут сменён", text: "текст сменён", more: "ещё",
+const UI_KIND = {
+  added: { label: "Появилось", icon: "icon-plus" },
+  removed: { label: "Пропало", icon: "icon-trash" },
+  moved: { label: "Переехало", icon: "icon-arrow" },
+  tag: { label: "Тег сменён", icon: "icon-code" },
+  attr: { label: "Ссылка сменена", icon: "icon-link" },
+  text: { label: "Текст сменён", icon: "icon-text" },
+  more: { label: "Ещё", icon: "icon-more" },
 };
 
 export function renderWatchUi(events) {
   if (!events?.length) return "";
-  return `<section class="panel watch-ui-panel"><div class="panel-head"><h3>Интерфейс: ${events.length} ${events.length === 1 ? "изменение" : "изменения"}</h3></div>
-    <ul class="watch-ui-list">${events.map((event) => `
+  return `<section class="panel watch-ui-panel" aria-label="Изменения интерфейса">
+    <div class="panel-head"><div><h3>Что изменилось в интерфейсе</h3><p>${events.length} ${plural(events.length, "событие", "события", "событий")} · тег, место и суть</p></div></div>
+    <ol class="watch-ui-list">${events.map((event) => {
+      const meta = UI_KIND[event.kind] || { label: event.kind || "", icon: "icon-arrow" };
+      return `
       <li class="watch-ui watch-ui-${escapeHTML(event.kind || "")}">
-        <span class="watch-ui-kind">${escapeHTML(UI_KIND_LABEL[event.kind] || event.kind || "")}</span>
-        <span class="watch-ui-what"><code>&lt;${escapeHTML(event.tag || "")}&gt;</code> ${escapeHTML(event.where || event.path || "")}</span>
-        ${event.detail ? `<span class="watch-ui-detail">${escapeHTML(event.detail)}</span>` : ""}
-      </li>`).join("")}</ul></section>`;
+        <span class="watch-ui-marker" aria-hidden="true">${icon(meta.icon)}</span>
+        <div class="watch-ui-body">
+          <div class="watch-ui-top"><strong>${escapeHTML(meta.label)}</strong><code class="watch-ui-tag">&lt;${escapeHTML(event.tag || "")}&gt;</code></div>
+          <div class="watch-ui-where">${escapeHTML(event.where || event.path || "")}</div>
+          ${event.detail ? `<div class="watch-ui-detail">${escapeHTML(event.detail)}</div>` : ""}
+        </div>
+      </li>`;
+    }).join("")}</ol></section>`;
 }
 
 export async function startWatchRun(path) {
@@ -307,27 +344,43 @@ export async function renderWatch() {
   const pages = group.pages || [];
   if (pageId) {
     const page = pages.find((item) => item.id === pageId);
-    let diff = { hunks: [], page: page || { title: "Адрес", url: "" } };
+    let diff = { hunks: [], ui: [], page: page || { title: "Адрес", url: "" } };
     try { diff = await api(`/api/watch/pages/${encodeURIComponent(pageId)}/diff`); } catch (error) { showError(error); }
     if (state.route !== "watch") return;
     const running = Boolean(page?.running);
+    const status = diff.page?.last_status || page?.last_status || "pending";
+    const summary = watchChangeSummary(diff);
+    const checked = diff.page?.last_checked_at || page?.last_checked_at;
+    const changedAt = diff.page?.last_changed_at || page?.last_changed_at;
     renderShell(`
       <div class="page watch-page">
-        <div class="page-head">
-          <div>
+        <div class="page-head watch-head">
+          <div class="watch-title">
             <button class="text-link back-watch" type="button">${icon("icon-arrow")} ${escapeHTML(group.name)}</button>
             <h2>${escapeHTML(diff.page?.title || page?.title || "Адрес")}</h2>
-            <p class="watch-url">${escapeHTML(diff.page?.url || page?.url || "")}</p>
-            ${diff.page?.last_error ? `<p class="field-hint">${escapeHTML(diff.page.last_error)}</p>` : ""}
+            <p class="watch-url"><a href="${escapeHTML(diff.page?.url || page?.url || "")}" target="_blank" rel="noopener">${escapeHTML(diff.page?.url || page?.url || "")}</a></p>
+            <p class="watch-meta">
+              ${watchStatusBadge(status, true)}
+              ${summary ? `<span>${escapeHTML(summary)}</span>` : ""}
+            </p>
+            <p class="watch-meta watch-meta-dim">
+              ${checked ? `проверено ${escapeHTML(formatDate(checked, false))}` : "ещё не проверялась"}${changedAt ? ` · изменилась ${escapeHTML(formatDate(changedAt, false))}` : ""}
+            </p>
+            ${diff.page?.last_error ? `<p class="field-hint" role="alert">${escapeHTML(diff.page.last_error)}</p>` : ""}
           </div>
           <div class="head-actions">
-            ${watchStatusBadge(diff.page?.last_status || page?.last_status, true)}
             <button class="button secondary run-watch-page" type="button" ${running ? "disabled" : ""}>${icon("icon-refresh")}${running ? "Проверяем…" : "Проверить"}</button>
             <button class="icon-button delete-watch-page" type="button" aria-label="Удалить адрес">${icon("icon-trash")}</button>
           </div>
         </div>
-        <section class="panel fill-panel watch-diff-panel">${renderWatchHunks(diff.hunks, { status: diff.page?.last_status, error: diff.page?.last_error })}</section>
-        ${renderWatchUi(diff.ui)}
+        ${running ? `<div class="watch-progress" role="status" aria-live="polite"><span class="watch-progress-dot"></span>Снимаю свежий снимок…</div>` : ""}
+        <section class="panel fill-panel watch-diff-panel" aria-label="Изменения текста и интерфейса">
+          <div class="panel-head"><div><h3>Что изменилось</h3><p>${summary ? escapeHTML(summary) : status === "same" ? "Совпало с прошлым снимком" : status === "pending" ? "Первый снимок ещё не снят" : "Текст и структура рядом — сначала слова, ниже интерфейс"}</p></div></div>
+          <div class="panel-body watch-diff-body">
+            ${renderWatchHunks(diff.hunks, { status: diff.page?.last_status, error: diff.page?.last_error })}
+            ${renderWatchUi(diff.ui)}
+          </div>
+        </section>
       </div>`);
     document.querySelector(".back-watch").addEventListener("click", () => openWatch(groupId));
     document.querySelector(".run-watch-page").addEventListener("click", () => startWatchRun(`/api/watch/pages/${encodeURIComponent(pageId)}/run`));
