@@ -326,34 +326,59 @@ async def run_daily_if_due() -> None:
     store.set_daily_stamp(dt.datetime.now().strftime("%Y-%m-%d"))
 
 
+def _pair_snaps(page_id: str) -> tuple[dict | None, dict | None]:
+    """Пара для показа: база изменения и то, что сравниваем с ней.
+
+    latest_snapshots отдаёт соседей по времени, а человек ждёт «что
+    изменилось с прошлого раза, когда что-то менялось». Поэтому ищем
+    последний снимок с changed=1 и сравниваем его с тем, что было прямо
+    перед ним: два снимка самого изменения. Свежие перепроверки без правок
+    в пару не лезут — иначе одно нажатие «Проверить» прячет изменение.
+    """
+    snaps = store.latest_snapshots(page_id, limit=20)
+    if not snaps:
+        return None, None
+    changed_at = next((i for i, snap in enumerate(snaps) if snap.get("changed")), None)
+    if changed_at is None:
+        # Изменений ещё не было: показать просто два свежих, как раньше.
+        return (snaps[0], snaps[1]) if len(snaps) > 1 else (snaps[0], None)
+    current = snaps[changed_at]
+    previous = snaps[changed_at + 1] if changed_at + 1 < len(snaps) else None
+    return current, previous
+
+
+def _hunks_and_ui(current: dict | None, previous: dict | None) -> tuple[list[dict], list[dict], list[dict]]:
+    import json
+
+    def _nodes(raw: str) -> list[dict]:
+        try:
+            data = json.loads(raw or "[]")
+        except (ValueError, TypeError):
+            return []
+        return data if isinstance(data, list) else []
+
+    # ponytail: один разбор DOM на diff+copy, а не два одинаковых.
+    if not previous or not (current.get("dom") or previous.get("dom")):
+        hunks = text_hunks(previous["text"] if previous else "", current["text"]) if (current and previous) else []
+        return hunks, [], []
+    old_nodes = _nodes(previous.get("dom") or "")
+    new_nodes = _nodes(current.get("dom") or "")
+    ui = watch_dom.diff_nodes(old_nodes, new_nodes)
+    marks = [{"path": event.get("path") or "", "kind": event.get("kind") or ""}
+             for event in ui if event.get("path") and event.get("kind") != "more"]
+    hunks = text_hunks(previous["text"] if previous else "", current["text"]) if previous else []
+    return hunks, ui, marks
+
+
 def page_diff(page_id: str) -> dict:
     page = store.get_page(page_id)
     if page is None:
         raise KeyError("Адрес не найден")
-    snaps = store.latest_snapshots(page_id, limit=2)
-    if not snaps:
+    current, previous = _pair_snaps(page_id)
+    if not current:
         return {"page": page, "hunks": [], "ui": [], "marks": [], "has_copy": False, "previous": None, "current": None}
-    current = snaps[0]
-    previous = snaps[1] if len(snaps) > 1 else None
-    hunks = text_hunks(previous["text"] if previous else "", current["text"]) if previous else []
+    hunks, ui, marks = _hunks_and_ui(current, previous)
     raw_copy = current.get("body") or ""
-    ui = []
-    marks: list[dict] = []
-    if previous and (current.get("dom") or previous.get("dom")):
-        import json
-
-        def _nodes(raw: str) -> list[dict]:
-            try:
-                data = json.loads(raw or "[]")
-            except (ValueError, TypeError):
-                return []
-            return data if isinstance(data, list) else []
-
-        old_nodes = _nodes(previous.get("dom") or "")
-        new_nodes = _nodes(current.get("dom") or "")
-        ui = watch_dom.diff_nodes(old_nodes, new_nodes)
-        marks = [{"path": event.get("path") or "", "kind": event.get("kind") or ""}
-                 for event in ui if event.get("path") and event.get("kind") != "more"]
     return {
         "page": page,
         "current": {
@@ -382,24 +407,23 @@ def page_copy(page_id: str) -> str:
     page = store.get_page(page_id)
     if page is None:
         raise KeyError("Адрес не найден")
-    snaps = store.latest_snapshots(page_id, limit=2)
-    if not snaps:
+    current, previous = _pair_snaps(page_id)
+    if not current:
         return ""
-    current = snaps[0]
-    previous = snaps[1] if len(snaps) > 1 else None
     copy = current.get("body") or ""
-    if previous and (current.get("dom") or previous.get("dom")):
-        import json
+    if not previous:
+        return copy
+    import json
 
-        def _nodes(raw: str) -> list[dict]:
-            try:
-                data = json.loads(raw or "[]")
-            except (ValueError, TypeError):
-                return []
-            return data if isinstance(data, list) else []
+    def _nodes(raw: str) -> list[dict]:
+        try:
+            data = json.loads(raw or "[]")
+        except (ValueError, TypeError):
+            return []
+        return data if isinstance(data, list) else []
 
-        old_nodes = _nodes(previous.get("dom") or "")
-        new_nodes = _nodes(current.get("dom") or "")
-        ui = watch_dom.diff_nodes(old_nodes, new_nodes)
-        copy = watch_dom.mark_copy(copy, old_nodes, new_nodes, ui)
+    old_nodes = _nodes(previous.get("dom") or "")
+    new_nodes = _nodes(current.get("dom") or "")
+    ui = watch_dom.diff_nodes(old_nodes, new_nodes)
+    copy = watch_dom.mark_copy(copy, old_nodes, new_nodes, ui)
     return copy
