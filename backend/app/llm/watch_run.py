@@ -8,12 +8,13 @@ import difflib
 import hashlib
 import logging
 import os
+import re
 from urllib.parse import urljoin
 
 import httpx
 from bs4 import BeautifulSoup
 
-from ..extractors import extract_html
+from ..extractors import extract_html, normalize_spaces
 from ..net_guard import BlockedURLError, safe_request
 from . import watch_store as store
 
@@ -25,6 +26,10 @@ USER_AGENT = os.getenv(
 )
 WATCH_HOUR = int(os.getenv("PROOFREADER_WATCH_HOUR", "4"))
 CONTEXT_LINES = 2
+# Слишком короткий текст почти всегда означает пустой каркас страницы
+# (JS-портал без рендера, каптча, заглушка). Такое считаем ошибкой съёма,
+# а не «без изменений», иначе наблюдение молча замирает.
+MIN_SNAPSHOT_CHARS = int(os.getenv("PROOFREADER_WATCH_MIN_CHARS", "24"))
 
 
 def fingerprint(text: str) -> str:
@@ -33,6 +38,30 @@ def fingerprint(text: str) -> str:
 
 def snapshot_text(html: str) -> str:
     return extract_html(html, include_chrome=False).strip()
+
+
+# Мусор, который меняется сам по себе и не означает правку регламента:
+# даты, время, счётчики, длинные токены. Маскируем перед сравнением —
+# по сырому тексту хэш тоже храним, чтобы ничего не потерять.
+_VOLATILE = [
+    re.compile(r"\b\d{2}\.\d{2}\.\d{4}(?:\s+\d{2}:\d{2}(?::\d{2})?)?"),  # 05.09.2026, 05.09.2026 18:20
+    re.compile(r"\b\d{2}:\d{2}(?::\d{2})?\b"),  # время
+    re.compile(r"\b[0-9a-f]{16,}\b", re.I),  # csrf-токены и прочий hex
+    re.compile(r"\b\d[\d\s]*просмотр\w*", re.I),
+    re.compile(r"обновлено.*", re.I),  # строка «обновлено ...» целиком
+]
+
+
+def normalized_text(text: str) -> str:
+    out = []
+    for line in text.splitlines():
+        line = normalize_spaces(line)
+        for pat in _VOLATILE:
+            line = pat.sub("…", line)
+        line = re.sub(r"\s+", " ", line).strip()
+        if line:
+            out.append(line)
+    return "\n".join(out)
 
 
 def collapse_hunks(hunks: list[dict]) -> list[dict]:
@@ -62,7 +91,34 @@ def text_hunks(old: str, new: str) -> list[dict]:
             hunks.append({"op": "del", "lines": old_lines[i1:i2]})
         elif tag == "insert":
             hunks.append({"op": "add", "lines": new_lines[j1:j2]})
-    return collapse_hunks(hunks)
+    return collapse_hunks(mark_word_diff(hunks))
+
+
+def mark_word_diff(hunks: list[dict]) -> list[dict]:
+    """В паре del/add из одной строки помечаем, какие слова новые, — фронт их подсветит."""
+    out: list[dict] = []
+    i = 0
+    while i < len(hunks):
+        cur = hunks[i]
+        nxt = hunks[i + 1] if i + 1 < len(hunks) else None
+        if (
+            cur["op"] == "del" and nxt and nxt["op"] == "add"
+            and len(cur["lines"]) == 1 and len(nxt["lines"]) == 1
+            and difflib.SequenceMatcher(a=cur["lines"][0].split(), b=nxt["lines"][0].split()).ratio() > 0.3
+        ):
+            old_words = cur["lines"][0].split()
+            new_words = nxt["lines"][0].split()
+            keep = [False] * len(new_words)
+            for match in difflib.SequenceMatcher(a=old_words, b=new_words).get_matching_blocks():
+                for j in range(match.b, min(match.b + match.size, len(keep))):
+                    keep[j] = True
+            out.append({**cur, "words": old_words})
+            out.append({**nxt, "words": new_words, "same": keep})
+            i += 2
+            continue
+        out.append(cur)
+        i += 1
+    return out
 
 
 def _guess_fields(form) -> tuple[str, str]:
@@ -92,30 +148,37 @@ async def _form_login(
     page = await safe_request(client, "GET", login_url)
     soup = BeautifulSoup(page.text, "lxml")
     form = soup.find("form")
-    action = login_url
+    if form is None:
+        raise ValueError(
+            "На странице входа нет формы (возможно, вход через JS или SSO — такой портал наблюдение не поддерживает)"
+        )
+    action = urljoin(login_url, form.get("action") or login_url)
     payload: dict[str, str] = {}
     user_field = group.get("username_field") or "username"
     pass_field = group.get("password_field") or "password"
-    if form:
-        action = urljoin(login_url, form.get("action") or login_url)
-        for inp in form.find_all("input"):
-            name = (inp.get("name") or "").strip()
-            if not name:
-                continue
-            itype = (inp.get("type") or "text").lower()
-            if itype in ("submit", "button", "image", "file"):
-                continue
-            payload[name] = inp.get("value") or ""
-        guessed_user, guessed_pass = _guess_fields(form)
-        if user_field not in payload:
-            user_field = guessed_user
-        if pass_field not in payload:
-            pass_field = guessed_pass
+    for inp in form.find_all("input"):
+        name = (inp.get("name") or "").strip()
+        if not name:
+            continue
+        itype = (inp.get("type") or "text").lower()
+        if itype in ("submit", "button", "image", "file"):
+            continue
+        payload[name] = inp.get("value") or ""
+    guessed_user, guessed_pass = _guess_fields(form)
+    if user_field not in payload:
+        user_field = guessed_user
+    if pass_field not in payload:
+        pass_field = guessed_pass
     payload[user_field] = username
     payload[pass_field] = password
     resp = await safe_request(client, "POST", action, data=payload)
     if resp.status_code >= 400:
         raise ValueError(f"Вход не удался (HTTP {resp.status_code})")
+    # Многие порталы при неверном пароле отдают 200 с той же формой входа —
+    # проверяем, что после POST формы на странице больше нет.
+    again = BeautifulSoup(resp.text, "lxml")
+    if again.find("input", {"type": "password"}):
+        raise ValueError("Похоже, вход не удался: портал снова показал форму входа")
 
 
 async def _login(client: httpx.AsyncClient, group: dict) -> httpx.Auth | None:
@@ -134,9 +197,23 @@ async def _login(client: httpx.AsyncClient, group: dict) -> httpx.Auth | None:
 
 async def _fetch_page(client: httpx.AsyncClient, url: str, auth: httpx.Auth | None) -> str:
     resp = await safe_request(client, "GET", url, auth=auth)
+    if resp.status_code == 401:
+        raise ValueError("Портал просит войти заново (HTTP 401) — проверь логин и пароль группы")
     if resp.status_code >= 400:
         raise ValueError(f"Страница недоступна (HTTP {resp.status_code})")
-    return snapshot_text(resp.text)
+    text = snapshot_text(resp.text)
+    if len(text) < MIN_SNAPSHOT_CHARS:
+        raise ValueError(
+            f"Со страницы пришло почти пусто ({len(text)} символов) — "
+            "возможно, нужен JS или портал отдал заглушку"
+        )
+    # Сессия могла протухнуть посреди прогона: портал отдал страницу входа.
+    # Проверяем сырой html, а не вычищенный текст: форма входа может жить
+    # в header/nav, которые snapshot_text выкидывает.
+    soup = BeautifulSoup(resp.text, "lxml")
+    if soup.find("input", {"type": "password"}) and "парол" in resp.text.lower():
+        raise ValueError("Портал снова показал форму входа — сессия протухла, проверь пароль группы")
+    return text
 
 
 async def check_page(page_id: str, client: httpx.AsyncClient | None = None, auth: httpx.Auth | None = None) -> dict:
@@ -157,7 +234,7 @@ async def check_page(page_id: str, client: httpx.AsyncClient | None = None, auth
         if own_client:
             auth = await _login(client, group)
         text = await _fetch_page(client, page["url"], auth)
-        digest = fingerprint(text)
+        digest = fingerprint(normalized_text(text))
         previous = store.latest_snapshots(page_id, limit=1)
         changed = bool(previous) and previous[0]["content_hash"] != digest
         if not previous:

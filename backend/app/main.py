@@ -1346,6 +1346,10 @@ def _watch_group_out(group: dict) -> dict:
     return {**group, "running": group["id"] in _watch_running}
 
 
+def _watch_page_out(page: dict) -> dict:
+    return {**page, "running": f"page:{page['id']}" in _watch_running or page["group_id"] in _watch_running}
+
+
 @app.get("/api/watch/groups")
 async def watch_list_groups(_user: str = Depends(require_user)):
     return {"groups": [_watch_group_out(item) for item in watch_store.list_groups()]}
@@ -1376,7 +1380,7 @@ async def watch_get_group(group_id: str, _user: str = Depends(require_user)):
         raise HTTPException(404, "Группа не найдена")
     return {
         **_watch_group_out(group),
-        "pages": watch_store.list_pages(group_id),
+        "pages": [_watch_page_out(page) for page in watch_store.list_pages(group_id)],
     }
 
 

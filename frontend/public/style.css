@@ -1128,6 +1128,13 @@ button.chip:hover,
   background: var(--primary-wash);
 }
 
+.watch-diff .watch-add mark {
+  padding: 0 2px;
+  color: inherit;
+  background: #cde6c5;
+  border-radius: 3px;
+}
+
 .watch-diff .watch-del {
   color: var(--error);
   background: var(--error-bg);
