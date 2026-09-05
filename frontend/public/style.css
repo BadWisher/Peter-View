@@ -1122,95 +1122,26 @@ button.chip:hover,
   padding: 18px;
 }
 
-/* Изменение — как правка в проверке: было/стало рядом, новое слово подсвечено.
-   Те же del/ins, что у issue-fix: знакомый язык вместо отдельных маркеров. */
-.watch-diff-list {
+/* Изменение — та же issue-fix из проверки, новых классов не заводим. */
+.watch-changes {
   margin: 0 0 16px;
-  padding: 0;
-  list-style: none;
   display: grid;
   gap: 10px;
 }
 
-.watch-diff-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 8px;
-  max-width: 110ch;
+.watch-changes .issue-fix {
+  margin: 0;
 }
 
-.watch-diff-ui {
-  grid-template-columns: minmax(0, 1fr);
-}
-
-.watch-diff-ui p {
+.watch-note {
   margin: 0;
   max-width: 72ch;
   font-size: var(--text-ui);
   line-height: 1.55;
 }
 
-.watch-diff-cell {
-  min-width: 0;
-  padding: 5px 7px;
-  font-size: var(--text-meta);
-  line-height: 1.45;
-  border-radius: 4px;
-  overflow-wrap: anywhere;
-}
-
-.watch-diff-cell span {
-  display: block;
-  margin-bottom: 2px;
-  color: var(--muted);
-  font-size: 12px;
-}
-
-.watch-diff-cell p {
-  margin: 0;
-}
-
-.watch-diff-cell ins {
-  text-decoration: none;
-  padding: 0 2px;
-  border-radius: 3px;
-}
-
-.watch-diff-old {
-  color: #9d2c24;
-  background: var(--error-bg);
-}
-
-.watch-diff-old p {
-  text-decoration: line-through;
-}
-
-.watch-diff-new {
-  color: #08715f;
-  background: var(--primary-soft);
-}
-
-.watch-diff-new ins {
-  color: #08715f;
-  background: #ddf4ef;
-}
-
-.watch-history {
-  margin: 0;
-  color: var(--muted);
-  font-size: var(--text-meta);
-  font-variant-numeric: tabular-nums;
-}
-
-@media (max-width: 720px) {
-  .watch-diff-row {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-/* Живая копия: сохранённая страница в песочнице. Подсветка едет вместе
-   с разметкой (классы pvwatch-is-* ставит backend), здесь только рамка
-   и сами метки — иначе копия приезжает голой: классы есть, а красок нет. */
+/* Копия страницы в песочнице. Подсветка едет вместе с разметкой
+   (классы pvwatch-is-* ставит бэкенд), здесь только рамка. */
 .watch-copy-wrap {
   margin: 0;
   border: 1px solid var(--line);

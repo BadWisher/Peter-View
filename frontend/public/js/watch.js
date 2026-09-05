@@ -262,49 +262,37 @@ export function renderWatchChanges(diff, { status = "", error = "" } = {}) {
     const msg = error || diff.page.last_error;
     return `<div class="empty-state">${icon("icon-eye-off")}<div><h3>Страница не загрузилась</h3><p>${escapeHTML(msg)}</p><p class="empty-hint">Проверь адрес и вход группы, затем нажми «Проверить».</p></div></div>`;
   }
-  const hunks = diff?.hunks || [];
-  const pairs = watchChangePairs(hunks);
-  const ui = (diff?.ui || []).filter((e) => e.kind !== "more");
-  // Текстовая правка уже видна парой было/стало — событие text второй раз не показываем.
-  const uiRest = ui.filter((e) => e.kind !== "text" || !pairs.length);
-  if (!pairs.length && !uiRest.length) {
-    if (status === "pending") return `<div class="empty-state">${icon("icon-clock")}<div><h3>Ещё не проверялась</h3><p>Нажми «Проверить», чтобы снять первый снимок.</p></div></div>`;
-    if (status === "same") return `<div class="empty-state">${icon("icon-check")}<div><h3>Без изменений</h3><p>С прошлого изменения ничего нового — страница та же.</p></div></div>`;
-    return `<div class="empty-state">${icon("icon-eye")}<div><h3>Сравнить пока нечего</h3><p>Нужны два снимка: проверь страницу дважды.</p></div></div>`;
-  }
-  return `<ol class="watch-diff-list">${pairs.map((pair) => `
-    <li class="watch-diff-row">
-      <div class="watch-diff-cell watch-diff-old"><span>Было</span><p>${pair.oldHtml || "—"}</p></div>
-      <div class="watch-diff-cell watch-diff-new"><span>Стало</span><p>${pair.newHtml || "—"}</p></div>
-    </li>`).join("")}${uiRest.map((event) => {
-    const sentence = watchUiSentence(event);
-    return sentence ? `<li class="watch-diff-row watch-diff-ui"><p>${escapeHTML(sentence)}</p></li>` : "";
-  }).join("")}</ol>`;
-}
-
-// Пары было/стало для показа, как в проверке: del+add рядом, со словами.
-export function watchChangePairs(hunks) {
-  const out = [];
-  const list = hunks || [];
+  const rows = [];
+  const list = diff?.hunks || [];
   for (let i = 0; i < list.length; i += 1) {
     const cur = list[i];
     const nxt = list[i + 1];
     if (!cur || cur.op === "eq" || cur.op === "skip") continue;
     if (cur.op === "del" && nxt?.op === "add") {
-      out.push({ oldHtml: watchWordsHtml(cur, true), newHtml: watchWordsHtml(nxt, false) });
+      rows.push(`<div class="issue-fix"><del>${escapeHTML((cur.lines || []).join(" "))}</del><ins>${worded(nxt)}</ins></div>`);
       i += 1;
       continue;
     }
-    if (cur.op === "del") out.push({ oldHtml: watchWordsHtml(cur, true), newHtml: "" });
-    if (cur.op === "add") out.push({ oldHtml: "", newHtml: watchWordsHtml(nxt || cur, false) });
+    if (cur.op === "del") rows.push(`<div class="issue-fix"><del>${escapeHTML((cur.lines || []).join(" "))}</del></div>`);
+    if (cur.op === "add") rows.push(`<div class="issue-fix"><ins>${worded(cur)}</ins></div>`);
   }
-  return out;
+  const seenText = rows.length > 0;
+  const notes = [];
+  for (const event of (diff?.ui || [])) {
+    if (event.kind === "more" || (event.kind === "text" && seenText)) continue;
+    const sentence = watchUiSentence(event);
+    if (sentence) notes.push(`<p class="watch-note">${escapeHTML(sentence)}</p>`);
+  }
+  if (!rows.length && !notes.length) {
+    if (status === "pending") return `<div class="empty-state">${icon("icon-clock")}<div><h3>Ещё не проверялась</h3><p>Нажми «Проверить», чтобы снять первый снимок.</p></div></div>`;
+    if (status === "same") return `<div class="empty-state">${icon("icon-check")}<div><h3>Без изменений</h3><p>Проверь ещё раз позже.</p></div></div>`;
+    return `<div class="empty-state">${icon("icon-eye")}<div><h3>Сравнить пока нечего</h3><p>Нужны два снимка: проверь страницу дважды.</p></div></div>`;
+  }
+  return `<div class="watch-changes">${rows.join("")}${notes.join("")}</div>`;
 }
 
-// Слова: изменившиеся подсвечиваем тем же del/ins, что в проверке.
-export function watchWordsHtml(hunk, isOld) {
+function worded(hunk) {
   const words = hunk?.words || (hunk?.lines || []).join(" ").split(/\s+/).filter(Boolean);
-  if (isOld) return escapeHTML(words.join(" "));
   const same = hunk?.same;
   if (!same || same.length !== words.length) return escapeHTML(words.join(" "));
   return words.map((word, i) => (same[i] ? escapeHTML(word) : `<ins>${escapeHTML(word)}</ins>`)).join(" ");
@@ -337,9 +325,8 @@ function watchUiSentence(event) {
   return "";
 }
 
-// Живая копия: сохранённое тело страницы в песочнице, без скриптов.
-// Подсветка уже стоит в разметке (классы pvwatch-is-*), фрейм только
-// показывает её и держит высоту по содержимому.
+// Копия страницы: то же сохранённое тело, без скриптов. Подсветка уже
+// в разметке (классы pvwatch-is-* ставит бэкенд), тут только высота.
 export function watchCopyUrl(pageId) {
   return `/api/watch/pages/${encodeURIComponent(pageId)}/copy`;
 }
@@ -347,29 +334,6 @@ export function watchCopyUrl(pageId) {
 export function renderWatchCopy(diff, pageId) {
   if (!diff?.has_copy) return "";
   return `<div class="watch-copy-wrap"><iframe class="watch-copy" title="Страница как она выглядит" sandbox="" loading="lazy" src="${watchCopyUrl(pageId)}"></iframe></div>`;
-}
-
-// Подпись под заголовком: когда снят свежий снимок и с чем сравниваем.
-export function watchDiffCaption(diff, status, summary) {
-  if (summary) return summary;
-  if (status === "same") return "Нового нет — показываю последнее изменение";
-  if (status === "pending") return "Первый снимок ещё не снят";
-  const prev = diff?.previous?.checked_at;
-  const cur = diff?.current?.checked_at;
-  if (prev && cur) return `Сравниваю ${formatDate(prev, false)} → ${formatDate(cur, false)}`;
-  return "Настоящая страница ниже, изменения подсвечены прямо в ней";
-}
-
-// История: предыдущий снимок, с которым сравниваем. Две даты парой,
-// чтобы «без изменений» читалось как «сверено тогда-то», а не пустота.
-export function renderWatchHistory(diff) {
-  const prev = diff?.previous;
-  const cur = diff?.current;
-  if (!prev?.checked_at || !cur?.checked_at) return "";
-  return `<section class="panel fill-panel" aria-label="История снимков">
-    <div class="panel-head"><div><h3>История</h3><p>С чем сравниваю</p></div></div>
-    <div class="panel-body"><p class="watch-history">Было: ${escapeHTML(formatDate(prev.checked_at, false))} → Стало: ${escapeHTML(formatDate(cur.checked_at, false))}</p></div>
-  </section>`;
 }
 
 export function bindWatchCopy() {
@@ -537,13 +501,12 @@ export async function renderWatch() {
         </div>
         ${running ? `<div class="watch-progress" role="status" aria-live="polite"><span class="watch-progress-dot"></span>Снимаю свежий снимок…</div>` : ""}
         <section class="panel fill-panel watch-diff-panel" aria-label="Что изменилось">
-          <div class="panel-head"><div><h3>Что изменилось</h3><p>${watchDiffCaption(diff, status, summary)}</p></div></div>
+          <div class="panel-head"><div><h3>Что изменилось</h3><p>${summary ? escapeHTML(summary) : "Страница и подсветка ниже"}</p></div></div>
           <div class="panel-body">
             ${renderWatchChanges(diff, { status: diff.page?.last_status, error: diff.page?.last_error })}
             ${renderWatchCopy(diff, pageId)}
           </div>
         </section>
-        ${renderWatchHistory(diff)}
       </div>`);
     document.querySelector(".back-watch").addEventListener("click", () => openWatch(groupId));
     bindWatchCopy();

@@ -327,20 +327,13 @@ async def run_daily_if_due() -> None:
 
 
 def _pair_snaps(page_id: str) -> tuple[dict | None, dict | None]:
-    """Пара для показа: база изменения и то, что сравниваем с ней.
-
-    latest_snapshots отдаёт соседей по времени, а человек ждёт «что
-    изменилось с прошлого раза, когда что-то менялось». Поэтому ищем
-    последний снимок с changed=1 и сравниваем его с тем, что было прямо
-    перед ним: два снимка самого изменения. Свежие перепроверки без правок
-    в пару не лезут — иначе одно нажатие «Проверить» прячет изменение.
-    """
+    # Два снимка самого изменения: последний с changed=1 и тот, что перед ним.
+    # Свежие холостые перепроверки в пару не берём, иначе «Проверить» прячет diff.
     snaps = store.latest_snapshots(page_id, limit=20)
     if not snaps:
         return None, None
     changed_at = next((i for i, snap in enumerate(snaps) if snap.get("changed")), None)
     if changed_at is None:
-        # Изменений ещё не было: показать просто два свежих, как раньше.
         return (snaps[0], snaps[1]) if len(snaps) > 1 else (snaps[0], None)
     current = snaps[changed_at]
     previous = snaps[changed_at + 1] if changed_at + 1 < len(snaps) else None
@@ -357,7 +350,6 @@ def _hunks_and_ui(current: dict | None, previous: dict | None) -> tuple[list[dic
             return []
         return data if isinstance(data, list) else []
 
-    # ponytail: один разбор DOM на diff+copy, а не два одинаковых.
     if not previous or not (current.get("dom") or previous.get("dom")):
         hunks = text_hunks(previous["text"] if previous else "", current["text"]) if (current and previous) else []
         return hunks, [], []

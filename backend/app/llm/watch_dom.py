@@ -175,16 +175,11 @@ def snapshot_nodes(html: str) -> list[dict]:
 
 
 def cleaned_body(html: str, limit: int = 60000) -> str:
-    """Тело страницы без скриптов: та же чистка, что для снимка узлов.
-
-    Это и есть «живая копия» интерфейса: отдаём сохранённый body как есть,
-    только без script/style/noscript/template и опасных атрибутов. Фронт
-    кладёт его в песочницу без скриптов и подсвечивает узлы по путям.
-    """
+    # Тело без скриптов и чужого style. Свой style с метками (data-pvwatch)
+    # переживает чистку — иначе песочница не видит подсветку.
     soup = BeautifulSoup(html or "", "lxml")
     for dead in soup.find_all(("script", "noscript", "template")):
         dead.decompose()
-    # Свой style с метками переживает чистку: чужой вырезаем, свой оставляем.
     for tag in soup.find_all("style"):
         if tag.get("data-pvwatch") != "marks":
             tag.decompose()
@@ -381,14 +376,9 @@ def diff_nodes(old: list[dict], new: list[dict]) -> list[dict]:
 
 def mark_copy(body: str, old_nodes: list[dict], new_nodes: list[dict],
               events: list[dict]) -> str:
-    """Та же сохранённая страница, но изменённые узлы уже подсвечены.
-
-    Живую копию рисует сам браузер из этого html, скриптов в нём нет, так что
-    подсветка — обычные классы на тех же узлах: находим их по пути в дереве
-    (тот же обход, что в snapshot_nodes) и вешаем pvwatch-is-added и друзей.
-    Пропавшие узлы в новом теле отсутствуют — их показываем призраком на
-    месте: плашкой «тут был блок …» после последнего выжившего соседа.
-    """
+    # Тот же сохранённый body, но узлы с изменениями уже помечены классами.
+    # Краски едут внутри (песочница не видит общий style.css), чужой style
+    # cleaned_body вырезает — свой помечен data-pvwatch и переживает чистку.
     soup = BeautifulSoup(body or "", "lxml")
     container = soup.find("body")
     if container is None:
@@ -396,9 +386,6 @@ def mark_copy(body: str, old_nodes: list[dict], new_nodes: list[dict],
     if not isinstance(container, Tag):
         return (body or "")[:COPY_LIMIT]
 
-    # Краски живой копии едут вместе с разметкой: iframe песочницы не видит
-    # общий style.css, поэтому без этого style классы pvwatch-is-* молчат.
-    # data-атрибут вместо нового style: cleaned_body вырезает style-теги.
     paint = soup.new_tag("style")
     paint["data-pvwatch"] = "marks"
     paint.string = (
@@ -427,9 +414,8 @@ def mark_copy(body: str, old_nodes: list[dict], new_nodes: list[dict],
         kind = event.get("kind") or ""
         if kind == "more":
             continue
-        # Молчаливая подмена слов без смены структуры: текстовый diff её видит,
-        # структурный — нет. Подсвечиваем абзац как текстовую правку, иначе
-        # копия приезжает голой при самой частой правке.
+        # Слово поменялось, структура та же: структурный diff молчит,
+        # текстовый видит. Подсвечиваем абзац, иначе самая частая правка без метки.
         if kind == "text" and len(kinds) == 1:
             path = event.get("path") or ""
             target = by_path.get(path)
