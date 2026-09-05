@@ -1948,6 +1948,11 @@ button.chip:hover,
   flex: 1;
 }
 
+.review-toolbar .head-actions {
+  margin-left: auto;
+  flex: 0 0 auto;
+}
+
 .review-workspace {
   display: grid;
   flex: 1;
@@ -2016,6 +2021,111 @@ button.chip:hover,
   width: min(100%, 76ch);
   margin: 0 auto;
   padding: 0 4%;
+}
+
+/* Копия наблюдаемой страницы: её собственная разметка, не наш текст. */
+.document-content .pvwatch-page {
+  display: grid;
+  gap: 14px;
+}
+
+.document-content .pvwatch-page article,
+.document-content .pvwatch-page main,
+.document-content .pvwatch-page section,
+.document-content .pvwatch-page div {
+  min-width: 0;
+}
+
+.document-content .pvwatch-page h1,
+.document-content .pvwatch-page h2,
+.document-content .pvwatch-page h3 {
+  margin: 4px 0 10px;
+  color: var(--ink);
+  letter-spacing: -.02em;
+}
+
+.document-content .pvwatch-page h1 { font-size: 26px; line-height: 1.2; }
+.document-content .pvwatch-page h2 { font-size: 22px; line-height: 1.25; }
+.document-content .pvwatch-page h3 { font-size: 19px; line-height: 1.3; }
+
+.document-content .pvwatch-page p {
+  max-width: 72ch;
+  margin: 0 0 14px;
+  color: var(--ink-soft);
+  font-size: var(--text-body);
+  line-height: 1.65;
+}
+
+.document-content .pvwatch-page a {
+  color: var(--primary-ink);
+  pointer-events: none;
+  cursor: default;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.document-content .pvwatch-page button,
+.document-content .pvwatch-page input,
+.document-content .pvwatch-page select,
+.document-content .pvwatch-page textarea {
+  pointer-events: none;
+}
+
+.document-content .pvwatch-page img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.document-content .pvwatch-page button,
+.document-content .pvwatch-page input[type="submit"],
+.document-content .pvwatch-page .btn,
+.document-content .pvwatch-page .btn-primary {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  padding: 0 14px;
+  font-size: var(--text-ui);
+  font-weight: 600;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  cursor: default;
+  text-decoration: none;
+}
+
+.document-content .pvwatch-page .btn-primary {
+  color: #fff;
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.document-content .pvwatch-page ul,
+.document-content .pvwatch-page ol {
+  margin: 0 0 14px;
+  padding-left: 22px;
+  color: var(--ink-soft);
+  line-height: 1.6;
+}
+
+.document-content .pvwatch-page table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-ui);
+}
+
+.document-content .pvwatch-page th,
+.document-content .pvwatch-page td {
+  padding: 8px 10px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--line);
+}
+
+.document-content .pvwatch-active {
+  outline: 3px solid color-mix(in srgb, var(--primary) 55%, transparent);
+  outline-offset: 3px;
+  border-radius: 4px;
 }
 
 .document-block {

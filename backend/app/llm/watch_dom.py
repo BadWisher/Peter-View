@@ -53,6 +53,20 @@ def mask_volatile(value: str) -> str:
     return re.sub(r"\s+", " ", value).strip(" -–—•·")
 
 
+def _clean_style(raw: str) -> str:
+    bits = []
+    for chunk in str(raw or "").split(";"):
+        chunk = chunk.strip().lower()
+        if not chunk or ":" not in chunk:
+            continue
+        name, _, value = chunk.partition(":")
+        name = re.sub(r"\s+", " ", name.strip())
+        value = re.sub(r"\s+", " ", value.strip())
+        if name and value:
+            bits.append(f"{name}:{value}")
+    return mask_volatile(";".join(sorted(bits)))
+
+
 def _clean_attrs(tag: Tag) -> dict[str, str]:
     out: dict[str, str] = {}
     for name in KEPT_ATTRS:
@@ -70,6 +84,9 @@ def _clean_attrs(tag: Tag) -> dict[str, str]:
     kept = sorted({c for c in classes if c and not _HASHY_CLASS.search(c)})
     if kept:
         out["class"] = " ".join(kept)
+    style = _clean_style(tag.get("style") or "")
+    if style:
+        out["style"] = style
     return out
 
 
@@ -179,6 +196,11 @@ def cleaned_body(html: str, limit: int = 60000) -> str:
     for tag in body.find_all(True):
         for attr in ("onclick", "onload", "onerror", "onmouseover", "onfocus", "onblur"):
             tag.attrs.pop(attr, None)
+        for attr in ("href", "src", "srcset", "action"):
+            if tag.has_attr(attr):
+                tag[f"data-pvwatch-{attr}"] = tag.attrs.pop(attr)
+        if tag.name == "form":
+            tag.name = "div"
     out = body.decode_contents() or ""
     return out[:limit]
 
@@ -217,9 +239,31 @@ def _fine_kind(old: dict, new: dict) -> tuple[str, str]:
     if old["tag"] != new["tag"]:
         return "tag", f"{old['tag']} → {new['tag']}"
     if old["attrs"] != new["attrs"]:
-        keys = sorted(set(old["attrs"]) | set(new["attrs"]))
-        bits = [f"{k}: {old['attrs'].get(k, '—')} → {new['attrs'].get(k, '—')}"
-                for k in keys if old["attrs"].get(k) != new["attrs"].get(k)][:3]
+        shown = {
+            "href": "ссылка",
+            "src": "картинка",
+            "alt": "подпись",
+            "disabled": "доступность",
+            "checked": "состояние",
+            "selected": "состояние",
+            "open": "состояние",
+        }
+        bits = []
+        old_style = old["attrs"].get("style", "")
+        new_style = new["attrs"].get("style", "")
+        old_cls = old["attrs"].get("class", "")
+        new_cls = new["attrs"].get("class", "")
+        if old_cls != new_cls or old_style != new_style:
+            bits.append(f"оформление {old_cls or '—'} → {new_cls or '—'}")
+        for k in sorted(set(old["attrs"]) | set(new["attrs"])):
+            if k in ("class", "style"):
+                continue
+            o, n = old["attrs"].get(k), new["attrs"].get(k)
+            if o == n:
+                continue
+            bits.append(f"{shown.get(k, k)} {o or '—'} → {n or '—'}")
+            if len(bits) >= 3:
+                break
         return "attr", "; ".join(bits)
     return "text", f"{old['text']} → {new['text']}" if old["text"] != new["text"] else "порядок"
 

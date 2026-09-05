@@ -258,24 +258,105 @@ export function watchChanges(diff) {
     if (cur.op === "add") out.push({ oldText: "", newText, loc: "текст" });
   }
   // Та же правка текста видна и в структуре — второй раз её не повторяем.
-  const textCovered = out.length > 0;
+  // Сдвиг блока тоже даёт del/add в тексте: слова те же, место другое.
+  const movedTexts = new Set(
+    ui.filter((e) => e.kind === "moved").flatMap((e) => [e.old_text || "", e.new_text || ""]).filter(Boolean),
+  );
+  const movedFirst = movedTexts.size ? [...movedTexts][0] : "";
+  const textCovered = out.some((item) => {
+    const t = item.newText || item.oldText || "";
+    return t && !movedTexts.has(t);
+  });
+  const moved = [];
   for (const event of ui) {
     if (event.kind === "text" && textCovered) continue;
     if (event.kind === "text") {
-      out.push({ oldText: event.old_text || "", newText: event.new_text || "", loc: watchTagLabel(event.tag) });
+      out.push({ oldText: event.old_text || "", newText: event.new_text || "", loc: watchTagLabel(event.tag), event });
       continue;
     }
-    const sentence = watchUiSentence(event);
-    if (sentence) out.push({ oldText: "", newText: "", note: sentence, loc: watchTagLabel(event.tag) });
+    if (event.kind === "moved") {
+      moved.push(event);
+      continue;
+    }
+    out.push({ oldText: "", newText: "", note: watchUiSentence(event), loc: watchTagLabel(event.tag), event });
   }
-  return out;
+  // Один сдвиг — одна карточка. Иначе переезд кнопки мимо абзаца даёт
+  // пять строк: add/del текста плюс «переставили» на каждый затронутый узел.
+  if (moved.length === 1) {
+    const event = moved[0];
+    const here = event.path ? event.path.split("/").slice(-2).join(" / ") : "";
+    const there = (event.detail || "").split("→").map((s) => s.trim()).filter(Boolean);
+    const from = there.length > 1 ? there[0].split("/").slice(-2).join(" / ") : "";
+    const note = event.new_text || event.old_text
+      ? `«${event.new_text || event.old_text}» был${from ? ` в ${from}` : ""}${here ? `, стал в ${here}` : ""}.`
+      : "Элемент сместился.";
+    out.push({ oldText: "", newText: "", note, loc: watchTagLabel(event.tag), event });
+  } else if (moved.length > 1) {
+    const names = [...new Set(moved.map((e) => e.new_text || e.old_text || "").filter(Boolean))].slice(0, 3);
+    const first = moved[0];
+    const note = names.length
+      ? `Переставили: ${names.map((n) => `«${n}»`).join(", ")}.`
+      : "Элементы переставили местами.";
+    out.push({
+      oldText: "",
+      newText: "",
+      note,
+      loc: watchTagLabel(first.tag),
+      event: first,
+    });
+  }
+  // Текстовые ханки, дублирующие сдвиг, выкидываем после группировки.
+  return out.filter((item) => {
+    if (item.oldText === undefined) return true;
+    const t = item.newText || item.oldText || "";
+    if (!t) return true;
+    if (movedTexts.has(t) && !item.event) return false;
+    return true;
+  });
 }
 
 function watchIssueTitle(item) {
-  if (item.note) return item.note;
+  if (item.note) return watchKindTitle(item.event?.kind);
   if (item.oldText && item.newText) return "Текст изменился";
   if (item.newText) return "Текст добавлен";
   return "Текст убран";
+}
+
+export function watchKindTitle(kind) {
+  return {
+    added: "Новый элемент",
+    removed: "Элемент убран",
+    moved: "Элемент сместился",
+    tag: "Элемент переоформили",
+    attr: "Элемент переоформили",
+    text: "Текст изменился",
+  }[kind] || "Изменение";
+}
+
+export function watchKindBadge(kind) {
+  return {
+    added: "Новое",
+    removed: "Убрано",
+    moved: "Сдвиг",
+    tag: "Вид",
+    attr: "Вид",
+    text: "Изменение",
+  }[kind] || "Изменение";
+}
+
+export function watchDetail(event) {
+  if (!event || event.kind === "more") return "";
+  const label = event.new_text || event.old_text || "";
+  if (event.kind === "added") return `${label ? `«${label}» — ` : ""}новый элемент, смотри подсветку в копии слева`;
+  if (event.kind === "removed") return `${label ? `«${label}» — ` : ""}элемент убрали, место помечено в копии слева`;
+  if (event.kind === "moved") return "Нажми — покажу место в копии слева";
+  if (event.kind === "tag") return `${label ? `«${label}» — ` : ""}был ${event.old_tag || "?"}, стал ${event.tag || "?"}, смотри подсветку слева`;
+  if (event.kind === "attr") {
+    const d = event.detail || "";
+    if (/оформление/.test(d)) return `${label ? `«${label}» — ` : ""}смотри подсветку в копии слева: ${d}`;
+    return `${label ? `«${label}» — ` : ""}${d}, смотри подсветку слева`;
+  }
+  return "";
 }
 
 export function renderWatchChanges(diff, { status = "", error = "" } = {}) {
@@ -290,21 +371,47 @@ export function renderWatchChanges(diff, { status = "", error = "" } = {}) {
     return `<div class="empty-state">${icon("icon-eye")}<div><h3>Сравнить пока нечего</h3><p>Нужны два снимка: проверь страницу дважды.</p></div></div>`;
   }
   return `<div class="issues-list">${items.map((item, index) => {
-    if (item.note) return `<button class="issue" type="button" data-issue-index="${index}"><span class="badge warning">Изменение</span><span class="issue-location">${escapeHTML(item.loc || "структура")}</span><strong>${escapeHTML(item.note)}</strong></button>`;
+    if (item.note) return `<button class="issue" type="button" data-issue-index="${index}"><span class="badge warning">${escapeHTML(watchKindBadge(item.event?.kind))}</span><span class="issue-location">${escapeHTML(item.loc || "структура")}</span><strong>${escapeHTML(watchUiSentence(item.event))}</strong></button>`;
     const quote = item.newText || item.oldText || "";
-    return `<button class="issue" type="button" data-issue-index="${index}"><span class="badge warning">Изменение</span><span class="issue-location">${escapeHTML(item.loc || "текст")}</span><strong>${escapeHTML(watchIssueTitle(item))}</strong><span class="issue-quote">«${escapeHTML(quote)}»</span>${item.oldText && item.newText && item.oldText !== item.newText ? `<span class="issue-fix"><del>${escapeHTML(item.oldText)}</del><ins>${escapeHTML(item.newText)}</ins></span>` : ""}</button>`;
+    return `<button class="issue" type="button" data-issue-index="${index}"><span class="badge warning">${escapeHTML(watchKindBadge(item.event?.kind))}</span><span class="issue-location">${escapeHTML(item.loc || "текст")}</span><strong>${escapeHTML(watchIssueTitle(item))}</strong><span class="issue-quote">«${escapeHTML(quote)}»</span>${item.oldText && item.newText && item.oldText !== item.newText ? `<span class="issue-fix"><del>${escapeHTML(item.oldText)}</del><ins>${escapeHTML(item.newText)}</ins></span>` : ""}</button>`;
   }).join("")}</div>`;
 }
 
 export function bindWatchIssues() {
   const marks = () => Array.from(document.querySelectorAll(".document-content .pvwatch-is-text,.document-content .pvwatch-is-added,.document-content .pvwatch-is-removed,.document-content .pvwatch-ghost,.document-content .pvwatch-is-attr,.document-content .pvwatch-is-moved,.document-content .pvwatch-is-tag"));
+  const highlight = (target) => {
+    document.querySelectorAll(".document-content .pvwatch-active").forEach((node) => node.classList.remove("pvwatch-active"));
+    if (!target) return;
+    target.classList.add("pvwatch-active");
+    target.scrollIntoView({ block: "center", behavior: "smooth" });
+  };
   document.querySelectorAll(".review-workspace [data-issue-index]").forEach((element) => element.addEventListener("click", () => {
     document.querySelectorAll(".issues-list [data-issue-index].active").forEach((other) => other.classList.remove("active"));
     document.querySelector(`.issues-list [data-issue-index="${element.dataset.issueIndex}"]`)?.classList.add("active");
-    const all = marks();
-    const target = all[Number(element.dataset.issueIndex)] || all[0];
-    target?.scrollIntoView({ block: "center", behavior: "smooth" });
+    highlight(marks()[Number(element.dataset.issueIndex)] || marks()[0]);
   }));
+  const copy = document.querySelector(".document-content");
+  if (copy && !copy.dataset.watchClicks) {
+    copy.dataset.watchClicks = "1";
+    // Ссылки/кнопки наблюдаемой страницы в копии глушим: они ведут на живой
+    // сайт и уводят со страницы проверки. Оставляем метки кликабельными
+    // только для подсветки связанных карточек.
+    copy.addEventListener("click", (event) => {
+      const hit = event.target instanceof Element ? event.target.closest("a,button,form") : null;
+      if (!hit || !copy.contains(hit)) return;
+      if (!hit.className || !String(hit.className).includes("pvwatch-is-")) {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
+      const all = marks();
+      const at = all.indexOf(hit.closest("[class*=pvwatch-is-]") || hit);
+      if (at < 0) return;
+      document.querySelectorAll(".issues-list [data-issue-index].active").forEach((other) => other.classList.remove("active"));
+      document.querySelector(`.issues-list [data-issue-index="${at}"]`)?.classList.add("active");
+      highlight(all[at]);
+    }, true);
+  }
 }
 
 function watchUiSentence(event) {
@@ -328,7 +435,18 @@ function watchUiSentence(event) {
     const to = (event.attrs && event.attrs.href) || "";
     if (text && from && to && from !== to) return `Ссылка «${text}» теперь ведёт на ${to} (было ${from}).`;
     if (from && to && from !== to) return `Одна из ссылок теперь ведёт на ${to} (было ${from}).`;
-    return text ? `У «${text}» поменялась ссылка.` : "У одной из ссылок поменялся адрес.";
+    const oldCls = (event.old_attrs && event.old_attrs.class) || "";
+    const newCls = (event.attrs && event.attrs.class) || "";
+    const hadStyle = Boolean(event.old_attrs && event.old_attrs.style);
+    const hasStyle = Boolean(event.attrs && event.attrs.style);
+    if (oldCls !== newCls || hadStyle !== hasStyle) {
+      const what = text ? `«${text}»` : "Элемент";
+      if (oldCls && newCls && oldCls !== newCls) return `${what} перекрасился: было «${oldCls}», стало «${newCls}».`;
+      if (!oldCls && newCls) return `${what} получил оформление «${newCls}».`;
+      if (oldCls && !newCls) return `${what} потерял оформление «${oldCls}».`;
+      return `${what} перекрасился — поменялись стили.`;
+    }
+    return text ? `У «${text}» поменялись свойства.` : "У элемента поменялись свойства.";
   }
   if (event.kind === "text") return `Было «${event.old_text}», стало «${event.new_text}».`;
   return "";
@@ -343,7 +461,9 @@ export function watchCopyUrl(pageId) {
 export function renderWatchCopy(diff, pageId) {
   if (!diff?.copy && !diff?.has_copy) return "";
   const n = Math.max(1, watchChanges(diff).length);
-  const body = diff?.copy ? `<div class="document-content" aria-live="polite">${diff.copy}</div>` : `<div class="document-content" data-watch-copy="${escapeHTML(pageId)}" aria-live="polite">Загружаю копию…</div>`;
+  const body = diff?.copy
+    ? `<div class="document-content" aria-live="polite"><div class="pvwatch-page">${diff.copy}</div></div>`
+    : `<div class="document-content" data-watch-copy="${escapeHTML(pageId)}" aria-live="polite">Загружаю копию…</div>`;
   return `${body}<aside class="document-map" aria-label="Карта изменений">${Array.from({ length: 22 }, () => "<span></span>").join("")}${Array.from({ length: Math.min(12, n) }, (_, index) => `<button class="map-point warning" style="--y:${Math.min(88, 8 + index * 7)}%" type="button" data-issue-index="${index}" aria-label="Изменение ${index + 1}"></button>`).join("")}</aside>`;
 }
 
@@ -352,7 +472,7 @@ export function bindWatchCopy() {
     try {
       const res = await fetch(watchCopyUrl(box.dataset.watchCopy), { credentials: "same-origin" });
       if (!res.ok) return;
-      box.outerHTML = `<div class="document-content" aria-live="polite">${await res.text()}</div>`;
+      box.outerHTML = `<div class="document-content" aria-live="polite"><div class="pvwatch-page">${await res.text()}</div></div>`;
     } catch { /* копия уже в diff.copy — список находок выше всё сказал */ }
   });
   bindWatchIssues();
@@ -493,9 +613,9 @@ export async function renderWatch() {
       <section class="review-toolbar">
         <div class="review-toolbar-title"><button class="text-link back-watch" type="button">${icon("icon-arrow")} ${escapeHTML(group.name)}</button><strong>${escapeHTML(diff.page?.title || page?.title || "Адрес")}</strong><small>${checkedBit} · ${summary || "изменений нет"}${status === "same" && summary ? " · нового нет" : ""}</small></div>
         <div class="head-actions">
-          <a class="button ghost" href="${escapeHTML(diff.page?.url || page?.url || "")}" target="_blank" rel="noopener">Открыть</a>
           <button class="button secondary run-watch-page" type="button" ${running ? "disabled" : ""}>${icon("icon-refresh")}${running ? "Проверяем…" : "Проверить"}</button>
-          <button class="icon-button delete-watch-page" type="button" aria-label="Удалить адрес">${icon("icon-trash")}</button>
+          <a class="button secondary watch-original" href="${escapeHTML(diff.page?.url || page?.url || "")}" target="_blank" rel="noopener" title="Живой сайт в новой вкладке — копия слева это сохранённый снимок">${icon("icon-link")}Оригинал</a>
+          <button class="icon-button delete-watch-page" type="button" aria-label="Удалить адрес" title="Удалить адрес">${icon("icon-trash")}</button>
         </div>
       </section>
       ${running ? `<div class="watch-progress" role="status" aria-live="polite"><span class="watch-progress-dot"></span>Снимаю свежий снимок…</div>` : ""}
