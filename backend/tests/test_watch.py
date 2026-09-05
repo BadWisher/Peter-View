@@ -243,7 +243,8 @@ class WatchCopyTests(unittest.TestCase):
         page = self._two_snaps()
         diff = watch_run.page_diff(page["id"])
         self.assertTrue(diff["has_copy"])
-        self.assertNotIn("copy", diff)
+        self.assertIn("copy", diff)
+        self.assertIn("Новая версия регламента", diff["copy"])
 
 
 if __name__ == "__main__":

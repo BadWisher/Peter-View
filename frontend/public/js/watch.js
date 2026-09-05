@@ -225,6 +225,16 @@ export function watchChangeSummary(diff) {
 
 // Один список обычным языком: «что было — что стало». Пути вида article#0
 // и слова вроде «атрибут» человеку не нужны — остаются только в API.
+const WATCH_TAG_LABEL = {
+  p: "абзац", h1: "заголовок", h2: "заголовок", h3: "заголовок", h4: "заголовок",
+  a: "ссылка", li: "пункт списка", ul: "список", ol: "список", button: "кнопка",
+  img: "картинка", div: "блок", section: "раздел", article: "статья",
+};
+
+export function watchTagLabel(tag) {
+  return WATCH_TAG_LABEL[tag] || "элемент";
+}
+
 export function watchChanges(diff) {
   const out = [];
   const hunks = diff?.hunks || [];
@@ -238,27 +248,34 @@ export function watchChanges(diff) {
     const oldText = (cur.op === "del" ? cur.lines : []).join(" ");
     const newText = (cur.op === "del" && nxt?.op === "add" ? nxt.lines : cur.op === "add" ? cur.lines : []).join(" ");
     if (cur.op === "del" && nxt?.op === "add") {
-      out.push({ oldText, newText });
+      out.push({ oldText, newText, loc: "текст" });
       i += 1;
       continue;
     }
     if (cur.op === "del" && uiRemoved.has(oldText)) continue;
     if (cur.op === "add" && uiAdded.has(newText)) continue;
-    if (cur.op === "del") out.push({ oldText, newText: "" });
-    if (cur.op === "add") out.push({ oldText: "", newText });
+    if (cur.op === "del") out.push({ oldText, newText: "", loc: "текст" });
+    if (cur.op === "add") out.push({ oldText: "", newText, loc: "текст" });
   }
   // Та же правка текста видна и в структуре — второй раз её не повторяем.
   const textCovered = out.length > 0;
   for (const event of ui) {
     if (event.kind === "text" && textCovered) continue;
     if (event.kind === "text") {
-      out.push({ oldText: event.old_text || "", newText: event.new_text || "" });
+      out.push({ oldText: event.old_text || "", newText: event.new_text || "", loc: watchTagLabel(event.tag) });
       continue;
     }
     const sentence = watchUiSentence(event);
-    if (sentence) out.push({ oldText: "", newText: "", note: sentence });
+    if (sentence) out.push({ oldText: "", newText: "", note: sentence, loc: watchTagLabel(event.tag) });
   }
   return out;
+}
+
+function watchIssueTitle(item) {
+  if (item.note) return item.note;
+  if (item.oldText && item.newText) return "Текст изменился";
+  if (item.newText) return "Текст добавлен";
+  return "Текст убран";
 }
 
 export function renderWatchChanges(diff, { status = "", error = "" } = {}) {
@@ -272,9 +289,22 @@ export function renderWatchChanges(diff, { status = "", error = "" } = {}) {
     if (status === "same") return `<div class="empty-state">${icon("icon-check")}<div><h3>Без изменений</h3><p>Проверь ещё раз позже.</p></div></div>`;
     return `<div class="empty-state">${icon("icon-eye")}<div><h3>Сравнить пока нечего</h3><p>Нужны два снимка: проверь страницу дважды.</p></div></div>`;
   }
-  return `<div class="watch-changes">${items.map((item) => item.note
-    ? `<p class="watch-note">${escapeHTML(item.note)}</p>`
-    : `<div class="issue-fix">${item.oldText ? `<del>${escapeHTML(item.oldText)}</del>` : ""}${item.newText ? `<ins>${escapeHTML(item.newText)}</ins>` : ""}</div>`).join("")}</div>`;
+  return `<div class="issues-list">${items.map((item, index) => {
+    if (item.note) return `<button class="issue" type="button" data-issue-index="${index}"><span class="badge warning">Изменение</span><span class="issue-location">${escapeHTML(item.loc || "структура")}</span><strong>${escapeHTML(item.note)}</strong></button>`;
+    const quote = item.newText || item.oldText || "";
+    return `<button class="issue" type="button" data-issue-index="${index}"><span class="badge warning">Изменение</span><span class="issue-location">${escapeHTML(item.loc || "текст")}</span><strong>${escapeHTML(watchIssueTitle(item))}</strong><span class="issue-quote">«${escapeHTML(quote)}»</span>${item.oldText && item.newText && item.oldText !== item.newText ? `<span class="issue-fix"><del>${escapeHTML(item.oldText)}</del><ins>${escapeHTML(item.newText)}</ins></span>` : ""}</button>`;
+  }).join("")}</div>`;
+}
+
+export function bindWatchIssues() {
+  const marks = () => Array.from(document.querySelectorAll(".document-content .pvwatch-is-text,.document-content .pvwatch-is-added,.document-content .pvwatch-is-removed,.document-content .pvwatch-ghost,.document-content .pvwatch-is-attr,.document-content .pvwatch-is-moved,.document-content .pvwatch-is-tag"));
+  document.querySelectorAll(".review-workspace [data-issue-index]").forEach((element) => element.addEventListener("click", () => {
+    document.querySelectorAll(".issues-list [data-issue-index].active").forEach((other) => other.classList.remove("active"));
+    document.querySelector(`.issues-list [data-issue-index="${element.dataset.issueIndex}"]`)?.classList.add("active");
+    const all = marks();
+    const target = all[Number(element.dataset.issueIndex)] || all[0];
+    target?.scrollIntoView({ block: "center", behavior: "smooth" });
+  }));
 }
 
 function watchUiSentence(event) {
@@ -304,15 +334,17 @@ function watchUiSentence(event) {
   return "";
 }
 
-// Копия страницы: то же сохранённое тело, без скриптов. Подсветка уже
-// в разметке (классы pvwatch-is-* ставит бэкенд), тут только высота.
+// Копия страницы: то же сохранённое тело, без скриптов. Подсветку
+// в разметку ставит бэкенд (классы pvwatch-is-*), тут только вставка.
 export function watchCopyUrl(pageId) {
   return `/api/watch/pages/${encodeURIComponent(pageId)}/copy`;
 }
 
 export function renderWatchCopy(diff, pageId) {
-  if (!diff?.has_copy) return "";
-  return `<div class="watch-copy-wrap"><div class="watch-copy" data-watch-copy="${escapeHTML(pageId)}" role="img" aria-label="Сохранённая копия страницы с подсветкой изменений">Загружаю копию…</div></div>`;
+  if (!diff?.copy && !diff?.has_copy) return "";
+  const n = Math.max(1, watchChanges(diff).length);
+  const body = diff?.copy ? `<div class="document-content" aria-live="polite">${diff.copy}</div>` : `<div class="document-content" data-watch-copy="${escapeHTML(pageId)}" aria-live="polite">Загружаю копию…</div>`;
+  return `${body}<aside class="document-map" aria-label="Карта изменений">${Array.from({ length: 22 }, () => "<span></span>").join("")}${Array.from({ length: Math.min(12, n) }, (_, index) => `<button class="map-point warning" style="--y:${Math.min(88, 8 + index * 7)}%" type="button" data-issue-index="${index}" aria-label="Изменение ${index + 1}"></button>`).join("")}</aside>`;
 }
 
 export function bindWatchCopy() {
@@ -320,14 +352,10 @@ export function bindWatchCopy() {
     try {
       const res = await fetch(watchCopyUrl(box.dataset.watchCopy), { credentials: "same-origin" });
       if (!res.ok) return;
-      const html = await res.text();
-      box.innerHTML = "";
-      const root = document.createElement("div");
-      root.className = "watch-copy-body";
-      root.innerHTML = html;
-      box.append(root);
-    } catch { /* копию не подтянули — текст diff выше уже всё сказал */ }
+      box.outerHTML = `<div class="document-content" aria-live="polite">${await res.text()}</div>`;
+    } catch { /* копия уже в diff.copy — список находок выше всё сказал */ }
   });
+  bindWatchIssues();
 }
 
 export async function startWatchRun(path) {
@@ -459,30 +487,32 @@ export async function renderWatch() {
     const checked = diff.page?.last_checked_at || page?.last_checked_at;
     const changedAt = diff.page?.last_changed_at || page?.last_changed_at;
     const checkedBit = checked ? `проверено ${escapeHTML(formatDate(checked, false))}` : "ещё не проверялась";
-    const panelSub = summary ? (status === "same" ? `${escapeHTML(summary)} · нового нет` : escapeHTML(summary)) : "Пока тихо";
+    const n = watchChanges(diff).length;
     renderShell(`
-      <div class="page watch-page">
-        <div class="page-head">
-          <div>
-            <button class="text-link back-watch" type="button">${icon("icon-arrow")} ${escapeHTML(group.name)}</button>
-            <h2>${escapeHTML(diff.page?.title || page?.title || "Адрес")}</h2>
-            <p>${checkedBit}${changedAt ? ` · изменилась ${escapeHTML(formatDate(changedAt, false))}` : ""} · <a href="${escapeHTML(diff.page?.url || page?.url || "")}" target="_blank" rel="noopener">${escapeHTML(diff.page?.url || page?.url || "")}</a></p>
-            ${diff.page?.last_error ? `<p class="field-hint" role="alert">${escapeHTML(diff.page.last_error)}</p>` : ""}
-          </div>
-          <div class="head-actions">
-            <button class="button secondary run-watch-page" type="button" ${running ? "disabled" : ""}>${icon("icon-refresh")}${running ? "Проверяем…" : "Проверить"}</button>
-            <button class="icon-button delete-watch-page" type="button" aria-label="Удалить адрес">${icon("icon-trash")}</button>
-          </div>
+    <div class="review-view">
+      <section class="review-toolbar">
+        <div class="review-toolbar-title"><button class="text-link back-watch" type="button">${icon("icon-arrow")} ${escapeHTML(group.name)}</button><strong>${escapeHTML(diff.page?.title || page?.title || "Адрес")}</strong><small>${checkedBit} · ${summary || "изменений нет"}${status === "same" && summary ? " · нового нет" : ""}</small></div>
+        <div class="head-actions">
+          <a class="button ghost" href="${escapeHTML(diff.page?.url || page?.url || "")}" target="_blank" rel="noopener">Открыть</a>
+          <button class="button secondary run-watch-page" type="button" ${running ? "disabled" : ""}>${icon("icon-refresh")}${running ? "Проверяем…" : "Проверить"}</button>
+          <button class="icon-button delete-watch-page" type="button" aria-label="Удалить адрес">${icon("icon-trash")}</button>
         </div>
-        ${running ? `<div class="watch-progress" role="status" aria-live="polite"><span class="watch-progress-dot"></span>Снимаю свежий снимок…</div>` : ""}
-        <section class="panel fill-panel" aria-label="Что изменилось">
-          <div class="panel-head"><div><h3>Что изменилось</h3><p>${panelSub}</p></div><div>${watchStatusBadge(status, true)}</div></div>
-          <div class="panel-body">
-            ${renderWatchChanges(diff, { status: diff.page?.last_status, error: diff.page?.last_error })}
+      </section>
+      ${running ? `<div class="watch-progress" role="status" aria-live="polite"><span class="watch-progress-dot"></span>Снимаю свежий снимок…</div>` : ""}
+      ${diff.page?.last_error ? `<div class="partial-status" role="alert">${icon("icon-eye-off")}<span>${escapeHTML(diff.page.last_error)}</span></div>` : ""}
+      <section class="review-workspace">
+        <article class="document-pane" aria-label="Сохранённая копия страницы">
+          <div class="pane-bar"><span>${escapeHTML(diff.page?.url || page?.url || "")}</span><span>${n ? `${escapeHTML(summary)}` : "Без изменений"}</span></div>
+          <div class="document-scroll">
             ${renderWatchCopy(diff, pageId)}
           </div>
-        </section>
-      </div>`);
+        </article>
+        <aside class="issues-pane" aria-label="Находки">
+          ${renderWatchChanges(diff, { status: diff.page?.last_status, error: diff.page?.last_error })}
+          <footer class="issues-footer"><span>${n ? escapeHTML(summary) : "Изменений нет"}</span>${watchStatusBadge(status, true)}</footer>
+        </aside>
+      </section>
+    </div>`);
     document.querySelector(".back-watch").addEventListener("click", () => openWatch(groupId));
     bindWatchCopy();
     document.querySelector(".run-watch-page").addEventListener("click", () => startWatchRun(`/api/watch/pages/${encodeURIComponent(pageId)}/run`));

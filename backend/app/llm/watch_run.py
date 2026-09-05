@@ -59,8 +59,8 @@ def normalized_text(text: str) -> str:
     for line in text.splitlines():
         line = normalize_spaces(line)
         for pat in _VOLATILE:
-            line = pat.sub("…", line)
-        line = re.sub(r"\s+", " ", line).strip()
+            line = pat.sub("", line)
+        line = re.sub(r"\s+", " ", line).strip(" -–—•·")
         if line:
             out.append(line)
     return "\n".join(out)
@@ -371,6 +371,19 @@ def page_diff(page_id: str) -> dict:
         return {"page": page, "hunks": [], "ui": [], "marks": [], "has_copy": False, "previous": None, "current": None}
     hunks, ui, marks = _hunks_and_ui(current, previous)
     raw_copy = current.get("body") or ""
+    if raw_copy and previous:
+        import json as _json
+
+        def _copy_nodes(raw: str) -> list[dict]:
+            try:
+                data = _json.loads(raw or "[]")
+            except (ValueError, TypeError):
+                return []
+            return data if isinstance(data, list) else []
+
+        old_nodes = _copy_nodes(previous.get("dom") or "")
+        new_nodes = _copy_nodes(current.get("dom") or "")
+        raw_copy = watch_dom.mark_copy(raw_copy, old_nodes, new_nodes, ui)
     return {
         "page": page,
         "current": {
@@ -387,6 +400,7 @@ def page_diff(page_id: str) -> dict:
         "ui": ui,
         "marks": marks,
         "has_copy": bool(raw_copy),
+        "copy": raw_copy,
     }
 
 

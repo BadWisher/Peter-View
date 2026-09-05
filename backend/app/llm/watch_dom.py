@@ -1,14 +1,4 @@
-"""Структурный снимок страницы: теги, иерархия, порядок, атрибуты.
-
-Текстовый diff видит только слова. Этого мало для «что-то поменялось
-в интерфейсе»: новая кнопка без текста, ссылка с тем же анкором, но другим
-href, блок, переехавший вниз страницы, p, ставший h2, — всё это мимо текста.
-Поэтому рядом с текстом храним структуру DOM: для каждого видимого элемента
-тег, путь в иерархии, значимые атрибуты и собственный текст.
-
-Снимок намеренно лёгкий: только видимые узлы, обрезанный текст, ограниченное
-число узлов. Никаких скриншотов и пикселей — только DOM, его и сравниваем.
-"""
+"""Структура страницы для сравнения: теги, порядок, атрибуты."""
 
 from __future__ import annotations
 
@@ -59,8 +49,8 @@ COPY_LIMIT = 60000
 def mask_volatile(value: str) -> str:
     value = normalize_spaces(value)
     for pat in _VOLATILE:
-        value = pat.sub("…", value)
-    return re.sub(r"\s+", " ", value).strip()
+        value = pat.sub("", value)
+    return re.sub(r"\s+", " ", value).strip(" -–—•·")
 
 
 def _clean_attrs(tag: Tag) -> dict[str, str]:
@@ -389,18 +379,16 @@ def mark_copy(body: str, old_nodes: list[dict], new_nodes: list[dict],
     paint = soup.new_tag("style")
     paint["data-pvwatch"] = "marks"
     paint.string = (
-        ".pvwatch-is-added,.pvwatch-is-text{background:#ddf4ef;outline:2px solid #00a88e;outline-offset:2px;border-radius:4px}"
-        ".pvwatch-is-attr,.pvwatch-is-moved,.pvwatch-is-tag{background:#fdf7ec;outline:2px dashed #c2820b;outline-offset:2px;border-radius:4px}"
+        ".pvwatch-is-added,.pvwatch-is-text{background:#ddf4ef;border-bottom:2px solid #00a88e;border-radius:2px}"
+        ".pvwatch-is-attr,.pvwatch-is-moved,.pvwatch-is-tag{background:#fdf7ec;border-bottom:2px solid #c2820b;border-radius:2px}"
         ".pvwatch-is-removed,.pvwatch-ghost{margin:8px 0;padding:8px 10px;color:#9d2c24;background:#fdf1f0;border:1px dashed #d52a1d;border-radius:8px}"
     )
-    if isinstance(container, Tag):
-        container.insert(0, paint)
 
     by_path: dict[str, Tag] = {}
 
     def walk(node: Tag, path: str) -> None:
         for child in list(node.children):
-            if not isinstance(child, Tag):
+            if not isinstance(child, Tag) or child.name == "style":
                 continue
             step = f"{child.name}#{_child_position(child)}"
             here = f"{path}/{step}" if path else step
@@ -408,6 +396,9 @@ def mark_copy(body: str, old_nodes: list[dict], new_nodes: list[dict],
             walk(child, here)
 
     walk(container, "body")
+
+    if isinstance(container, Tag):
+        container.insert(0, paint)
 
     kinds = {e.get("kind") for e in events if e.get("kind") != "more"}
     for event in events:
