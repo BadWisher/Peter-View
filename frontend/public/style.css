@@ -1067,6 +1067,13 @@ button.chip:hover,
   gap: 10px;
 }
 
+.watch-list .file-row small {
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
 .watch-setup .source-content {
   gap: 16px;
 }
@@ -1112,81 +1119,24 @@ button.chip:hover,
 .watch-diff-body {
   display: grid;
   gap: 0;
-  padding: 0;
+  padding: 18px;
 }
 
-.watch-diff {
+.watch-changes {
   margin: 0;
-  padding: 6px 0 14px;
-  font-family: "JetBrains Mono", monospace;
-  font-size: 12.5px;
-  line-height: 1.6;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-.watch-line {
+  padding-left: 22px;
   display: grid;
-  grid-template-columns: 22px minmax(0, 1fr);
-  gap: 6px;
-  padding: 3px 16px 3px 10px;
-  border-left: 3px solid transparent;
+  gap: 10px;
+  font-size: var(--text-ui);
+  line-height: 1.55;
 }
 
-.watch-sign {
-  color: var(--muted-2);
-  text-align: center;
-  user-select: none;
+.watch-changes li {
+  max-width: 72ch;
 }
 
-.watch-text {
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-
-.watch-diff .watch-eq {
-  color: var(--ink-soft);
-}
-
-.watch-diff .watch-add {
-  color: var(--primary-ink);
-  background: var(--primary-wash);
-  border-left-color: var(--primary);
-}
-
-.watch-diff .watch-add .watch-sign {
-  color: var(--primary-ink);
-  font-weight: 700;
-}
-
-.watch-diff .watch-add mark {
-  padding: 0 2px;
-  color: inherit;
-  background: #cde6c5;
-  border-radius: 3px;
-}
-
-html[data-theme="dark"] .watch-diff .watch-add mark {
-  background: #2c4a34;
-}
-
-.watch-diff .watch-del {
-  color: var(--error);
-  background: var(--error-bg);
-  border-left-color: var(--error);
-}
-
-.watch-diff .watch-del .watch-sign {
-  color: var(--error);
-  font-weight: 700;
-}
-
-.watch-diff .watch-skip {
-  margin: 10px 0;
-  padding: 0 16px;
-  color: var(--muted);
-  font-family: "Golos Text", sans-serif;
-  font-size: var(--text-meta);
+.watch-changes li::marker {
+  color: var(--primary);
 }
 
 .watch-head .watch-title {
@@ -1258,112 +1208,6 @@ html[data-theme="dark"] .watch-diff .watch-add mark {
 .empty-hint {
   color: var(--muted);
   font-size: var(--text-meta);
-}
-
-.watch-ui-panel {
-  margin: 4px 0 0;
-  border-top: 1px solid var(--line);
-  border-radius: 0;
-  border-left: 0;
-  border-right: 0;
-  border-bottom: 0;
-}
-
-.watch-ui-panel .panel-head {
-  min-height: 0;
-  padding: 16px 16px 4px;
-  border-bottom: 0;
-}
-
-.watch-ui-panel h3 {
-  margin: 0;
-  font-family: "Golos Text", sans-serif;
-  font-size: var(--text-ui);
-  letter-spacing: -.01em;
-}
-
-.watch-ui-list {
-  margin: 0;
-  padding: 8px 16px 16px;
-  list-style: none;
-  display: grid;
-  gap: 8px;
-}
-
-.watch-ui {
-  display: grid;
-  grid-template-columns: 30px minmax(0, 1fr);
-  gap: 10px;
-  align-items: start;
-  padding: 10px 12px;
-  font-size: var(--text-meta);
-  line-height: 1.5;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  background: var(--surface);
-}
-
-.watch-ui-marker {
-  display: grid;
-  place-items: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 9px;
-  background: var(--surface-soft);
-  color: var(--ink-soft);
-}
-
-.watch-ui-marker svg {
-  width: 16px;
-  height: 16px;
-}
-
-.watch-ui-added .watch-ui-marker { color: var(--primary-ink); background: var(--primary-soft); }
-.watch-ui-removed .watch-ui-marker { color: var(--error); background: var(--error-bg); }
-.watch-ui-moved .watch-ui-marker { color: #7a5c00; background: var(--warning-bg); }
-.watch-ui-attr .watch-ui-marker { color: var(--suggestion); background: var(--suggestion-bg); }
-.watch-ui-tag .watch-ui-marker,
-.watch-ui-text .watch-ui-marker { color: var(--primary-ink); background: var(--primary-soft); }
-
-html[data-theme="dark"] .watch-ui-moved .watch-ui-marker { color: var(--warning); }
-
-.watch-ui-body {
-  min-width: 0;
-  display: grid;
-  gap: 2px;
-}
-
-.watch-ui-top {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 6px;
-}
-
-.watch-ui-top strong {
-  font-size: var(--text-meta);
-}
-
-.watch-ui-tag {
-  font-family: "JetBrains Mono", monospace;
-  font-size: 12px;
-  color: var(--muted);
-  background: var(--surface-soft);
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  padding: 0 6px;
-}
-
-.watch-ui-where {
-  color: var(--ink-soft);
-  font-size: var(--text-meta);
-  overflow-wrap: anywhere;
-}
-
-.watch-ui-detail {
-  color: var(--muted);
-  word-break: break-word;
-  font-variant-numeric: tabular-nums;
 }
 
 .skeleton {

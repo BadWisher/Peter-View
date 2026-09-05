@@ -274,9 +274,11 @@ def diff_nodes(old: list[dict], new: list[dict]) -> list[dict]:
                 used.add(best)
                 kind, detail = _fine_kind(old[a], new[best])
                 events.append({
-                    "kind": kind, "tag": new[best]["tag"], "path": new[best]["path"],
+                    "kind": kind, "tag": new[best]["tag"], "old_tag": old[a]["tag"],
+                    "path": new[best]["path"],
                     "where": _where(new[best]), "old_text": old[a]["text"],
                     "new_text": new[best]["text"], "detail": detail,
+                    "old_attrs": old[a]["attrs"], "attrs": new[best]["attrs"],
                 })
             else:
                 gone.append(a)
@@ -321,6 +323,7 @@ def diff_nodes(old: list[dict], new: list[dict]) -> list[dict]:
                 "where": _where(new[j]), "old_text": old[i]["text"],
                 "new_text": new[j]["text"],
                 "detail": f"{old[i]['path']} → {new[j]['path']}",
+                "attrs": new[j]["attrs"], "old_attrs": old[i]["attrs"],
             })
     gone = [i for i in gone if i not in moved_old]
     for i in gone:
@@ -328,6 +331,7 @@ def diff_nodes(old: list[dict], new: list[dict]) -> list[dict]:
             "kind": "removed", "tag": old[i]["tag"], "path": old[i]["path"],
             "where": _where(old[i]), "old_text": old[i]["text"],
             "new_text": "", "detail": old[i]["text"] or _sig(old[i]).split("|")[2][:80],
+            "attrs": old[i]["attrs"], "old_attrs": old[i]["attrs"],
         })
     for j in came:
         if j in moved_new:
@@ -336,6 +340,7 @@ def diff_nodes(old: list[dict], new: list[dict]) -> list[dict]:
             "kind": "added", "tag": new[j]["tag"], "path": new[j]["path"],
             "where": _where(new[j]), "old_text": "",
             "new_text": new[j]["text"], "detail": new[j]["text"] or _sig(new[j]).split("|")[2][:80],
+            "attrs": new[j]["attrs"], "old_attrs": {},
         })
 
     events.sort(key=lambda e: ({"added": 0, "removed": 1, "moved": 2,
