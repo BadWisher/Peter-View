@@ -13,23 +13,23 @@ export function watchStatusLabel(status) {
 }
 
 export function watchStatusBadge(status, always = false) {
-  if (status === "changed") return `<span class="badge warning">изменилась</span>`;
-  if (status === "error") return `<span class="badge error">ошибка</span>`;
+  if (status === "changed") return `<span class="badge warning">Изменилась</span>`;
+  if (status === "error") return `<span class="badge error">Ошибка</span>`;
   if (!always) return "";
   return `<span class="badge">${escapeHTML(watchStatusLabel(status))}</span>`;
 }
 
 export function watchGroupBadge(group) {
   if (group.running) return "";
-  if (Number(group.changed_count)) return `<span class="badge warning">изменилась</span>`;
-  if (Number(group.error_count)) return `<span class="badge error">ошибка</span>`;
+  if (Number(group.changed_count)) return `<span class="badge warning">Изменилась</span>`;
+  if (Number(group.error_count)) return `<span class="badge error">Ошибка</span>`;
   return "";
 }
 
 export function watchPageBadge(page) {
   if (page.running) return "";
-  if (page.last_status === "changed") return `<span class="badge warning">изменилась</span>`;
-  if (page.last_status === "error" || page.last_error) return `<span class="badge error">ошибка</span>`;
+  if (page.last_status === "changed") return `<span class="badge warning">Изменилась</span>`;
+  if (page.last_status === "error" || page.last_error) return `<span class="badge error">Ошибка</span>`;
   return "";
 }
 
@@ -235,24 +235,28 @@ export function watchChanges(diff) {
     const cur = hunks[i];
     const nxt = hunks[i + 1];
     if (!cur || cur.op === "eq" || cur.op === "skip") continue;
+    const oldText = (cur.op === "del" ? cur.lines : []).join(" ");
+    const newText = (cur.op === "del" && nxt?.op === "add" ? nxt.lines : cur.op === "add" ? cur.lines : []).join(" ");
     if (cur.op === "del" && nxt?.op === "add") {
-      out.push({ text: `Было «${(cur.lines || []).join(" ")}», стало «${(nxt.lines || []).join(" ")}».` });
+      out.push({ oldText, newText });
       i += 1;
       continue;
     }
-    // Добавление/удаление, которое уже описано событием интерфейса
-    // (там есть куда ведёт ссылка), второй раз не повторяем.
-    if (cur.op === "del" && uiRemoved.has((cur.lines || []).join(" "))) continue;
-    if (cur.op === "add" && uiAdded.has((cur.lines || []).join(" "))) continue;
-    if (cur.op === "del") out.push({ text: `Убрали текст «${(cur.lines || []).join(" ")}».` });
-    if (cur.op === "add") out.push({ text: `Добавился текст «${(cur.lines || []).join(" ")}».` });
+    if (cur.op === "del" && uiRemoved.has(oldText)) continue;
+    if (cur.op === "add" && uiAdded.has(newText)) continue;
+    if (cur.op === "del") out.push({ oldText, newText: "" });
+    if (cur.op === "add") out.push({ oldText: "", newText });
   }
   // Та же правка текста видна и в структуре — второй раз её не повторяем.
   const textCovered = out.length > 0;
   for (const event of ui) {
     if (event.kind === "text" && textCovered) continue;
+    if (event.kind === "text") {
+      out.push({ oldText: event.old_text || "", newText: event.new_text || "" });
+      continue;
+    }
     const sentence = watchUiSentence(event);
-    if (sentence) out.push({ text: sentence });
+    if (sentence) out.push({ oldText: "", newText: "", note: sentence });
   }
   return out;
 }
@@ -262,40 +266,15 @@ export function renderWatchChanges(diff, { status = "", error = "" } = {}) {
     const msg = error || diff.page.last_error;
     return `<div class="empty-state">${icon("icon-eye-off")}<div><h3>Страница не загрузилась</h3><p>${escapeHTML(msg)}</p><p class="empty-hint">Проверь адрес и вход группы, затем нажми «Проверить».</p></div></div>`;
   }
-  const rows = [];
-  const list = diff?.hunks || [];
-  for (let i = 0; i < list.length; i += 1) {
-    const cur = list[i];
-    const nxt = list[i + 1];
-    if (!cur || cur.op === "eq" || cur.op === "skip") continue;
-    if (cur.op === "del" && nxt?.op === "add") {
-      rows.push(`<div class="issue-fix"><del>${escapeHTML((cur.lines || []).join(" "))}</del><ins>${worded(nxt)}</ins></div>`);
-      i += 1;
-      continue;
-    }
-    if (cur.op === "del") rows.push(`<div class="issue-fix"><del>${escapeHTML((cur.lines || []).join(" "))}</del></div>`);
-    if (cur.op === "add") rows.push(`<div class="issue-fix"><ins>${worded(cur)}</ins></div>`);
-  }
-  const seenText = rows.length > 0;
-  const notes = [];
-  for (const event of (diff?.ui || [])) {
-    if (event.kind === "more" || (event.kind === "text" && seenText)) continue;
-    const sentence = watchUiSentence(event);
-    if (sentence) notes.push(`<p class="watch-note">${escapeHTML(sentence)}</p>`);
-  }
-  if (!rows.length && !notes.length) {
+  const items = watchChanges(diff);
+  if (!items.length) {
     if (status === "pending") return `<div class="empty-state">${icon("icon-clock")}<div><h3>Ещё не проверялась</h3><p>Нажми «Проверить», чтобы снять первый снимок.</p></div></div>`;
     if (status === "same") return `<div class="empty-state">${icon("icon-check")}<div><h3>Без изменений</h3><p>Проверь ещё раз позже.</p></div></div>`;
     return `<div class="empty-state">${icon("icon-eye")}<div><h3>Сравнить пока нечего</h3><p>Нужны два снимка: проверь страницу дважды.</p></div></div>`;
   }
-  return `<div class="watch-changes">${rows.join("")}${notes.join("")}</div>`;
-}
-
-function worded(hunk) {
-  const words = hunk?.words || (hunk?.lines || []).join(" ").split(/\s+/).filter(Boolean);
-  const same = hunk?.same;
-  if (!same || same.length !== words.length) return escapeHTML(words.join(" "));
-  return words.map((word, i) => (same[i] ? escapeHTML(word) : `<ins>${escapeHTML(word)}</ins>`)).join(" ");
+  return `<div class="watch-changes">${items.map((item) => item.note
+    ? `<p class="watch-note">${escapeHTML(item.note)}</p>`
+    : `<div class="issue-fix">${item.oldText ? `<del>${escapeHTML(item.oldText)}</del>` : ""}${item.newText ? `<ins>${escapeHTML(item.newText)}</ins>` : ""}</div>`).join("")}</div>`;
 }
 
 function watchUiSentence(event) {
@@ -333,20 +312,22 @@ export function watchCopyUrl(pageId) {
 
 export function renderWatchCopy(diff, pageId) {
   if (!diff?.has_copy) return "";
-  return `<div class="watch-copy-wrap"><iframe class="watch-copy" title="Страница как она выглядит" sandbox="" loading="lazy" src="${watchCopyUrl(pageId)}"></iframe></div>`;
+  return `<div class="watch-copy-wrap"><div class="watch-copy" data-watch-copy="${escapeHTML(pageId)}" role="img" aria-label="Сохранённая копия страницы с подсветкой изменений">Загружаю копию…</div></div>`;
 }
 
 export function bindWatchCopy() {
-  const frame = document.querySelector(".watch-copy");
-  if (!frame) return;
-  const fit = () => {
+  document.querySelectorAll("[data-watch-copy]").forEach(async (box) => {
     try {
-      const doc = frame.contentDocument;
-      if (!doc) return;
-      frame.style.height = `${Math.min(Math.max(doc.documentElement.scrollHeight, 200), 1200)}px`;
-    } catch { /* чужой документ — высоту не трогаем */ }
-  };
-  frame.addEventListener("load", fit);
+      const res = await fetch(watchCopyUrl(box.dataset.watchCopy), { credentials: "same-origin" });
+      if (!res.ok) return;
+      const html = await res.text();
+      box.innerHTML = "";
+      const root = document.createElement("div");
+      root.className = "watch-copy-body";
+      root.innerHTML = html;
+      box.append(root);
+    } catch { /* копию не подтянули — текст diff выше уже всё сказал */ }
+  });
 }
 
 export async function startWatchRun(path) {
@@ -442,11 +423,10 @@ export async function renderWatch() {
     const summary = watchGroupsSummary(groups);
     renderShell(`
       <div class="page watch-page">
-        <div class="page-head watch-head">
-          <div class="watch-title">
+        <div class="page-head">
+          <div>
             <h2>Наблюдение</h2>
-            <p class="watch-meta">${summary ? `<span>${escapeHTML(summary)}</span>` : "<span>Следим за страницами</span>"}</p>
-            <p class="watch-meta watch-meta-dim">Показываем, что поменялось, обычным языком — без путей и тегов</p>
+            <p>${summary ? escapeHTML(summary) : "Следим за страницами"}</p>
           </div>
           <div class="head-actions"><button class="button primary add-watch-group" type="button">${icon("icon-plus")}Группа</button></div>
         </div>
@@ -478,20 +458,15 @@ export async function renderWatch() {
     const summary = watchChangeSummary(diff);
     const checked = diff.page?.last_checked_at || page?.last_checked_at;
     const changedAt = diff.page?.last_changed_at || page?.last_changed_at;
+    const checkedBit = checked ? `проверено ${escapeHTML(formatDate(checked, false))}` : "ещё не проверялась";
+    const panelSub = summary ? (status === "same" ? `${escapeHTML(summary)} · нового нет` : escapeHTML(summary)) : "Пока тихо";
     renderShell(`
       <div class="page watch-page">
-        <div class="page-head watch-head">
-          <div class="watch-title">
+        <div class="page-head">
+          <div>
             <button class="text-link back-watch" type="button">${icon("icon-arrow")} ${escapeHTML(group.name)}</button>
             <h2>${escapeHTML(diff.page?.title || page?.title || "Адрес")}</h2>
-            <p class="watch-url"><a href="${escapeHTML(diff.page?.url || page?.url || "")}" target="_blank" rel="noopener">${escapeHTML(diff.page?.url || page?.url || "")}</a></p>
-            <p class="watch-meta">
-              ${watchStatusBadge(status, true)}
-              ${summary ? `<span>${escapeHTML(summary)}</span>` : ""}
-            </p>
-            <p class="watch-meta watch-meta-dim">
-              ${checked ? `проверено ${escapeHTML(formatDate(checked, false))}` : "ещё не проверялась"}${changedAt ? ` · изменилась ${escapeHTML(formatDate(changedAt, false))}` : ""}
-            </p>
+            <p>${checkedBit}${changedAt ? ` · изменилась ${escapeHTML(formatDate(changedAt, false))}` : ""} · <a href="${escapeHTML(diff.page?.url || page?.url || "")}" target="_blank" rel="noopener">${escapeHTML(diff.page?.url || page?.url || "")}</a></p>
             ${diff.page?.last_error ? `<p class="field-hint" role="alert">${escapeHTML(diff.page.last_error)}</p>` : ""}
           </div>
           <div class="head-actions">
@@ -500,8 +475,8 @@ export async function renderWatch() {
           </div>
         </div>
         ${running ? `<div class="watch-progress" role="status" aria-live="polite"><span class="watch-progress-dot"></span>Снимаю свежий снимок…</div>` : ""}
-        <section class="panel fill-panel watch-diff-panel" aria-label="Что изменилось">
-          <div class="panel-head"><div><h3>Что изменилось</h3><p>${summary ? escapeHTML(summary) : "Страница и подсветка ниже"}</p></div></div>
+        <section class="panel fill-panel" aria-label="Что изменилось">
+          <div class="panel-head"><div><h3>Что изменилось</h3><p>${panelSub}</p></div><div>${watchStatusBadge(status, true)}</div></div>
           <div class="panel-body">
             ${renderWatchChanges(diff, { status: diff.page?.last_status, error: diff.page?.last_error })}
             ${renderWatchCopy(diff, pageId)}
@@ -536,17 +511,11 @@ export async function renderWatch() {
   const groupChecked = group.last_run_at ? `проверено ${formatDate(group.last_run_at, false)}` : "";
   renderShell(`
     <div class="page watch-page">
-      <div class="page-head watch-head">
-        <div class="watch-title">
+      <div class="page-head">
+        <div>
           <button class="text-link back-watch" type="button">${icon("icon-arrow")} Наблюдение</button>
           <h2>${escapeHTML(group.name)}</h2>
-          <p class="watch-meta">
-            ${groupBadge}
-            ${listSummary ? `<span>${escapeHTML(listSummary)}</span>` : "<span>Следим за адресами этой группы</span>"}
-          </p>
-          <p class="watch-meta watch-meta-dim">
-            ${escapeHTML(watchAuthLabel(group.auth_kind))}${groupChecked ? ` · ${escapeHTML(groupChecked)}` : " · ещё не проверялась"}
-          </p>
+          <p>${listSummary ? escapeHTML(listSummary) : "Следим за адресами этой группы"} · ${escapeHTML(watchAuthLabel(group.auth_kind))}${groupChecked ? ` · ${escapeHTML(groupChecked)}` : ""}</p>
         </div>
         <div class="head-actions">
           <button class="icon-button edit-watch-group" type="button" aria-label="Изменить группу">${icon("icon-edit")}</button>
@@ -556,7 +525,7 @@ export async function renderWatch() {
       </div>
       ${group.running ? `<div class="watch-progress" role="status" aria-live="polite"><span class="watch-progress-dot"></span>Снимаю свежие снимки…</div>` : ""}
       <section class="panel fill-panel" aria-label="Адреса">
-        <div class="panel-head"><div><h3>Адреса</h3><p>${listSummary ? escapeHTML(listSummary) : "Вставь ссылку — снимем первый снимок"}</p></div></div>
+        <div class="panel-head"><div><h3>Адреса</h3><p>${listSummary ? escapeHTML(listSummary) : "Вставь ссылку — снимем первый снимок"}</p></div><div>${groupBadge}</div></div>
         <div class="panel-body">
           <form class="watch-url-bar">
             <label class="field"><span>URL</span><input name="url" required type="url" inputmode="url" placeholder="https://" autocomplete="off"></label>

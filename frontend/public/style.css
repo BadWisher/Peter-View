@@ -1036,14 +1036,6 @@ button.chip:hover,
   transform: rotate(180deg);
 }
 
-.watch-url {
-  margin: 6px 0 0;
-  color: var(--muted);
-  font-family: "JetBrains Mono", monospace;
-  font-size: 12px;
-  word-break: break-all;
-}
-
 .file-row-end {
   display: flex;
   align-items: center;
@@ -1112,21 +1104,11 @@ button.chip:hover,
   margin-top: 10px;
 }
 
-.watch-diff-panel {
-  overflow: auto;
-}
-
-.watch-diff-body {
-  display: grid;
-  gap: 0;
-  padding: 18px;
-}
-
-/* Изменение — та же issue-fix из проверки, новых классов не заводим. */
+/* Изменение — тот же issue-fix из проверки. */
 .watch-changes {
-  margin: 0 0 16px;
   display: grid;
   gap: 10px;
+  margin: 0 0 16px;
 }
 
 .watch-changes .issue-fix {
@@ -1140,68 +1122,45 @@ button.chip:hover,
   line-height: 1.55;
 }
 
-/* Копия страницы в песочнице. Подсветка едет вместе с разметкой
-   (классы pvwatch-is-* ставит бэкенд), здесь только рамка. */
+/* Копия страницы: тот же сохранённый body, в потоке панели. Подсветка
+   едет вместе с разметкой (классы pvwatch-is-* ставит бэкенд). */
 .watch-copy-wrap {
   margin: 0;
+  overflow: hidden;
+  background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
-  overflow: hidden;
-  background: #fff;
 }
 
 .watch-copy {
-  display: block;
-  width: 100%;
-  min-height: 200px;
-  height: 480px;
-  border: 0;
-  background: #fff;
+  padding: 14px 16px;
+  font-size: var(--text-ui);
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.watch-copy-body > :first-child {
+  margin-top: 0;
+}
+
+.watch-copy-body > :last-child {
+  margin-bottom: 0;
+}
+
+.watch-copy-body > :first-child {
+  margin-top: 0;
+}
+
+.watch-copy-body > :last-child {
+  margin-bottom: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .watch-copy-wrap {
-    scroll-behavior: auto;
+  .watch-progress-dot {
+    animation: none;
+    opacity: 1;
   }
 }
-
-.watch-head .watch-title {
-  min-width: 0;
-  max-width: 78ch;
-}
-
-.watch-url {
-  margin: 6px 0 0;
-  font-family: "JetBrains Mono", monospace;
-  font-size: 12px;
-  word-break: break-all;
-}
-
-.watch-url a {
-  color: var(--muted);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  text-decoration-color: var(--line-strong);
-}
-
-.watch-url a:hover {
-  color: var(--primary-ink);
-}
-
-.watch-meta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  margin: 10px 0 0;
-  font-size: var(--text-meta);
-}
-
-.watch-meta-dim {
-  margin-top: 4px;
-  color: var(--muted);
-}
-
 .watch-progress {
   display: flex;
   align-items: center;
