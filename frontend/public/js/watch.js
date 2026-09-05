@@ -307,7 +307,7 @@ export function watchCopyUrl(pageId) {
 
 export function renderWatchCopy(diff, pageId) {
   if (!diff?.has_copy) return "";
-  return `<div class="watch-copy-wrap"><iframe class="watch-copy" title="Как страница выглядит сейчас" sandbox="" loading="lazy" src="${watchCopyUrl(pageId)}"></iframe></div>`;
+  return `<div class="watch-copy-wrap"><iframe class="watch-copy" title="Страница как она выглядит" sandbox="" loading="lazy" src="${watchCopyUrl(pageId)}"></iframe></div>`;
 }
 
 export function bindWatchCopy() {
@@ -475,17 +475,12 @@ export async function renderWatch() {
         </div>
         ${running ? `<div class="watch-progress" role="status" aria-live="polite"><span class="watch-progress-dot"></span>Снимаю свежий снимок…</div>` : ""}
         <section class="panel fill-panel watch-diff-panel" aria-label="Что изменилось">
-          <div class="panel-head"><div><h3>Что изменилось</h3><p>${summary ? escapeHTML(summary) : status === "same" ? "Со прошлого снимка ничего не поменялось" : status === "pending" ? "Первый снимок ещё не снят" : ""}</p></div></div>
+          <div class="panel-head"><div><h3>Что изменилось</h3><p>${summary ? escapeHTML(summary) : status === "same" ? "Со прошлого снимка ничего не поменялось" : status === "pending" ? "Первый снимок ещё не снят" : "Настоящая страница ниже, изменения подсвечены прямо в ней"}</p></div></div>
           <div class="panel-body">
             ${renderWatchChanges(diff, { status: diff.page?.last_status, error: diff.page?.last_error })}
-          </div>
-        </section>
-        ${diff?.has_copy ? `<section class="panel fill-panel" aria-label="Как страница выглядит сейчас">
-          <div class="panel-head"><div><h3>Как это выглядит</h3><p>Настоящая страница, изменения подсвечены прямо в ней</p></div></div>
-          <div class="panel-body">
             ${renderWatchCopy(diff, pageId)}
           </div>
-        </section>` : ""}
+        </section>
       </div>`);
     document.querySelector(".back-watch").addEventListener("click", () => openWatch(groupId));
     bindWatchCopy();

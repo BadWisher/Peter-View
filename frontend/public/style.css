@@ -1123,7 +1123,7 @@ button.chip:hover,
 }
 
 .watch-changes {
-  margin: 0;
+  margin: 0 0 16px;
   padding-left: 22px;
   display: grid;
   gap: 10px;
@@ -1142,6 +1142,7 @@ button.chip:hover,
 /* Живая копия: сохранённая страница в песочнице. Подсветка едет вместе
    с разметкой (классы pvwatch-is-* ставит backend), здесь только рамка. */
 .watch-copy-wrap {
+  margin: 0;
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   overflow: hidden;
@@ -1155,6 +1156,12 @@ button.chip:hover,
   height: 480px;
   border: 0;
   background: #fff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .watch-copy-wrap {
+    scroll-behavior: auto;
+  }
 }
 
 .watch-head .watch-title {
