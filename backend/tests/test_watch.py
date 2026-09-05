@@ -192,5 +192,59 @@ class WatchDomTests(unittest.TestCase):
         self.assertTrue([e for e in diff["ui"] if e["kind"] == "added"])
 
 
+class WatchCopyTests(unittest.TestCase):
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self.db = Path(self._tmp.name) / "watch.db"
+        self._db_patch = patch.object(store, "DB_FILE", self.db)
+        self._db_patch.start()
+        self.addCleanup(self._db_patch.stop)
+        store._init_db()
+
+    def _two_snaps(self):
+        group = store.create_group("Портал", auth_kind="none", created_by="editor")
+        page = store.add_page(group["id"], "https://portal.example.test/copy", "Копия")
+        first = ("<html><body><main><h1>Регламент</h1><p>Текст тот же самый длинный.</p>"
+                 "<a href='/v1'>Скачать PDF</a><script>steal()</script></main></body></html>")
+        second = ("<html><body><main><h1>Регламент</h1><p>Текст тот же самый длинный.</p>"
+                  "<a href='/v2'>Скачать PDF</a><a href='/new'>Новая версия регламента</a></main></body></html>")
+        with patch.object(watch_run, "safe_request", new=AsyncMock(return_value=_resp(first))):
+            asyncio.run(watch_run.check_page(page["id"]))
+        with patch.object(watch_run, "safe_request", new=AsyncMock(return_value=_resp(second))):
+            asyncio.run(watch_run.check_page(page["id"]))
+        return page
+
+    def test_copy_has_no_scripts_but_marks_changes(self):
+        page = self._two_snaps()
+        copy = watch_run.page_copy(page["id"])
+        self.assertNotIn("<script", copy)
+        self.assertNotIn("steal()", copy)
+        self.assertIn("pvwatch-is-added", copy)
+        self.assertIn("pvwatch-is-attr", copy)
+        self.assertIn("Новая версия регламента", copy)
+
+    def test_copy_shows_ghost_where_block_was_removed(self):
+        group = store.create_group("Портал", auth_kind="none", created_by="editor")
+        page = store.add_page(group["id"], "https://portal.example.test/gone", "Пропажа")
+        first = ("<html><body><main><h1>Регламент</h1><p>Текст тот же самый длинный.</p>"
+                 "<a href='/v1'>Скачать PDF</a><a href='/x'>Лишняя ссылка для удаления</a></main></body></html>")
+        second = ("<html><body><main><h1>Регламент</h1><p>Текст тот же самый длинный.</p>"
+                  "<a href='/v1'>Скачать PDF</a></main></body></html>")
+        with patch.object(watch_run, "safe_request", new=AsyncMock(return_value=_resp(first))):
+            asyncio.run(watch_run.check_page(page["id"]))
+        with patch.object(watch_run, "safe_request", new=AsyncMock(return_value=_resp(second))):
+            asyncio.run(watch_run.check_page(page["id"]))
+        copy = watch_run.page_copy(page["id"])
+        self.assertIn("pvwatch-ghost", copy)
+        self.assertIn("Лишняя ссылка для удаления", copy)
+
+    def test_diff_stays_light_copy_flag_only(self):
+        page = self._two_snaps()
+        diff = watch_run.page_diff(page["id"])
+        self.assertTrue(diff["has_copy"])
+        self.assertNotIn("copy", diff)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -258,6 +258,7 @@ async def check_page(page_id: str, client: httpx.AsyncClient | None = None, auth
         html, _rendered = await _fetch_page(client, page["url"], auth)
         text = snapshot_text(html)
         nodes = watch_dom.snapshot_nodes(html)
+        body = watch_dom.cleaned_body(html)
         digest = fingerprint(normalized_text(text))
         struct = watch_dom.fingerprint_nodes(nodes)
         previous = store.latest_snapshots(page_id, limit=1)
@@ -269,6 +270,7 @@ async def check_page(page_id: str, client: httpx.AsyncClient | None = None, auth
         store.record_snapshot(
             page_id, text=text, content_hash=digest, changed=changed,
             struct_hash=struct, dom=json.dumps(nodes, ensure_ascii=False),
+            body=body,
         )
         return store.get_page(page_id)  # type: ignore[return-value]
     except (BlockedURLError, ValueError, httpx.HTTPError) as exc:
@@ -330,11 +332,13 @@ def page_diff(page_id: str) -> dict:
         raise KeyError("Адрес не найден")
     snaps = store.latest_snapshots(page_id, limit=2)
     if not snaps:
-        return {"page": page, "hunks": [], "ui": [], "previous": None, "current": None}
+        return {"page": page, "hunks": [], "ui": [], "marks": [], "has_copy": False, "previous": None, "current": None}
     current = snaps[0]
     previous = snaps[1] if len(snaps) > 1 else None
     hunks = text_hunks(previous["text"] if previous else "", current["text"]) if previous else []
+    raw_copy = current.get("body") or ""
     ui = []
+    marks: list[dict] = []
     if previous and (current.get("dom") or previous.get("dom")):
         import json
 
@@ -345,7 +349,11 @@ def page_diff(page_id: str) -> dict:
                 return []
             return data if isinstance(data, list) else []
 
-        ui = watch_dom.diff_nodes(_nodes(previous.get("dom") or ""), _nodes(current.get("dom") or ""))
+        old_nodes = _nodes(previous.get("dom") or "")
+        new_nodes = _nodes(current.get("dom") or "")
+        ui = watch_dom.diff_nodes(old_nodes, new_nodes)
+        marks = [{"path": event.get("path") or "", "kind": event.get("kind") or ""}
+                 for event in ui if event.get("path") and event.get("kind") != "more"]
     return {
         "page": page,
         "current": {
@@ -360,4 +368,38 @@ def page_diff(page_id: str) -> dict:
         } if previous else None,
         "hunks": hunks,
         "ui": ui,
+        "marks": marks,
+        "has_copy": bool(raw_copy),
     }
+
+
+def page_copy(page_id: str) -> str:
+    """Готовое тело живой копии для iframe: разметка уже с подсветкой.
+
+    page_diff лёгкий и тела не отдаёт (иначе каждый diff тащил бы 60к),
+    поэтому здесь повторяем его сборку и возвращаем только тело.
+    """
+    page = store.get_page(page_id)
+    if page is None:
+        raise KeyError("Адрес не найден")
+    snaps = store.latest_snapshots(page_id, limit=2)
+    if not snaps:
+        return ""
+    current = snaps[0]
+    previous = snaps[1] if len(snaps) > 1 else None
+    copy = current.get("body") or ""
+    if previous and (current.get("dom") or previous.get("dom")):
+        import json
+
+        def _nodes(raw: str) -> list[dict]:
+            try:
+                data = json.loads(raw or "[]")
+            except (ValueError, TypeError):
+                return []
+            return data if isinstance(data, list) else []
+
+        old_nodes = _nodes(previous.get("dom") or "")
+        new_nodes = _nodes(current.get("dom") or "")
+        ui = watch_dom.diff_nodes(old_nodes, new_nodes)
+        copy = watch_dom.mark_copy(copy, old_nodes, new_nodes, ui)
+    return copy

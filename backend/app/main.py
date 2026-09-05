@@ -1486,6 +1486,19 @@ async def watch_page_diff(page_id: str, _user: str = Depends(require_user)):
         raise HTTPException(404, "Адрес не найден")
 
 
+@app.get("/api/watch/pages/{page_id}/copy")
+async def watch_page_copy(page_id: str, _user: str = Depends(require_user)):
+    # Живая копия: сохранённое тело страницы с подсветкой изменений.
+    # Отдельным запросом, а не в diff: тело тяжёлое, а список и diff
+    # должны оставаться быстрыми. Разметка уже вычищена при записи
+    # (без script/style и on*-атрибутов), здесь отдаём как текст.
+    try:
+        payload = watch_run.page_copy(page_id)
+    except KeyError:
+        raise HTTPException(404, "Адрес не найден")
+    return Response(content=payload, media_type="text/html; charset=utf-8")
+
+
 @app.get("/api/watch/pages/{page_id}/history")
 async def watch_page_history(page_id: str, _user: str = Depends(require_user)):
     if watch_store.get_page(page_id) is None:

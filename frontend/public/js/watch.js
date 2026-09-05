@@ -298,6 +298,31 @@ function watchUiSentence(event) {
   return "";
 }
 
+// Живая копия: сохранённое тело страницы в песочнице, без скриптов.
+// Подсветка уже стоит в разметке (классы pvwatch-is-*), фрейм только
+// показывает её и держит высоту по содержимому.
+export function watchCopyUrl(pageId) {
+  return `/api/watch/pages/${encodeURIComponent(pageId)}/copy`;
+}
+
+export function renderWatchCopy(diff, pageId) {
+  if (!diff?.has_copy) return "";
+  return `<div class="watch-copy-wrap"><iframe class="watch-copy" title="Как страница выглядит сейчас" sandbox="" loading="lazy" src="${watchCopyUrl(pageId)}"></iframe></div>`;
+}
+
+export function bindWatchCopy() {
+  const frame = document.querySelector(".watch-copy");
+  if (!frame) return;
+  const fit = () => {
+    try {
+      const doc = frame.contentDocument;
+      if (!doc) return;
+      frame.style.height = `${Math.min(Math.max(doc.documentElement.scrollHeight, 200), 1200)}px`;
+    } catch { /* чужой документ — высоту не трогаем */ }
+  };
+  frame.addEventListener("load", fit);
+}
+
 export async function startWatchRun(path) {
   try {
     await api(path, { method: "POST", body: "{}" });
@@ -455,8 +480,15 @@ export async function renderWatch() {
             ${renderWatchChanges(diff, { status: diff.page?.last_status, error: diff.page?.last_error })}
           </div>
         </section>
+        ${diff?.has_copy ? `<section class="panel fill-panel" aria-label="Как страница выглядит сейчас">
+          <div class="panel-head"><div><h3>Как это выглядит</h3><p>Настоящая страница, изменения подсвечены прямо в ней</p></div></div>
+          <div class="panel-body">
+            ${renderWatchCopy(diff, pageId)}
+          </div>
+        </section>` : ""}
       </div>`);
     document.querySelector(".back-watch").addEventListener("click", () => openWatch(groupId));
+    bindWatchCopy();
     document.querySelector(".run-watch-page").addEventListener("click", () => startWatchRun(`/api/watch/pages/${encodeURIComponent(pageId)}/run`));
     document.querySelector(".delete-watch-page")?.addEventListener("click", () => {
       confirmAction({

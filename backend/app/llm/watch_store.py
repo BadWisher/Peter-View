@@ -88,10 +88,12 @@ def _init_db() -> None:
         )
         # Структура интерфейса живёт рядом с текстом: хэш структуры ловит
         # новые/пропавшие/переехавшие элементы, dom — их позиции для диффа.
+        # body — вычищенное тело для живой копии (без скриптов).
         # Миграция мягкая: на старых базах колонок нет — добавляем.
         for stmt in (
             "ALTER TABLE snapshots ADD COLUMN struct_hash TEXT NOT NULL DEFAULT ''",
             "ALTER TABLE snapshots ADD COLUMN dom TEXT NOT NULL DEFAULT ''",
+            "ALTER TABLE snapshots ADD COLUMN body TEXT NOT NULL DEFAULT ''",
             "ALTER TABLE pages ADD COLUMN struct_hash TEXT",
         ):
             try:
@@ -371,18 +373,22 @@ def record_snapshot(
     error: str | None = None,
     struct_hash: str = "",
     dom: str = "",
+    body: str = "",
 ) -> None:
     now = time.time()
     clipped = text[:TEXT_CAP]
     clipped_dom = (dom or "")[:TEXT_CAP]
+    # Тело для живой копии режем отдельно: ему хватает 60к, а общий кап
+    # может быть больше. Пустое тело на ошибке не трогаем.
+    clipped_body = (body or "")[:60000]
     status = "error" if error else ("changed" if changed else "same")
     with _lock, _connect() as conn:
         conn.execute(
             """
-            INSERT INTO snapshots (page_id, checked_at, content_hash, text, changed, error, struct_hash, dom)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO snapshots (page_id, checked_at, content_hash, text, changed, error, struct_hash, dom, body)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            (page_id, now, content_hash, clipped, 1 if changed else 0, error, struct_hash, clipped_dom),
+            (page_id, now, content_hash, clipped, 1 if changed else 0, error, struct_hash, clipped_dom, clipped_body),
         )
         conn.execute(
             """
@@ -416,7 +422,12 @@ def mark_group_run(group_id: str) -> None:
 def latest_snapshots(page_id: str, limit: int = 2) -> list[dict[str, Any]]:
     with _lock, _connect() as conn:
         cols = [row[1] for row in conn.execute("PRAGMA table_info(snapshots)").fetchall()]
-        extra = ", struct_hash, dom" if "struct_hash" in cols else ", '' AS struct_hash, '' AS dom"
+        extra = ""
+        if "struct_hash" in cols:
+            extra += ", struct_hash, dom"
+        else:
+            extra += ", '' AS struct_hash, '' AS dom"
+        extra += ", body" if "body" in cols else ", '' AS body"
         rows = conn.execute(
             f"""
             SELECT id, checked_at, content_hash, text, changed, error{extra}

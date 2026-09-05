@@ -53,6 +53,7 @@ _HIDDEN_STYLE = re.compile(r"display\s*:\s*none|visibility\s*:\s*hidden", re.I)
 MAX_NODES = 2000
 MAX_TEXT = 120
 MAX_EVENTS = 200
+COPY_LIMIT = 60000
 
 
 def mask_volatile(value: str) -> str:
@@ -171,6 +172,26 @@ def snapshot_nodes(html: str) -> list[dict]:
     if isinstance(body, Tag):
         walk(body, "body")
     return nodes
+
+
+def cleaned_body(html: str, limit: int = 60000) -> str:
+    """Тело страницы без скриптов: та же чистка, что для снимка узлов.
+
+    Это и есть «живая копия» интерфейса: отдаём сохранённый body как есть,
+    только без script/style/noscript/template и опасных атрибутов. Фронт
+    кладёт его в песочницу без скриптов и подсвечивает узлы по путям.
+    """
+    soup = BeautifulSoup(html or "", "lxml")
+    for dead in soup.find_all(("script", "style", "noscript", "template")):
+        dead.decompose()
+    body = soup.find("body") or soup
+    if not isinstance(body, Tag):
+        return ""
+    for tag in body.find_all(True):
+        for attr in ("onclick", "onload", "onerror", "onmouseover", "onfocus", "onblur"):
+            tag.attrs.pop(attr, None)
+    out = body.decode_contents() or ""
+    return out[:limit]
 
 
 def _sig(node: dict) -> str:
@@ -352,3 +373,64 @@ def diff_nodes(old: list[dict], new: list[dict]) -> list[dict]:
                        "where": "", "old_text": "", "new_text": "",
                        "detail": "показаны первые 200 изменений"})
     return events
+
+
+def mark_copy(body: str, old_nodes: list[dict], new_nodes: list[dict],
+              events: list[dict]) -> str:
+    """Та же сохранённая страница, но изменённые узлы уже подсвечены.
+
+    Живую копию рисует сам браузер из этого html, скриптов в нём нет, так что
+    подсветка — обычные классы на тех же узлах: находим их по пути в дереве
+    (тот же обход, что в snapshot_nodes) и вешаем pvwatch-is-added и друзей.
+    Пропавшие узлы в новом теле отсутствуют — их показываем призраком на
+    месте: плашкой «тут был блок …» после последнего выжившего соседа.
+    """
+    soup = BeautifulSoup(body or "", "lxml")
+    container = soup.find("body")
+    if container is None:
+        container = soup
+    if not isinstance(container, Tag):
+        return (body or "")[:COPY_LIMIT]
+
+    by_path: dict[str, Tag] = {}
+
+    def walk(node: Tag, path: str) -> None:
+        for child in list(node.children):
+            if not isinstance(child, Tag):
+                continue
+            step = f"{child.name}#{_child_position(child)}"
+            here = f"{path}/{step}" if path else step
+            by_path[here] = child
+            walk(child, here)
+
+    walk(container, "body")
+
+    for event in events:
+        kind = event.get("kind") or ""
+        if kind == "more":
+            continue
+        path = event.get("path") or ""
+        if kind == "removed":
+            ghost = soup.new_tag("div")
+            ghost["class"] = ["pvwatch-ghost", "pvwatch-is-removed"]
+            label = event.get("old_text") or event.get("detail") or "блок"
+            ghost.string = f"Тут был блок «{label}» — его убрали"
+            anchor = by_path.get(path)
+            if anchor is not None and anchor.parent is not None:
+                anchor.insert_after(ghost)
+            elif isinstance(container, Tag):
+                container.append(ghost)
+            continue
+        target = by_path.get(path)
+        if target is None:
+            continue
+        cls = list(target.get("class") or [])
+        if isinstance(cls, str):
+            cls = cls.split()
+        mark = f"pvwatch-is-{kind}"
+        if mark not in cls:
+            cls.append(mark)
+        target["class"] = cls
+
+    out = container.decode_contents() if isinstance(container, Tag) else str(soup)
+    return (out or "")[:COPY_LIMIT]

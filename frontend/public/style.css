@@ -1139,6 +1139,24 @@ button.chip:hover,
   color: var(--primary);
 }
 
+/* Живая копия: сохранённая страница в песочнице. Подсветка едет вместе
+   с разметкой (классы pvwatch-is-* ставит backend), здесь только рамка. */
+.watch-copy-wrap {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: #fff;
+}
+
+.watch-copy {
+  display: block;
+  width: 100%;
+  min-height: 200px;
+  height: 480px;
+  border: 0;
+  background: #fff;
+}
+
 .watch-head .watch-title {
   min-width: 0;
   max-width: 78ch;
