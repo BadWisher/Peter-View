@@ -124,5 +124,73 @@ class WatchFetchTests(unittest.TestCase):
         self.assertEqual(changed, ["60"])
 
 
+class WatchDomTests(unittest.TestCase):
+    def test_new_button_is_added_event_with_position(self):
+        before = "<html><body><main><h1>Регламент</h1></main></body></html>"
+        after = "<html><body><main><h1>Регламент</h1><a href='/v2'>Новая версия</a></main></body></html>"
+        events = watch_run.watch_dom.diff_nodes(
+            watch_run.watch_dom.snapshot_nodes(before),
+            watch_run.watch_dom.snapshot_nodes(after),
+        )
+        added = [e for e in events if e["kind"] == "added"]
+        self.assertTrue(added)
+        self.assertIn("a", [e["tag"] for e in added])
+        self.assertTrue(all(e["path"] for e in added))
+
+    def test_moved_block_is_moved_not_add_remove(self):
+        before = ("<html><body><main><p>Первый</p><p>Второй</p></main></body></html>")
+        after = ("<html><body><main><p>Второй</p><p>Первый</p></main></body></html>")
+        events = watch_run.watch_dom.diff_nodes(
+            watch_run.watch_dom.snapshot_nodes(before),
+            watch_run.watch_dom.snapshot_nodes(after),
+        )
+        kinds = {e["kind"] for e in events}
+        self.assertIn("moved", kinds)
+        self.assertNotIn("added", kinds)
+        self.assertNotIn("removed", kinds)
+
+    def test_href_change_is_attr_event(self):
+        before = "<html><body><main><a href='/v1'>Скачать</a></main></body></html>"
+        after = "<html><body><main><a href='/v2'>Скачать</a></main></body></html>"
+        events = watch_run.watch_dom.diff_nodes(
+            watch_run.watch_dom.snapshot_nodes(before),
+            watch_run.watch_dom.snapshot_nodes(after),
+        )
+        self.assertEqual([e["kind"] for e in events], ["attr"])
+        self.assertIn("href", events[0]["detail"])
+
+    def test_tag_change_is_tag_event(self):
+        before = "<html><body><main><p>Заголовок</p></main></body></html>"
+        after = "<html><body><main><h2>Заголовок</h2></main></body></html>"
+        events = watch_run.watch_dom.diff_nodes(
+            watch_run.watch_dom.snapshot_nodes(before),
+            watch_run.watch_dom.snapshot_nodes(after),
+        )
+        self.assertEqual([e["kind"] for e in events], ["tag"])
+
+    def test_date_only_change_is_quiet(self):
+        before = "<html><body><main><p>Обновлено 01.09.2026</p></main></body></html>"
+        after = "<html><body><main><p>Обновлено 05.09.2026</p></main></body></html>"
+        events = watch_run.watch_dom.diff_nodes(
+            watch_run.watch_dom.snapshot_nodes(before),
+            watch_run.watch_dom.snapshot_nodes(after),
+        )
+        self.assertEqual(events, [])
+
+    def test_struct_change_flips_status_without_text_change(self):
+        group = store.create_group("Портал", auth_kind="none", created_by="editor")
+        page = store.add_page(group["id"], "https://portal.example.test/ui", "Интерфейс")
+        first = "<html><body><main><h1>Регламент</h1><p>Текст тот же самый длинный.</p></main></body></html>"
+        second = ("<html><body><main><h1>Регламент</h1><p>Текст тот же самый длинный.</p>"
+                  "<a href='/v2'>Новая версия регламента</a></main></body></html>")
+        with patch.object(watch_run, "safe_request", new=AsyncMock(return_value=_resp(first))):
+            asyncio.run(watch_run.check_page(page["id"]))
+        with patch.object(watch_run, "safe_request", new=AsyncMock(return_value=_resp(second))):
+            result = asyncio.run(watch_run.check_page(page["id"]))
+        self.assertEqual(result["last_status"], "changed")
+        diff = watch_run.page_diff(page["id"])
+        self.assertTrue([e for e in diff["ui"] if e["kind"] == "added"])
+
+
 if __name__ == "__main__":
     unittest.main()

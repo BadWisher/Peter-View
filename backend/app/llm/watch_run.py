@@ -17,6 +17,8 @@ from bs4 import BeautifulSoup
 from ..extractors import extract_html, normalize_spaces
 from ..net_guard import BlockedURLError, safe_request
 from . import watch_store as store
+from . import watch_dom
+from . import watch_render
 
 logger = logging.getLogger(__name__)
 
@@ -195,25 +197,45 @@ async def _login(client: httpx.AsyncClient, group: dict) -> httpx.Auth | None:
     return None
 
 
-async def _fetch_page(client: httpx.AsyncClient, url: str, auth: httpx.Auth | None) -> str:
+async def _fetch_page(client: httpx.AsyncClient, url: str, auth: httpx.Auth | None) -> tuple[str, str]:
+    """Возвращает (сырой html, отрендерен ли через браузер).
+
+    Сначала пробуем голый HTTP — это быстро и хватает большинству регламентов.
+    Если со страницы пришло почти пусто, а рендер доступен — открываем её
+    в headless Chromium и забираем DOM после JS. Пустой каркас SPA больше
+    не молчит как «без изменений», а либо дорисовывается, либо честно
+    падает в ошибку.
+    """
     resp = await safe_request(client, "GET", url, auth=auth)
     if resp.status_code == 401:
         raise ValueError("Портал просит войти заново (HTTP 401) — проверь логин и пароль группы")
     if resp.status_code >= 400:
         raise ValueError(f"Страница недоступна (HTTP {resp.status_code})")
-    text = snapshot_text(resp.text)
+    html = resp.text
+    rendered = False
+    text = snapshot_text(html)
+    if len(text) < MIN_SNAPSHOT_CHARS and watch_render.render_available():
+        try:
+            html = await watch_render.render_html(url)
+            rendered = True
+        except ValueError:
+            raise
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("Рендер %s не удался: %s", url, exc)
+    text = snapshot_text(html)
     if len(text) < MIN_SNAPSHOT_CHARS:
-        raise ValueError(
-            f"Со страницы пришло почти пусто ({len(text)} символов) — "
-            "возможно, нужен JS или портал отдал заглушку"
+        hint = "" if rendered else (
+            " — возможно, нужен JS (поставь playwright и chromium), либо портал отдал заглушку"
+            if watch_render.render_available() is False else " — возможно, нужен JS или портал отдал заглушку"
         )
+        raise ValueError(f"Со страницы пришло почти пусто ({len(text)} символов){hint}")
     # Сессия могла протухнуть посреди прогона: портал отдал страницу входа.
     # Проверяем сырой html, а не вычищенный текст: форма входа может жить
     # в header/nav, которые snapshot_text выкидывает.
-    soup = BeautifulSoup(resp.text, "lxml")
-    if soup.find("input", {"type": "password"}) and "парол" in resp.text.lower():
+    soup = BeautifulSoup(html, "lxml")
+    if soup.find("input", {"type": "password"}) and "парол" in html.lower():
         raise ValueError("Портал снова показал форму входа — сессия протухла, проверь пароль группы")
-    return text
+    return html, rendered
 
 
 async def check_page(page_id: str, client: httpx.AsyncClient | None = None, auth: httpx.Auth | None = None) -> dict:
@@ -233,13 +255,21 @@ async def check_page(page_id: str, client: httpx.AsyncClient | None = None, auth
     try:
         if own_client:
             auth = await _login(client, group)
-        text = await _fetch_page(client, page["url"], auth)
+        html, _rendered = await _fetch_page(client, page["url"], auth)
+        text = snapshot_text(html)
+        nodes = watch_dom.snapshot_nodes(html)
         digest = fingerprint(normalized_text(text))
+        struct = watch_dom.fingerprint_nodes(nodes)
         previous = store.latest_snapshots(page_id, limit=1)
-        changed = bool(previous) and previous[0]["content_hash"] != digest
-        if not previous:
-            changed = False
-        store.record_snapshot(page_id, text=text, content_hash=digest, changed=changed)
+        changed = False
+        if previous:
+            changed = previous[0]["content_hash"] != digest or (previous[0].get("struct_hash") or "") != struct
+        import json
+
+        store.record_snapshot(
+            page_id, text=text, content_hash=digest, changed=changed,
+            struct_hash=struct, dom=json.dumps(nodes, ensure_ascii=False),
+        )
         return store.get_page(page_id)  # type: ignore[return-value]
     except (BlockedURLError, ValueError, httpx.HTTPError) as exc:
         message = str(exc)
@@ -300,10 +330,22 @@ def page_diff(page_id: str) -> dict:
         raise KeyError("Адрес не найден")
     snaps = store.latest_snapshots(page_id, limit=2)
     if not snaps:
-        return {"page": page, "hunks": [], "previous": None, "current": None}
+        return {"page": page, "hunks": [], "ui": [], "previous": None, "current": None}
     current = snaps[0]
     previous = snaps[1] if len(snaps) > 1 else None
     hunks = text_hunks(previous["text"] if previous else "", current["text"]) if previous else []
+    ui = []
+    if previous and (current.get("dom") or previous.get("dom")):
+        import json
+
+        def _nodes(raw: str) -> list[dict]:
+            try:
+                data = json.loads(raw or "[]")
+            except (ValueError, TypeError):
+                return []
+            return data if isinstance(data, list) else []
+
+        ui = watch_dom.diff_nodes(_nodes(previous.get("dom") or ""), _nodes(current.get("dom") or ""))
     return {
         "page": page,
         "current": {
@@ -317,4 +359,5 @@ def page_diff(page_id: str) -> dict:
             "error": previous["error"],
         } if previous else None,
         "hunks": hunks,
+        "ui": ui,
     }

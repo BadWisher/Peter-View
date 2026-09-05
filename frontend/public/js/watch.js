@@ -209,13 +209,29 @@ export function renderWatchHunks(hunks, { status = "", error = "" } = {}) {
   if (error) return `<div class="empty-state"><div><h3>Страница не загрузилась</h3><p>${escapeHTML(error)}</p></div></div>`;
   if (!hunks?.length) {
     if (status === "pending") return `<div class="empty-state"><div><h3>Ещё не проверялась</h3><p>Нажми «Проверить», чтобы снять первый текст.</p></div></div>`;
-    if (status === "same") return `<div class="empty-state"><div><h3>Без изменений</h3><p>Текст совпал с прошлым снимком.</p></div></div>`;
+    if (status === "same") return `<div class="empty-state"><div><h3>Без изменений</h3><p>Текст и интерфейс совпали с прошлым снимком.</p></div></div>`;
     return `<div class="empty-state"><div><h3>Сравнить пока нечего</h3><p>Нужны два снимка: проверь страницу дважды.</p></div></div>`;
   }
   return `<pre class="watch-diff">${hunks.map((hunk) => {
     if (hunk.op === "skip") return `<div class="watch-skip">… ${hunk.count} строк без изменений …</div>`;
     return renderWatchLine(hunk);
   }).join("")}</pre>`;
+}
+
+const UI_KIND_LABEL = {
+  added: "появилось", removed: "пропало", moved: "переехало",
+  tag: "тег сменён", attr: "атрибут сменён", text: "текст сменён", more: "ещё",
+};
+
+export function renderWatchUi(events) {
+  if (!events?.length) return "";
+  return `<section class="panel watch-ui-panel"><div class="panel-head"><h3>Интерфейс: ${events.length} ${events.length === 1 ? "изменение" : "изменения"}</h3></div>
+    <ul class="watch-ui-list">${events.map((event) => `
+      <li class="watch-ui watch-ui-${escapeHTML(event.kind || "")}">
+        <span class="watch-ui-kind">${escapeHTML(UI_KIND_LABEL[event.kind] || event.kind || "")}</span>
+        <span class="watch-ui-what"><code>&lt;${escapeHTML(event.tag || "")}&gt;</code> ${escapeHTML(event.where || event.path || "")}</span>
+        ${event.detail ? `<span class="watch-ui-detail">${escapeHTML(event.detail)}</span>` : ""}
+      </li>`).join("")}</ul></section>`;
 }
 
 export async function startWatchRun(path) {
@@ -311,6 +327,7 @@ export async function renderWatch() {
           </div>
         </div>
         <section class="panel fill-panel watch-diff-panel">${renderWatchHunks(diff.hunks, { status: diff.page?.last_status, error: diff.page?.last_error })}</section>
+        ${renderWatchUi(diff.ui)}
       </div>`);
     document.querySelector(".back-watch").addEventListener("click", () => openWatch(groupId));
     document.querySelector(".run-watch-page").addEventListener("click", () => startWatchRun(`/api/watch/pages/${encodeURIComponent(pageId)}/run`));

@@ -1145,6 +1145,60 @@ button.chip:hover,
   color: var(--muted);
 }
 
+.watch-ui-panel {
+  margin-top: 12px;
+}
+
+.watch-ui-panel .panel-head {
+  padding: 12px 16px 0;
+}
+
+.watch-ui-panel h3 {
+  margin: 0;
+  font-size: 13px;
+}
+
+.watch-ui-list {
+  margin: 0;
+  padding: 8px 16px 14px;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.watch-ui {
+  display: grid;
+  gap: 2px;
+  padding: 8px 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.watch-ui-kind {
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: .04em;
+  color: var(--muted);
+}
+
+.watch-ui-added .watch-ui-kind { color: var(--primary-ink); }
+.watch-ui-removed .watch-ui-kind { color: var(--error); }
+.watch-ui-moved .watch-ui-kind { color: #8a6d00; }
+
+.watch-ui-what code {
+  font-family: "JetBrains Mono", monospace;
+  color: var(--ink-soft);
+}
+
+.watch-ui-detail {
+  color: var(--ink-soft);
+  word-break: break-word;
+}
+
 .skeleton {
   min-height: 14px;
   overflow: hidden;
