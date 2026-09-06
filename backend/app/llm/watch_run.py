@@ -331,7 +331,14 @@ def _loads_nodes(raw: str) -> list[dict]:
     try:
         data = json.loads(raw or "[]")
     except (ValueError, TypeError):
-        return []
+        # снимки до подъёма DOM_CAP хранили обрезанный JSON; достаём целые узлы
+        end = (raw or "").rfind("},")
+        if end < 0:
+            return []
+        try:
+            data = json.loads(raw[:end] + "]")
+        except (ValueError, TypeError):
+            return []
     return data if isinstance(data, list) else []
 
 

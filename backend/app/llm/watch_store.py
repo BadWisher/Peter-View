@@ -25,6 +25,9 @@ DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data"
 DB_FILE = Path(os.getenv("WATCH_STORE_PATH", str(DATA_DIR / "watch.db")))
 SNAPSHOT_KEEP = int(os.getenv("WATCH_SNAPSHOT_KEEP", "14"))
 TEXT_CAP = int(os.getenv("WATCH_TEXT_CAP", "200000"))
+# dom — это сериализованный JSON до 2000 узлов; обрезать его общим капом нельзя:
+# посередине строки json.loads уже не распарсит, и UI-дифф молча станет пустым.
+DOM_CAP = int(os.getenv("WATCH_DOM_CAP", "1500000"))
 AUTH_KINDS = frozenset({"none", "basic", "form"})
 
 _lock = threading.Lock()
@@ -377,7 +380,7 @@ def record_snapshot(
 ) -> None:
     now = time.time()
     clipped = text[:TEXT_CAP]
-    clipped_dom = (dom or "")[:TEXT_CAP]
+    clipped_dom = (dom or "")[:DOM_CAP]
     # Тело для живой копии режем по тому же капиту, что и watch_dom.COPY_LIMIT:
     # крупные сайты (GitHub и т.п.) иначе обрезаются посреди разметки.
     clipped_body = (body or "")[:400000]
