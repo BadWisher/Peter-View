@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Response, UploadFile
+from sse_starlette.sse import EventSourceResponse
 
 from .. import audit
 from ..auth import require_user
@@ -18,6 +20,8 @@ from .infra import _check_sem
 from .rules_store import _read_rules, _rules_for_check
 
 router = APIRouter(tags=["Вычитка"])
+
+logger = logging.getLogger(__name__)
 
 @router.post("/api/check")
 async def check_file(
