@@ -5,8 +5,7 @@
     "password": "Password",
     "showPassword": "Show password",
     "submit": "Sign in",
-    "oidc": "Sign in with organization",
-    "defaultHint": "First login: admin / admin. Change the password immediately."
+    "oidc": "Sign in with organization"
   },
   "account": {
     "menu": "Account",

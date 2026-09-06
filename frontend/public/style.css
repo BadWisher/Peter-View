@@ -2556,6 +2556,28 @@ button.chip:hover,
   font-size: var(--text-meta);
 }
 
+.file-row small.watch-stats,
+.page-head p.watch-stats,
+.review-toolbar-title small.watch-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  white-space: normal;
+}
+
+.file-row small.watch-stats > span,
+.page-head p.watch-stats > span,
+.review-toolbar-title small.watch-stats > span {
+  padding: 2px 10px;
+  color: var(--muted);
+  background: var(--hover);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: var(--text-meta);
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
 .new-mark {
   position: absolute;
   top: 7px;

@@ -379,23 +379,9 @@ def mark_copy(body: str, old_nodes: list[dict], new_nodes: list[dict],
     if isinstance(container, Tag):
         container.insert(0, paint)
 
-    kinds = {e.get("kind") for e in events if e.get("kind") != "more"}
     for event in events:
         kind = event.get("kind") or ""
         if kind == "more":
-            continue
-        if kind == "text" and len(kinds) == 1:
-            path = event.get("path") or ""
-            target = by_path.get(path)
-            if target is not None:
-                cls = list(target.get("class") or [])
-                if isinstance(cls, str):
-                    cls = cls.split()
-                if "pvwatch-is-text" not in cls:
-                    cls.append("pvwatch-is-text")
-                target["class"] = cls
-                target["data-pvwatch-path"] = path
-                target["data-pvwatch-kind"] = kind
             continue
         path = event.get("path") or ""
         if kind == "removed":
@@ -418,6 +404,7 @@ def mark_copy(body: str, old_nodes: list[dict], new_nodes: list[dict],
         mark = f"pvwatch-is-{kind}"
         if mark not in cls:
             cls.append(mark)
+            target["class"] = cls
         target["data-pvwatch-path"] = path
         target["data-pvwatch-kind"] = kind
 

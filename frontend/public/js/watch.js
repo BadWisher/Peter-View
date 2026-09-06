@@ -498,27 +498,27 @@ export function watchCount(n) {
 export function watchPageMeta(page) {
   if (page.running) return "Проверяем…";
   if (page.last_error) return page.last_error;
-  const checked = page.last_checked_at ? `проверено ${formatDate(page.last_checked_at, false)}` : "";
   if (page.last_status === "pending" || !page.last_checked_at) return "Ещё не проверялась";
   if (page.last_status === "changed") {
-    const changed = page.last_changed_at ? `изменилась ${formatDate(page.last_changed_at, false)}` : "изменилась";
-    return checked ? `${changed} · ${checked}` : changed;
+    return page.last_changed_at ? `Изменилась ${formatDate(page.last_changed_at, false)}` : "Изменилась";
   }
-  if (page.last_status === "error") return checked || "Не загрузилась";
-  return checked ? `Без изменений · ${checked}` : "Без изменений";
+  if (page.last_status === "error") return "Не загрузилась";
+  return page.last_checked_at ? `Проверено ${formatDate(page.last_checked_at, false)}` : "Без изменений";
 }
 
 export function watchGroupMeta(group) {
   const total = Number(group.page_count) || 0;
   const changed = Number(group.changed_count) || 0;
   const errors = Number(group.error_count) || 0;
-  const locked = group.auth_kind && group.auth_kind !== "none" ? " · со входом" : "";
-  if (!total) return `Пока нет адресов${locked}`;
-  if (group.running) return `${watchCount(total)} · проверяем…${locked}`;
-  if (changed) return `${watchCount(total)} · ${changed} ${plural(changed, "изменился", "изменились", "изменились")}${locked}`;
-  if (errors) return `${watchCount(total)} · ${errors} ${plural(errors, "не загрузился", "не загрузились", "не загрузились")}${locked}`;
-  const checked = group.last_run_at ? ` · проверено ${formatDate(group.last_run_at, false)}` : "";
-  return `${watchCount(total)} · без изменений${checked}${locked}`;
+  if (!total) return "Пока нет адресов";
+  if (group.running) return `${watchCount(total)}, проверяем…`;
+  if (changed) return `${watchCount(total)}, ${changed} ${plural(changed, "изменился", "изменились", "изменились")}`;
+  if (errors) return `${watchCount(total)}, ${errors} ${plural(errors, "не загрузился", "не загрузились", "не загрузились")}`;
+  return group.last_run_at ? `${watchCount(total)}, проверено ${formatDate(group.last_run_at, false)}` : watchCount(total);
+}
+
+export function watchStats(parts) {
+  return parts.filter(Boolean).map((text) => `<span>${escapeHTML(text)}</span>`).join("");
 }
 
 export function watchGroupsSummary(groups) {
@@ -526,9 +526,10 @@ export function watchGroupsSummary(groups) {
   const changed = groups.reduce((n, group) => n + (Number(group.changed_count) || 0), 0);
   const errors = groups.reduce((n, group) => n + (Number(group.error_count) || 0), 0);
   if (!groups.length) return "";
-  if (changed) return `${groups.length} ${plural(groups.length, "группа", "группы", "групп")} · ${total} ${plural(total, "адрес", "адреса", "адресов")} · ${changed} ${plural(changed, "изменился", "изменились", "изменились")}`;
-  if (errors) return `${groups.length} ${plural(groups.length, "группа", "группы", "групп")} · ${total} ${plural(total, "адрес", "адреса", "адресов")} · ошибка на ${errors}`;
-  return `${groups.length} ${plural(groups.length, "группа", "группы", "групп")} · ${total} ${plural(total, "адрес", "адреса", "адресов")} · без изменений`;
+  const head = `${groups.length} ${plural(groups.length, "группа", "группы", "групп")}, ${total} ${plural(total, "адрес", "адреса", "адресов")}`;
+  if (changed) return `${head}, ${changed} ${plural(changed, "изменился", "изменились", "изменились")}`;
+  if (errors) return `${head}, ошибка на ${errors}`;
+  return head;
 }
 
 export function watchPagesSummary(pages) {
@@ -537,10 +538,10 @@ export function watchPagesSummary(pages) {
   const changed = pages.filter((page) => page.last_status === "changed").length;
   const errors = pages.filter((page) => page.last_status === "error" || page.last_error).length;
   const running = pages.filter((page) => page.running).length;
-  if (running) return `${watchCount(total)} · проверяем ${running}`;
-  if (changed) return `${watchCount(total)} · ${changed} ${plural(changed, "изменился", "изменились", "изменились")}`;
-  if (errors) return `${watchCount(total)} · ${errors} ${plural(errors, "не загрузился", "не загрузились", "не загрузились")}`;
-  return `${watchCount(total)} · без изменений`;
+  if (running) return `${watchCount(total)}, проверяем ${running}`;
+  if (changed) return `${watchCount(total)}, ${changed} ${plural(changed, "изменился", "изменились", "изменились")}`;
+  if (errors) return `${watchCount(total)}, ${errors} ${plural(errors, "не загрузился", "не загрузились", "не загрузились")}`;
+  return watchCount(total);
 }
 
 export function bindWatchList() {
@@ -567,19 +568,20 @@ export async function renderWatch() {
       return;
     }
     const summary = watchGroupsSummary(groups);
+    const headStats = summary ? [summary] : [];
     renderShell(`
       <div class="page watch-page">
         <div class="page-head">
           <div>
             <h2>Наблюдение</h2>
-            <p>${summary ? escapeHTML(summary) : "Следим за страницами"}</p>
+            <p class="watch-stats">${headStats.length ? watchStats(headStats) : "Следим за страницами"}</p>
           </div>
           <div class="head-actions"><button class="button primary add-watch-group" type="button">${icon("icon-plus")}Группа</button></div>
         </div>
         <section class="panel fill-panel" aria-label="Группы">
-          <div class="panel-head"><div><h3>Группы</h3><p>Нажми на группу, чтобы увидеть её адреса</p></div></div>
+          <div class="panel-head"><div><h3>Группы</h3></div></div>
           <div class="panel-body">
-            <div class="watch-list">${groups.map((group) => `<button class="file-row" type="button" data-watch-group="${escapeHTML(group.id)}">${icon("icon-eye")}<span><strong>${escapeHTML(group.name)}</strong><small>${escapeHTML(watchGroupMeta(group))}</small></span><span class="file-row-end">${watchGroupBadge(group)}${icon("icon-arrow")}</span></button>`).join("")}</div>
+            <div class="watch-list">${groups.map((group) => `<button class="file-row" type="button" data-watch-group="${escapeHTML(group.id)}">${icon("icon-eye")}<span><strong>${escapeHTML(group.name)}</strong><small class="watch-stats">${watchStats([watchGroupMeta(group)])}</small></span><span class="file-row-end">${watchGroupBadge(group)}${icon("icon-arrow")}</span></button>`).join("")}</div>
           </div>
         </section>
       </div>`);
@@ -604,12 +606,13 @@ export async function renderWatch() {
     const summary = watchChangeSummary(diff);
     const checked = diff.page?.last_checked_at || page?.last_checked_at;
     const changedAt = diff.page?.last_changed_at || page?.last_changed_at;
-    const checkedBit = checked ? `проверено ${escapeHTML(formatDate(checked, false))}` : "ещё не проверялась";
+    const checkedBit = checked ? `Проверено ${escapeHTML(formatDate(checked, false))}` : "Ещё не проверялась";
     const n = watchChanges(diff).length;
+    const statBits = [checkedBit, summary || (status === "changed" ? "" : "Изменений нет")].filter(Boolean);
     renderShell(`
     <div class="review-view">
       <section class="review-toolbar">
-        <div class="review-toolbar-title"><button class="text-link back-watch" type="button">${icon("icon-arrow")} ${escapeHTML(group.name)}</button><strong>${escapeHTML(diff.page?.title || page?.title || "Адрес")}</strong><small>${checkedBit}${summary ? ` · ${summary}` : " · изменений нет"}</small></div>
+        <div class="review-toolbar-title"><button class="text-link back-watch" type="button">${icon("icon-arrow")} ${escapeHTML(group.name)}</button><strong>${escapeHTML(diff.page?.title || page?.title || "Адрес")}</strong><small class="watch-stats">${watchStats(statBits)}</small></div>
         <div class="head-actions">
           <button class="button secondary run-watch-page" type="button" ${running ? "disabled" : ""}>${icon("icon-refresh")}${running ? "Проверяем…" : "Проверить"}</button>
           <a class="button secondary watch-original" href="${escapeHTML(diff.page?.url || page?.url || "")}" target="_blank" rel="noopener" title="Живой сайт в новой вкладке — копия слева это сохранённый снимок">${icon("icon-link")}Оригинал</a>
@@ -655,14 +658,15 @@ export async function renderWatch() {
   }
   const listSummary = watchPagesSummary(pages);
   const groupBadge = watchGroupBadge(group);
-  const groupChecked = group.last_run_at ? `проверено ${formatDate(group.last_run_at, false)}` : "";
+  const groupChecked = group.last_run_at ? `Проверено ${formatDate(group.last_run_at, false)}` : "";
+  const groupStats = [listSummary || "Следим за адресами этой группы", watchAuthLabel(group.auth_kind), groupChecked].filter(Boolean);
   renderShell(`
     <div class="page watch-page">
       <div class="page-head">
         <div>
           <button class="text-link back-watch" type="button">${icon("icon-arrow")} Наблюдение</button>
           <h2>${escapeHTML(group.name)}</h2>
-          <p>${listSummary ? escapeHTML(listSummary) : "Следим за адресами этой группы"} · ${escapeHTML(watchAuthLabel(group.auth_kind))}${groupChecked ? ` · ${escapeHTML(groupChecked)}` : ""}</p>
+          <p class="watch-stats">${watchStats(groupStats)}</p>
         </div>
         <div class="head-actions">
           <button class="icon-button edit-watch-group" type="button" aria-label="Изменить группу">${icon("icon-edit")}</button>
@@ -681,9 +685,8 @@ export async function renderWatch() {
           </form>
           ${pages.length ? `<div class="watch-list">${pages.map((page) => {
             const label = page.title || page.url;
-            const meta = watchPageMeta(page);
-            const urlBit = page.title ? ` · ${page.url}` : "";
-            return `<button class="file-row" type="button" data-watch-page="${escapeHTML(page.id)}">${icon("icon-link")}<span><strong>${escapeHTML(label)}</strong><small>${escapeHTML(meta)}${escapeHTML(urlBit)}</small></span><span class="file-row-end">${watchPageBadge(page)}${icon("icon-arrow")}</span></button>`;
+            const rowStats = [watchPageMeta(page), page.title ? page.url : ""].filter(Boolean);
+            return `<button class="file-row" type="button" data-watch-page="${escapeHTML(page.id)}">${icon("icon-link")}<span><strong>${escapeHTML(label)}</strong><small class="watch-stats">${watchStats(rowStats)}</small></span><span class="file-row-end">${watchPageBadge(page)}${icon("icon-arrow")}</span></button>`;
           }).join("")}</div>` : `<div class="empty-state">${icon("icon-link")}<div><h3>Пока нет адресов</h3><p>Вставь ссылку выше и нажми «Добавить».</p></div></div>`}
         </div>
       </section>

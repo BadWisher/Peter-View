@@ -27,7 +27,6 @@ export function renderLogin(error = "") {
         <label class="field"><span>${t("login.password")}</span><span class="password-field"><input name="password" type="password" autocomplete="current-password" required><button class="icon-button password-toggle" type="button" aria-label="${t("login.showPassword")}">${icon("icon-eye")}</button></span></label>
         <button class="button primary login-submit" type="submit">${t("login.submit")}</button>
         ${state.config?.oidc ? `<a class="button secondary" href="/api/auth/oidc/start">${t("login.oidc")}</a>` : ""}
-        <p class="field-hint">${t("login.defaultHint")}</p>
       </form>
     </main>`;
   const form = document.querySelector("#login-form");
@@ -218,9 +217,7 @@ document.addEventListener("keydown", (event) => {
   } else if (event.key.toLowerCase() === "k") {
     selectIssue(state.activeIssue - 1, { focus: true });
   } else if (event.key.toLowerCase() === "h" && issues[state.activeIssue]) {
-    const all = normalizedIssues();
-    const actualIndex = all.findIndex((item) => item.id === issues[state.activeIssue].id);
-    state.hiddenIssues.add(actualIndex);
+    state.hiddenIssues.add(issues[state.activeIssue].id);
     renderReview();
   }
 });
