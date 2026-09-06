@@ -378,9 +378,9 @@ def record_snapshot(
     now = time.time()
     clipped = text[:TEXT_CAP]
     clipped_dom = (dom or "")[:TEXT_CAP]
-    # Тело для живой копии режем отдельно: ему хватает 60к, а общий кап
-    # может быть больше. Пустое тело на ошибке не трогаем.
-    clipped_body = (body or "")[:60000]
+    # Тело для живой копии режем по тому же капиту, что и watch_dom.COPY_LIMIT:
+    # крупные сайты (GitHub и т.п.) иначе обрезаются посреди разметки.
+    clipped_body = (body or "")[:400000]
     status = "error" if error else ("changed" if changed else "same")
     with _lock, _connect() as conn:
         conn.execute(
