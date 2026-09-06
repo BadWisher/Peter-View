@@ -6,6 +6,7 @@ import asyncio
 import datetime as dt
 import difflib
 import hashlib
+import json
 import logging
 import os
 import re
@@ -42,15 +43,12 @@ def snapshot_text(html: str) -> str:
     return extract_html(html, include_chrome=False).strip()
 
 
-# Мусор, который меняется сам по себе и не означает правку регламента:
-# даты, время, счётчики, длинные токены. Маскируем перед сравнением —
-# по сырому тексту хэш тоже храним, чтобы ничего не потерять.
 _VOLATILE = [
-    re.compile(r"\b\d{2}\.\d{2}\.\d{4}(?:\s+\d{2}:\d{2}(?::\d{2})?)?"),  # 05.09.2026, 05.09.2026 18:20
-    re.compile(r"\b\d{2}:\d{2}(?::\d{2})?\b"),  # время
-    re.compile(r"\b[0-9a-f]{16,}\b", re.I),  # csrf-токены и прочий hex
+    re.compile(r"\b\d{2}\.\d{2}\.\d{4}(?:\s+\d{2}:\d{2}(?::\d{2})?)?"),
+    re.compile(r"\b\d{2}:\d{2}(?::\d{2})?\b"),
+    re.compile(r"\b[0-9a-f]{16,}\b", re.I),
     re.compile(r"\b\d[\d\s]*просмотр\w*", re.I),
-    re.compile(r"обновлено.*", re.I),  # строка «обновлено ...» целиком
+    re.compile(r"обновлено.*", re.I),
 ]
 
 
@@ -97,7 +95,6 @@ def text_hunks(old: str, new: str) -> list[dict]:
 
 
 def mark_word_diff(hunks: list[dict]) -> list[dict]:
-    """В паре del/add из одной строки помечаем, какие слова новые, — фронт их подсветит."""
     out: list[dict] = []
     i = 0
     while i < len(hunks):
@@ -176,8 +173,6 @@ async def _form_login(
     resp = await safe_request(client, "POST", action, data=payload)
     if resp.status_code >= 400:
         raise ValueError(f"Вход не удался (HTTP {resp.status_code})")
-    # Многие порталы при неверном пароле отдают 200 с той же формой входа —
-    # проверяем, что после POST формы на странице больше нет.
     again = BeautifulSoup(resp.text, "lxml")
     if again.find("input", {"type": "password"}):
         raise ValueError("Похоже, вход не удался: портал снова показал форму входа")
@@ -198,14 +193,6 @@ async def _login(client: httpx.AsyncClient, group: dict) -> httpx.Auth | None:
 
 
 async def _fetch_page(client: httpx.AsyncClient, url: str, auth: httpx.Auth | None) -> tuple[str, str]:
-    """Возвращает (сырой html, отрендерен ли через браузер).
-
-    Сначала пробуем голый HTTP — это быстро и хватает большинству регламентов.
-    Если со страницы пришло почти пусто, а рендер доступен — открываем её
-    в headless Chromium и забираем DOM после JS. Пустой каркас SPA больше
-    не молчит как «без изменений», а либо дорисовывается, либо честно
-    падает в ошибку.
-    """
     resp = await safe_request(client, "GET", url, auth=auth)
     if resp.status_code == 401:
         raise ValueError("Портал просит войти заново (HTTP 401) — проверь логин и пароль группы")
@@ -229,9 +216,6 @@ async def _fetch_page(client: httpx.AsyncClient, url: str, auth: httpx.Auth | No
             if watch_render.render_available() is False else " — возможно, нужен JS или портал отдал заглушку"
         )
         raise ValueError(f"Со страницы пришло почти пусто ({len(text)} символов){hint}")
-    # Сессия могла протухнуть посреди прогона: портал отдал страницу входа.
-    # Проверяем сырой html, а не вычищенный текст: форма входа может жить
-    # в header/nav, которые snapshot_text выкидывает.
     soup = BeautifulSoup(html, "lxml")
     if soup.find("input", {"type": "password"}) and "парол" in html.lower():
         raise ValueError("Портал снова показал форму входа — сессия протухла, проверь пароль группы")
@@ -265,8 +249,6 @@ async def check_page(page_id: str, client: httpx.AsyncClient | None = None, auth
         changed = False
         if previous:
             changed = previous[0]["content_hash"] != digest or (previous[0].get("struct_hash") or "") != struct
-        import json
-
         store.record_snapshot(
             page_id, text=text, content_hash=digest, changed=changed,
             struct_hash=struct, dom=json.dumps(nodes, ensure_ascii=False),
@@ -327,8 +309,6 @@ async def run_daily_if_due() -> None:
 
 
 def _pair_snaps(page_id: str) -> tuple[dict | None, dict | None]:
-    # Два снимка самого изменения: последний с changed=1 и тот, что перед ним.
-    # Свежие холостые перепроверки в пару не берём, иначе «Проверить» прячет diff.
     snaps = store.latest_snapshots(page_id, limit=20)
     if not snaps:
         return None, None
@@ -340,21 +320,20 @@ def _pair_snaps(page_id: str) -> tuple[dict | None, dict | None]:
     return current, previous
 
 
+def _loads_nodes(raw: str) -> list[dict]:
+    try:
+        data = json.loads(raw or "[]")
+    except (ValueError, TypeError):
+        return []
+    return data if isinstance(data, list) else []
+
+
 def _hunks_and_ui(current: dict | None, previous: dict | None) -> tuple[list[dict], list[dict], list[dict]]:
-    import json
-
-    def _nodes(raw: str) -> list[dict]:
-        try:
-            data = json.loads(raw or "[]")
-        except (ValueError, TypeError):
-            return []
-        return data if isinstance(data, list) else []
-
     if not previous or not (current.get("dom") or previous.get("dom")):
         hunks = text_hunks(previous["text"] if previous else "", current["text"]) if (current and previous) else []
         return hunks, [], []
-    old_nodes = _nodes(previous.get("dom") or "")
-    new_nodes = _nodes(current.get("dom") or "")
+    old_nodes = _loads_nodes(previous.get("dom") or "")
+    new_nodes = _loads_nodes(current.get("dom") or "")
     ui = watch_dom.diff_nodes(old_nodes, new_nodes)
     marks = [{"path": event.get("path") or "", "kind": event.get("kind") or ""}
              for event in ui if event.get("path") and event.get("kind") != "more"]
@@ -363,16 +342,7 @@ def _hunks_and_ui(current: dict | None, previous: dict | None) -> tuple[list[dic
 
 
 def _copy_pair(previous: dict, current: dict) -> tuple[list[dict], list[dict]]:
-    import json
-
-    def _nodes(raw: str) -> list[dict]:
-        try:
-            data = json.loads(raw or "[]")
-        except (ValueError, TypeError):
-            return []
-        return data if isinstance(data, list) else []
-
-    return _nodes(previous.get("dom") or ""), _nodes(current.get("dom") or "")
+    return _loads_nodes(previous.get("dom") or ""), _loads_nodes(current.get("dom") or "")
 
 
 def page_diff(page_id: str) -> dict:
@@ -410,14 +380,6 @@ def page_diff(page_id: str) -> dict:
 
 
 def page_copy(page_id: str) -> str:
-    """Готовый документ живой копии для iframe: разметка уже с подсветкой.
-
-    Отдаём полный html-документ: родные <style> из head едут в <head>
-    фрейма, боди — в <body>. Иначе фрейм кладёт <style> в тело и часть
-    правил может не примениться, а копия снова выглядит «просто текстом».
-    Песочница (sandbox без скриптов/форм/топ-навигации) глушит скрипты
-    и переходы — клики остаются внутри фрейма.
-    """
     page = store.get_page(page_id)
     if page is None:
         raise KeyError("Адрес не найден")

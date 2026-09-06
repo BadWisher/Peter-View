@@ -17,13 +17,11 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
-import time
 
 logger = logging.getLogger(__name__)
 
 RENDER_TIMEOUT = int(os.getenv("PROOFREADER_WATCH_RENDER_TIMEOUT", "25"))
 SETTLE_MS = int(os.getenv("PROOFREADER_WATCH_RENDER_SETTLE_MS", "1200"))
-MIN_RENDER_CHARS = int(os.getenv("PROOFREADER_WATCH_RENDER_MIN_CHARS", "24"))
 
 _browser = None
 _browser_lock = asyncio.Lock()
@@ -78,14 +76,3 @@ async def render_html(url: str, cookies: list[dict] | None = None) -> str:
         return html
     finally:
         await page.close()
-
-
-def cookies_for(url: str, jar: dict[str, str]) -> list[dict]:
-    from urllib.parse import urlparse
-
-    host = urlparse(url).path and urlparse(url).hostname or ""
-    now = int(time.time()) + 3600
-    return [
-        {"name": name, "value": value, "domain": host, "path": "/", "expires": now}
-        for name, value in (jar or {}).items()
-    ]

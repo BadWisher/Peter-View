@@ -223,8 +223,6 @@ export function watchChangeSummary(diff) {
   return `${n} ${plural(n, "изменение", "изменения", "изменений")}`;
 }
 
-// Один список обычным языком: «что было — что стало». Пути вида article#0
-// и слова вроде «атрибут» человеку не нужны — остаются только в API.
 const WATCH_TAG_LABEL = {
   p: "абзац", h1: "заголовок", h2: "заголовок", h3: "заголовок", h4: "заголовок",
   a: "ссылка", li: "пункт списка", ul: "список", ol: "список", button: "кнопка",
@@ -257,16 +255,10 @@ export function watchChanges(diff) {
     if (cur.op === "del") out.push({ oldText, newText: "", loc: "текст" });
     if (cur.op === "add") out.push({ oldText: "", newText, loc: "текст" });
   }
-  // Та же правка текста видна и в структуре — второй раз её не повторяем.
-  // Сдвиг блока тоже даёт del/add в тексте: слова те же, место другое.
-  // Порядок карточек = порядку меток во фрейме: ui идёт в том же порядке,
-  // что diff_nodes, а text-кейсы без своей метки пришиваем к абзацу ниже.
-  // Иначе индекс N карточки смотрит на метку M — «клик стирает всё».
   const ordered = [...ui].sort((a, b) => (a.path || "").localeCompare(b.path || ""));
   const movedTexts = new Set(
     ordered.filter((e) => e.kind === "moved").flatMap((e) => [e.old_text || "", e.new_text || ""]).filter(Boolean),
   );
-  const movedFirst = movedTexts.size ? [...movedTexts][0] : "";
   const textCovered = out.some((item) => {
     const t = item.newText || item.oldText || "";
     return t && !movedTexts.has(t);
@@ -284,8 +276,6 @@ export function watchChanges(diff) {
     }
     out.push({ oldText: "", newText: "", note: watchUiSentence(event), loc: watchTagLabel(event.tag), event, path: event.path || "" });
   }
-  // Один сдвиг — одна карточка. Иначе переезд кнопки мимо абзаца даёт
-  // пять строк: add/del текста плюс «переставили» на каждый затронутый узел.
   if (moved.length === 1) {
     const event = moved[0];
     const here = event.path ? event.path.split("/").slice(-2).join(" / ") : "";
@@ -297,8 +287,6 @@ export function watchChanges(diff) {
     out.push({ oldText: "", newText: "", note, loc: watchTagLabel(event.tag), event });
   } else if (moved.length > 1) {
     const names = [...new Set(moved.map((e) => e.new_text || e.old_text || "").filter(Boolean))].slice(0, 3);
-    // Групповая карточка сдвига: честная метка — первый узел группы,
-    // а не первый попавшийся. Иначе клик ведёт не туда.
     const first = [...moved].sort((a, b) => (a.path || "").localeCompare(b.path || ""))[0];
     const note = names.length
       ? `Переставили: ${names.map((n) => `«${n}»`).join(", ")}.`
@@ -311,7 +299,6 @@ export function watchChanges(diff) {
       event: first,
     });
   }
-  // Текстовые ханки, дублирующие сдвиг, выкидываем после группировки.
   return out.filter((item) => {
     if (item.oldText === undefined) return true;
     const t = item.newText || item.oldText || "";
@@ -348,11 +335,6 @@ export function watchKindBadge(kind) {
     attr: "Вид",
     text: "Изменение",
   }[kind] || "Изменение";
-}
-
-export function watchDetail() {
-  // Место изменения уже подсвечено в копии слева — лишний текст не пишем.
-  return "";
 }
 
 export function renderWatchChanges(diff, { status = "", error = "" } = {}) {
@@ -395,8 +377,6 @@ export function bindWatchIssues() {
     root.querySelectorAll(".pvwatch-active").forEach((node) => node.classList.remove("pvwatch-active"));
     target.classList.add("pvwatch-active");
     try { target.scrollIntoView({ block: "center", behavior: "smooth" }); } catch { /* фрейм ещё грузится */ }
-    // Номер метки в плоском списке находок ↔ узел: скролл фрейма не двигает
-    // страницу, но карточка должна сказать, куда смотреть.
     try { frame?.scrollIntoView({ block: "nearest", behavior: "smooth" }); } catch { /* рядом и так видно */ }
   };
   document.querySelectorAll(".review-workspace [data-issue-index]").forEach((element) => {
@@ -405,11 +385,6 @@ export function bindWatchIssues() {
     element.addEventListener("click", (click) => {
       click.preventDefault();
       click.stopPropagation();
-      // Карточки и метки идут в одном порядке (по path), но части карточек
-      // без своей метки (текстовые дубли, групповой сдвиг) сдвигают индекс.
-      // Поэтому целимся не по номеру, а по path карточки → метка с тем же
-      // путём. Номера остались для a11y/карты. Fallback по индексу — только
-      // когда path нет: ищем ANY, не marks()[0], чтобы клик не «стирал всё».
       const items = watchChanges(window.__watchDiff || {});
       const item = items[Number(element.dataset.issueIndex)];
       const list = marks();
@@ -469,13 +444,6 @@ function watchUiSentence(event) {
   return "";
 }
 
-// Копия страницы: то же сохранённое тело, но в песочнице iframe.
-// В поток встраивать нельзя: чужая вёрстка (grid/flex у body, сбросы
-// margin) ломает нашу панель, а наши стили превращают копию в «просто
-// текст». Фрейм с sandbox глушит скрипты, формы и топ-навигацию
-// (клики уходят в base target=_blank, не в топ), родные стили копии
-// работают как на живом сайте. Подсветку в разметку ставит бэкенд
-// (pvwatch-is-* + data-pvwatch-path), ниже мост «карточка ↔ метка».
 export function watchCopyUrl(pageId) {
   return `/api/watch/pages/${encodeURIComponent(pageId)}/copy`;
 }
@@ -500,7 +468,7 @@ export function bindWatchCopy(diff) {
         const res = await fetch(watchCopyUrl(frame.dataset.watchFrame), { credentials: "same-origin" });
         if (!res.ok) return;
         frame.srcdoc = await res.text();
-      } catch { /* копия уже в diff.copy — список находок выше всё сказал */ }
+      } catch { /* копия уже в diff.copy */ }
     };
     if (frame.dataset.watchReady) return;
     frame.dataset.watchReady = "1";
@@ -542,7 +510,6 @@ export function watchPageMeta(page) {
 }
 
 export function watchGroupMeta(group) {
-  // Одна строка обычным языком: сколько адресов и что с ними.
   const total = Number(group.page_count) || 0;
   const changed = Number(group.changed_count) || 0;
   const errors = Number(group.error_count) || 0;
@@ -680,7 +647,6 @@ export async function renderWatch() {
       });
     });
     if (running) {
-      // Прогон одной страницы идёт в фоне — опрашиваем, пока не закончится.
       state.watchPoll = window.setInterval(() => {
         if (state.route === "watch") renderWatch();
         else stopWatchPoll();

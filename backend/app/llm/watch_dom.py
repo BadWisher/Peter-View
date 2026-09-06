@@ -10,8 +10,6 @@ from bs4 import BeautifulSoup, Tag
 
 from ..extractors import normalize_spaces
 
-# Волатильный мусор маскируем так же, как в тексте: даты, счётчики, токены.
-# Иначе каждый прогон будет «изменилась» из-за цифр, а не правок.
 _VOLATILE = [
     re.compile(r"\b\d{2}\.\d{2}\.\d{4}(?:\s+\d{2}:\d{2}(?::\d{2})?)?"),
     re.compile(r"\b\d{2}:\d{2}(?::\d{2})?\b"),
@@ -20,9 +18,6 @@ _VOLATILE = [
     re.compile(r"обновлено.*", re.I),
 ]
 
-# Классы со сборочным хэшем (css-1a2b3c, block_x7f9a2) меняются при каждом
-# деплое фронта и не означают правку. Человеческие классы оставляем —
-# смена класса часто и есть визуальное изменение.
 _HASHY_CLASS = re.compile(r"[0-9a-f]{6,}|\d{4,}", re.I)
 
 SKIP_TAGS = frozenset({
@@ -30,8 +25,6 @@ SKIP_TAGS = frozenset({
     "meta", "link", "base", "title",
 })
 
-# Атрибуты, которые влияют на интерфейс. class/style осознанно урезаны
-# (см. _clean_attrs): полный style с хэшами даст шум на каждом прогоне.
 KEPT_ATTRS = frozenset({
     "id", "name", "type", "href", "src", "alt", "title",
     "placeholder", "value", "role", "for", "action", "method",
@@ -102,16 +95,6 @@ def _visible(tag: Tag) -> bool:
 
 
 def _own_text(tag: Tag) -> str:
-    """Только собственный текст узла, без потомков.
-
-    Если брать текст всего поддерева, одна правка слова пометит всю цепочку
-    предков — шум вместо позиции. Контейнеры получают пустой текст и
-    сравниваются по структуре, листья — по словам.
-
-    Важно: текст контейнера НЕ входит в сигнатуру сравнения потомков.
-    Иначе перестановка двух абзацев поменяет и текст родителя, и дифф
-    решит, что изменился сам контейнер, а не порядок детей.
-    """
     bits = []
     for child in tag.children:
         if isinstance(child, str):
@@ -121,42 +104,20 @@ def _own_text(tag: Tag) -> str:
     return mask_volatile(" ".join(bits))[:MAX_TEXT]
 
 
-def _copy_position(tag: Tag) -> int:
-    """Позиция среди соседей, как её видит walk() копии.
+_COPY_SKIP = ("style", "link", "base", "meta", "title")
 
-    snapshot_nodes считает пути по живому DOM без style/link/meta (их режет
-    SKIP_TAGS до обхода). Копия тоже несёт инлайновые <style> из head —
-    их надо пропускать и в подсчёте, иначе пути разъедутся и метки
-    не лягут на узлы. Обычный _child_position тут врёт на число style.
-    """
+
+def _sibling_index(tag: Tag, skip: tuple = ()) -> int:
     n = 0
     sib = tag.previous_sibling
     while sib is not None:
-        if isinstance(sib, Tag) and sib.name not in ("style", "link", "base", "meta", "title"):
-            n += 1
-        sib = sib.previous_sibling
-    return n
-
-
-def _child_position(tag: Tag) -> int:
-    """Порядковый номер среди всех соседей-тегов, не только одноимённых.
-
-    p[0]/p[1] не различают «первый абзац» и «второй абзац» при перестановке:
-    в обоих снимках есть p[0] и p[1], только тексты разные — и дифф видит
-    «текст сменён», а не «переехало». Сквозной индекс чинит это: уехавший
-    блок получает другой путь, одинаковый контент в разных местах — moved.
-    """
-    n = 0
-    sib = tag.previous_sibling
-    while sib is not None:
-        if isinstance(sib, Tag):
+        if isinstance(sib, Tag) and sib.name not in skip:
             n += 1
         sib = sib.previous_sibling
     return n
 
 
 def snapshot_nodes(html: str) -> list[dict]:
-    """Видимые элементы body по порядку: тег, путь, атрибуты, текст."""
     soup = BeautifulSoup(html or "", "lxml")
     for dead in soup.find_all(SKIP_TAGS):
         dead.decompose()
@@ -169,7 +130,7 @@ def snapshot_nodes(html: str) -> list[dict]:
                 continue
             if not _visible(child):
                 continue
-            step = f"{child.name}#{_child_position(child)}"
+            step = f"{child.name}#{_sibling_index(child)}"
             here = f"{path}/{step}" if path else step
             nodes.append({
                 "tag": child.name,
@@ -189,21 +150,12 @@ def snapshot_nodes(html: str) -> list[dict]:
 
 
 def cleaned_body(html: str, limit: int = 60000) -> str:
-    # Вычищенное тело для живой копии: без скриптов, но С родными стилями.
-    # Без них копия складывается в голый текст и не похожа на страницу.
-    # Безопасность даёт песочница iframe (sandbox без скриптов/форм/
-    # топ-навигации и попапов + base target=_blank), а не вырезание разметки:
-    # href/src/class/style оставляем, иначе едут картинки, вёрстка
-    # и перекраски кнопок. Режем только скрипты и inline-обработчики.
-    # Внешний css (<link rel=stylesheet>) оставляем как есть: srcdoc-фрейм
-    # попробует его подтянуть, не выйдет — не страшно, инлайна хватит.
     soup = BeautifulSoup(html or "", "lxml")
     for dead in soup.find_all(("script", "noscript", "template")):
         dead.decompose()
     head_keep = ""
     head = soup.find("head")
     if isinstance(head, Tag):
-        # Стили живут в head — без них body-копия всегда «просто текст».
         bits = list(head.find_all("style"))
         bits += [l for l in head.find_all("link")
                  if "stylesheet" in str(l.get("rel") or "").lower()
@@ -225,11 +177,6 @@ def _sig(node: dict) -> str:
 
 
 def _content_sig(node: dict) -> str:
-    """Тот же узел без позиции: тег + атрибуты + текст.
-
-    Нужен, чтобы отличить «поменялся href» от «блок переехал»: сначала ищем
-    правку по тому же пути, и только остаток считаем переездом/появлением.
-    """
     attrs = " ".join(f"{k}={v}" for k, v in sorted(node["attrs"].items()))
     return f"{node['tag']}|{attrs}|{node['text']}"
 
@@ -240,7 +187,6 @@ def fingerprint_nodes(nodes: list[dict]) -> str:
 
 
 def _where(node: dict) -> str:
-    """Человекочитаемая позиция: последние звенья пути + свой текст/атрибут."""
     tail = node["path"].split("/")[-3:]
     anchor = node["text"] or node["attrs"].get("alt") or node["attrs"].get("href") or node["attrs"].get("id") or ""
     if len(anchor) > 60:
@@ -287,13 +233,6 @@ def _parent(path: str) -> str:
 
 
 def _same_spot(old: dict, new: dict) -> bool:
-    """Тот же узел, даже если имя тега или индекс в пути уплыли.
-
-    Путь включает имя тега (p#0 → h2#0 при смене тега) и сквозной индекс
-    (#4 → #5, когда выше добавился сосед). Поэтому «то же место» — это
-    один родитель плюс совпадающий якорь: текст, alt, href или id.
-    Без якоря (два пустых контейнера) ровнять нельзя — это разные узлы.
-    """
     if _parent(old["path"]) != _parent(new["path"]):
         return False
     for key in ("text",):
@@ -306,7 +245,6 @@ def _same_spot(old: dict, new: dict) -> bool:
 
 
 def diff_nodes(old: list[dict], new: list[dict]) -> list[dict]:
-    """События интерфейса: added/removed/moved/tag/attr/text с позициями."""
     old_sigs = [_sig(n) for n in old]
     new_sigs = [_sig(n) for n in new]
     matcher = difflib.SequenceMatcher(a=old_sigs, b=new_sigs, autojunk=False)
@@ -318,10 +256,6 @@ def diff_nodes(old: list[dict], new: list[dict]) -> list[dict]:
     for tag, i1, i2, j1, j2 in matcher.get_opcodes():
         if tag == "equal":
             continue
-        # Кусок replace/delete/insert: сначала ровняем те же узлы по месту
-        # (родитель + якорь), потом остаток — в переезды/появления/удаления.
-        # Делить replace пополам «по индексам» нельзя: смена href у ссылки
-        # и вставка кнопки рядом приходят одним куском 1:2.
         old_idx = list(range(i1, i2)) if tag != "insert" else []
         new_idx = list(range(j1, j2)) if tag != "delete" else []
         used: set[int] = set()
@@ -354,16 +288,6 @@ def diff_nodes(old: list[dict], new: list[dict]) -> list[dict]:
             if b not in used:
                 came.append(b)
 
-    # Один и тот же узел исчез там и появился тут — переезд, а не пара
-    # «удалено + добавлено». Сравниваем без позиции: тот же контент
-    # в другом месте — moved, иначе это правда удаление и появление.
-    #
-    # Отдельный случай — перестановка соседей: пути у обоих уцелели
-    # (p#0 и p#1 на месте), но содержимое поменялось местами. Позиционный
-    # SequenceMatcher видит это как replace 1:1 по тем же путям и зовёт
-    # _fine_kind, который скажет «текст сменён». Проверяем набор текстов:
-    # если мультимножество текстов блока совпало, а попарно — нет,
-    # это переезд внутри родителя, а не две независимые правки.
     if not gone and not came and events:
         from collections import Counter
         olds = [e["old_text"] for e in events if e["kind"] == "text" and e["old_text"]]
@@ -424,10 +348,6 @@ def diff_nodes(old: list[dict], new: list[dict]) -> list[dict]:
 
 def mark_copy(body: str, old_nodes: list[dict], new_nodes: list[dict],
               events: list[dict]) -> str:
-    # Тот же сохранённый body, но узлы с изменениями уже помечены классами.
-    # Наши краски дописываем снизу, родные <style> из head не трогаем —
-    # без них копия складывается в голый текст. Пути считаем как снапшот
-    # (без style/link), иначе метки лягут мимо узлов.
     soup = BeautifulSoup(f"<div>{body or ''}</div>", "lxml")
     container = soup.find("div")
     if not isinstance(container, Tag):
@@ -441,7 +361,7 @@ def mark_copy(body: str, old_nodes: list[dict], new_nodes: list[dict],
                 continue
             if child.name in ("style", "link", "base", "meta", "title"):
                 continue
-            step = f"{child.name}#{_copy_position(child)}"
+            step = f"{child.name}#{_sibling_index(child, _COPY_SKIP)}"
             here = f"{path}/{step}" if path else step
             by_path[here] = child
             walk(child, here)
@@ -464,8 +384,6 @@ def mark_copy(body: str, old_nodes: list[dict], new_nodes: list[dict],
         kind = event.get("kind") or ""
         if kind == "more":
             continue
-        # Слово поменялось, структура та же: структурный diff молчит,
-        # текстовый видит. Подсвечиваем абзац, иначе самая частая правка без метки.
         if kind == "text" and len(kinds) == 1:
             path = event.get("path") or ""
             target = by_path.get(path)
@@ -500,9 +418,6 @@ def mark_copy(body: str, old_nodes: list[dict], new_nodes: list[dict],
         mark = f"pvwatch-is-{kind}"
         if mark not in cls:
             cls.append(mark)
-        # Тот же path, что в diff.ui: фронт целится карточка→метка по path,
-        # а не по номеру. Без data-атрибута индексы разъезжаются и клик
-        # подсвечивает чужой узел — «клик стирает всё».
         target["data-pvwatch-path"] = path
         target["data-pvwatch-kind"] = kind
 
@@ -511,15 +426,6 @@ def mark_copy(body: str, old_nodes: list[dict], new_nodes: list[dict],
 
 
 def copy_document(url: str, body: str) -> str:
-    """Полный документ копии для фрейма: стили в head, тело в body.
-
-    cleaned_body отдаёт «стили head + внутренности body» одной строкой.
-    Раскладываем обратно: <style>/<link> — в <head>, остальное — в <body>.
-    Плюс <base>, чтобы относительные картинки/ссылки копии чинились
-    от живого сайта. Скриптов тут уже нет (чистка при записи), фрейм
-    сверху в sandbox — клики и формы глушатся браузером, а не нашими
-    костылями, поэтому копия не «немая», а живая, но безопасная.
-    """
     soup = BeautifulSoup(f"<div>{body or ''}</div>", "lxml")
     holder = soup.find("div")
     head_bits: list[str] = []
