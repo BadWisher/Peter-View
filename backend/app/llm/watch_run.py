@@ -20,6 +20,7 @@ from ..net_guard import BlockedURLError, safe_request
 from . import watch_store as store
 from . import watch_dom
 from . import watch_render
+from .watch_dom import _VOLATILE
 
 logger = logging.getLogger(__name__)
 
@@ -41,15 +42,6 @@ def fingerprint(text: str) -> str:
 
 def snapshot_text(html: str) -> str:
     return extract_html(html, include_chrome=False).strip()
-
-
-_VOLATILE = [
-    re.compile(r"\b\d{2}\.\d{2}\.\d{4}(?:\s+\d{2}:\d{2}(?::\d{2})?)?"),
-    re.compile(r"\b\d{2}:\d{2}(?::\d{2})?\b"),
-    re.compile(r"\b[0-9a-f]{16,}\b", re.I),
-    re.compile(r"\b\d[\d\s]*просмотр\w*", re.I),
-    re.compile(r"обновлено.*", re.I),
-]
 
 
 def normalized_text(text: str) -> str:
@@ -314,7 +306,8 @@ def _pair_snaps(page_id: str) -> tuple[dict | None, dict | None]:
         return None, None
     changed_at = next((i for i, snap in enumerate(snaps) if snap.get("changed")), None)
     if changed_at is None:
-        return (snaps[0], snaps[1]) if len(snaps) > 1 else (snaps[0], None)
+        # Все прогоны холостые: показывать нечего, пару не выдумываем.
+        return snaps[0], None
     current = snaps[changed_at]
     previous = snaps[changed_at + 1] if changed_at + 1 < len(snaps) else None
     return current, previous
@@ -337,7 +330,8 @@ def _hunks_and_ui(current: dict | None, previous: dict | None) -> tuple[list[dic
     ui = watch_dom.diff_nodes(old_nodes, new_nodes)
     marks = [{"path": event.get("path") or "", "kind": event.get("kind") or ""}
              for event in ui if event.get("path") and event.get("kind") != "more"]
-    hunks = text_hunks(previous["text"] if previous else "", current["text"]) if previous else []
+    hunks = text_hunks(normalized_text(previous["text"]) if previous else "",
+                       normalized_text(current["text"])) if previous else []
     return hunks, ui, marks
 
 

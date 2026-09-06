@@ -11,8 +11,8 @@ from bs4 import BeautifulSoup, Tag
 from ..extractors import normalize_spaces
 
 _VOLATILE = [
-    re.compile(r"\b\d{2}\.\d{2}\.\d{4}(?:\s+\d{2}:\d{2}(?::\d{2})?)?"),
-    re.compile(r"\b\d{2}:\d{2}(?::\d{2})?\b"),
+    re.compile(r"\b\d{1,2}\.\d{1,2}\.\d{2,4}(?:\s+\d{1,2}:\d{2}(?::\d{2})?)?"),
+    re.compile(r"\b\d{1,2}:\d{2}(?::\d{2})?\b"),
     re.compile(r"\b[0-9a-f]{16,}\b", re.I),
     re.compile(r"\b\d[\d\s]*просмотр\w*", re.I),
     re.compile(r"обновлено.*", re.I),
