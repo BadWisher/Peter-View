@@ -157,7 +157,7 @@ class WatchDomTests(unittest.TestCase):
             watch_run.watch_dom.snapshot_nodes(after),
         )
         self.assertEqual([e["kind"] for e in events], ["attr"])
-        self.assertIn("href", events[0]["detail"])
+        self.assertIn("ссылка", events[0]["detail"])
 
     def test_tag_change_is_tag_event(self):
         before = "<html><body><main><p>Заголовок</p></main></body></html>"
@@ -223,6 +223,23 @@ class WatchCopyTests(unittest.TestCase):
         self.assertIn("pvwatch-is-added", copy)
         self.assertIn("pvwatch-is-attr", copy)
         self.assertIn("Новая версия регламента", copy)
+
+    def test_copy_is_document_with_native_styles_and_base(self):
+        group = store.create_group("Портал", auth_kind="none", created_by="editor")
+        page = store.add_page(group["id"], "https://portal.example.test/styled", "Стили")
+        first = ("<html><head><style>body{font-family:serif}</style></head>"
+                 "<body><main><h1>Регламент</h1><p>Текст тот же самый длинный.</p></main></body></html>")
+        second = ("<html><head><style>body{font-family:serif}</style></head>"
+                  "<body><main><h1>Регламент</h1><p>Текст тот же самый длинный!</p></main></body></html>")
+        with patch.object(watch_run, "safe_request", new=AsyncMock(return_value=_resp(first))):
+            asyncio.run(watch_run.check_page(page["id"]))
+        with patch.object(watch_run, "safe_request", new=AsyncMock(return_value=_resp(second))):
+            asyncio.run(watch_run.check_page(page["id"]))
+        copy = watch_run.page_copy(page["id"])
+        self.assertTrue(copy.startswith("<!DOCTYPE html>"))
+        self.assertIn("font-family:serif", copy)
+        self.assertIn('<base href="https://portal.example.test/styled">', copy)
+        self.assertIn("pvwatch-is-", copy)
 
     def test_copy_shows_ghost_where_block_was_removed(self):
         group = store.create_group("Портал", auth_kind="none", created_by="editor")

@@ -121,11 +121,18 @@ def _own_text(tag: Tag) -> str:
     return mask_volatile(" ".join(bits))[:MAX_TEXT]
 
 
-def _nth(tag: Tag) -> int:
+def _copy_position(tag: Tag) -> int:
+    """Позиция среди соседей, как её видит walk() копии.
+
+    snapshot_nodes считает пути по живому DOM без style/link/meta (их режет
+    SKIP_TAGS до обхода). Копия тоже несёт инлайновые <style> из head —
+    их надо пропускать и в подсчёте, иначе пути разъедутся и метки
+    не лягут на узлы. Обычный _child_position тут врёт на число style.
+    """
     n = 0
     sib = tag.previous_sibling
     while sib is not None:
-        if isinstance(sib, Tag) and sib.name == tag.name:
+        if isinstance(sib, Tag) and sib.name not in ("style", "link", "base", "meta", "title"):
             n += 1
         sib = sib.previous_sibling
     return n
@@ -182,26 +189,28 @@ def snapshot_nodes(html: str) -> list[dict]:
 
 
 def cleaned_body(html: str, limit: int = 60000) -> str:
-    # Тело без скриптов и чужого style. Свой style с метками (data-pvwatch)
-    # переживает чистку — иначе песочница не видит подсветку.
+    # Вычищенное тело для живой копии: без скриптов, но С родными стилями.
+    # Без них копия складывается в голый текст и не похожа на страницу.
+    # Безопасность даёт песочница iframe (sandbox без скриптов/форм/
+    # топ-навигации), а не вырезание разметки: href/src/class/style оставляем,
+    # иначе едут картинки, вёрстка и перекраски кнопок. Режем только скрипты
+    # и inline-обработчики. Внешний css (<link>) не тащим: он тяжёлый, а наша
+    # CSP всё равно его режет — хватает инлайновых <style> из head.
     soup = BeautifulSoup(html or "", "lxml")
     for dead in soup.find_all(("script", "noscript", "template")):
         dead.decompose()
-    for tag in soup.find_all("style"):
-        if tag.get("data-pvwatch") != "marks":
-            tag.decompose()
+    head_styles = ""
+    head = soup.find("head")
+    if isinstance(head, Tag):
+        # Стили живут в head — без них body-копия всегда «просто текст».
+        head_styles = "".join(str(s) for s in head.find_all("style"))
     body = soup.find("body") or soup
     if not isinstance(body, Tag):
-        return ""
+        return head_styles[:limit]
     for tag in body.find_all(True):
         for attr in ("onclick", "onload", "onerror", "onmouseover", "onfocus", "onblur"):
             tag.attrs.pop(attr, None)
-        for attr in ("href", "src", "srcset", "action"):
-            if tag.has_attr(attr):
-                tag[f"data-pvwatch-{attr}"] = tag.attrs.pop(attr)
-        if tag.name == "form":
-            tag.name = "div"
-    out = body.decode_contents() or ""
+    out = head_styles + (body.decode_contents() or "")
     return out[:limit]
 
 
@@ -411,14 +420,28 @@ def diff_nodes(old: list[dict], new: list[dict]) -> list[dict]:
 def mark_copy(body: str, old_nodes: list[dict], new_nodes: list[dict],
               events: list[dict]) -> str:
     # Тот же сохранённый body, но узлы с изменениями уже помечены классами.
-    # Краски едут внутри (песочница не видит общий style.css), чужой style
-    # cleaned_body вырезает — свой помечен data-pvwatch и переживает чистку.
-    soup = BeautifulSoup(body or "", "lxml")
-    container = soup.find("body")
-    if container is None:
-        container = soup
+    # Наши краски дописываем снизу, родные <style> из head не трогаем —
+    # без них копия складывается в голый текст. Пути считаем как снапшот
+    # (без style/link), иначе метки лягут мимо узлов.
+    soup = BeautifulSoup(f"<div>{body or ''}</div>", "lxml")
+    container = soup.find("div")
     if not isinstance(container, Tag):
         return (body or "")[:COPY_LIMIT]
+
+    by_path: dict[str, Tag] = {}
+
+    def walk(node: Tag, path: str) -> None:
+        for child in list(node.children):
+            if not isinstance(child, Tag):
+                continue
+            if child.name in ("style", "link", "base", "meta", "title"):
+                continue
+            step = f"{child.name}#{_copy_position(child)}"
+            here = f"{path}/{step}" if path else step
+            by_path[here] = child
+            walk(child, here)
+
+    walk(container, "body")
 
     paint = soup.new_tag("style")
     paint["data-pvwatch"] = "marks"
@@ -426,21 +449,8 @@ def mark_copy(body: str, old_nodes: list[dict], new_nodes: list[dict],
         ".pvwatch-is-added,.pvwatch-is-text{background:#ddf4ef;border-bottom:2px solid #00a88e;border-radius:2px}"
         ".pvwatch-is-attr,.pvwatch-is-moved,.pvwatch-is-tag{background:#fdf7ec;border-bottom:2px solid #c2820b;border-radius:2px}"
         ".pvwatch-is-removed,.pvwatch-ghost{margin:8px 0;padding:8px 10px;color:#9d2c24;background:#fdf1f0;border:1px dashed #d52a1d;border-radius:8px}"
+        ".pvwatch-active{outline:3px solid #0f766e;outline-offset:3px;border-radius:4px}"
     )
-
-    by_path: dict[str, Tag] = {}
-
-    def walk(node: Tag, path: str) -> None:
-        for child in list(node.children):
-            if not isinstance(child, Tag) or child.name == "style":
-                continue
-            step = f"{child.name}#{_child_position(child)}"
-            here = f"{path}/{step}" if path else step
-            by_path[here] = child
-            walk(child, here)
-
-    walk(container, "body")
-
     if isinstance(container, Tag):
         container.insert(0, paint)
 
@@ -487,3 +497,35 @@ def mark_copy(body: str, old_nodes: list[dict], new_nodes: list[dict],
 
     out = container.decode_contents() if isinstance(container, Tag) else str(soup)
     return (out or "")[:COPY_LIMIT]
+
+
+def copy_document(url: str, body: str) -> str:
+    """Полный документ копии для фрейма: стили в head, тело в body.
+
+    cleaned_body отдаёт «стили head + внутренности body» одной строкой.
+    Раскладываем обратно: <style>/<link> — в <head>, остальное — в <body>.
+    Плюс <base>, чтобы относительные картинки/ссылки копии чинились
+    от живого сайта. Скриптов тут уже нет (чистка при записи), фрейм
+    сверху в sandbox — клики и формы глушатся браузером, а не нашими
+    костылями, поэтому копия не «немая», а живая, но безопасная.
+    """
+    soup = BeautifulSoup(f"<div>{body or ''}</div>", "lxml")
+    holder = soup.find("div")
+    head_bits: list[str] = []
+    body_bits: list[str] = []
+    if isinstance(holder, Tag):
+        for child in list(holder.children):
+            if isinstance(child, Tag) and child.name in ("style", "link"):
+                head_bits.append(str(child))
+            else:
+                body_bits.append(str(child))
+    else:
+        body_bits.append(body or "")
+    safe_url = (url or "").replace('"', "")
+    base = f'<base href="{safe_url}">' if safe_url.startswith("http") else ""
+    doc = (
+        "<!DOCTYPE html><html><head><meta charset='utf-8'>"
+        f"{base}{''.join(head_bits)}</head>"
+        f"<body>{''.join(body_bits)}</body></html>"
+    )
+    return doc[: COPY_LIMIT + 4000]

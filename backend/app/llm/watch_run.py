@@ -362,6 +362,19 @@ def _hunks_and_ui(current: dict | None, previous: dict | None) -> tuple[list[dic
     return hunks, ui, marks
 
 
+def _copy_pair(previous: dict, current: dict) -> tuple[list[dict], list[dict]]:
+    import json
+
+    def _nodes(raw: str) -> list[dict]:
+        try:
+            data = json.loads(raw or "[]")
+        except (ValueError, TypeError):
+            return []
+        return data if isinstance(data, list) else []
+
+    return _nodes(previous.get("dom") or ""), _nodes(current.get("dom") or "")
+
+
 def page_diff(page_id: str) -> dict:
     page = store.get_page(page_id)
     if page is None:
@@ -370,20 +383,12 @@ def page_diff(page_id: str) -> dict:
     if not current:
         return {"page": page, "hunks": [], "ui": [], "marks": [], "has_copy": False, "previous": None, "current": None}
     hunks, ui, marks = _hunks_and_ui(current, previous)
-    raw_copy = current.get("body") or ""
-    if raw_copy and previous:
-        import json as _json
-
-        def _copy_nodes(raw: str) -> list[dict]:
-            try:
-                data = _json.loads(raw or "[]")
-            except (ValueError, TypeError):
-                return []
-            return data if isinstance(data, list) else []
-
-        old_nodes = _copy_nodes(previous.get("dom") or "")
-        new_nodes = _copy_nodes(current.get("dom") or "")
-        raw_copy = watch_dom.mark_copy(raw_copy, old_nodes, new_nodes, ui)
+    raw_copy = ""
+    if previous:
+        raw_copy = watch_dom.copy_document(
+            (page.get("url") or ""),
+            watch_dom.mark_copy(current.get("body") or "", *_copy_pair(previous, current), ui),
+        )
     return {
         "page": page,
         "current": {
@@ -405,10 +410,13 @@ def page_diff(page_id: str) -> dict:
 
 
 def page_copy(page_id: str) -> str:
-    """Готовое тело живой копии для iframe: разметка уже с подсветкой.
+    """Готовый документ живой копии для iframe: разметка уже с подсветкой.
 
-    page_diff лёгкий и тела не отдаёт (иначе каждый diff тащил бы 60к),
-    поэтому здесь повторяем его сборку и возвращаем только тело.
+    Отдаём полный html-документ: родные <style> из head едут в <head>
+    фрейма, боди — в <body>. Иначе фрейм кладёт <style> в тело и часть
+    правил может не примениться, а копия снова выглядит «просто текстом».
+    Песочница (sandbox без скриптов/форм/топ-навигации) глушит скрипты
+    и переходы — клики остаются внутри фрейма.
     """
     page = store.get_page(page_id)
     if page is None:
@@ -416,20 +424,10 @@ def page_copy(page_id: str) -> str:
     current, previous = _pair_snaps(page_id)
     if not current:
         return ""
-    copy = current.get("body") or ""
-    if not previous:
-        return copy
-    import json
-
-    def _nodes(raw: str) -> list[dict]:
-        try:
-            data = json.loads(raw or "[]")
-        except (ValueError, TypeError):
-            return []
-        return data if isinstance(data, list) else []
-
-    old_nodes = _nodes(previous.get("dom") or "")
-    new_nodes = _nodes(current.get("dom") or "")
-    ui = watch_dom.diff_nodes(old_nodes, new_nodes)
-    copy = watch_dom.mark_copy(copy, old_nodes, new_nodes, ui)
-    return copy
+    body = current.get("body") or ""
+    if previous:
+        old_nodes, new_nodes = _copy_pair(previous, current)
+        ui = watch_dom.diff_nodes(old_nodes, new_nodes)
+        body = watch_dom.mark_copy(body, old_nodes, new_nodes, ui)
+    url = (page.get("url") or "").replace('"', "")
+    return watch_dom.copy_document(url, body)

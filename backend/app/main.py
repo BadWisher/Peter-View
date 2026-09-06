@@ -1488,10 +1488,11 @@ async def watch_page_diff(page_id: str, _user: str = Depends(require_user)):
 
 @app.get("/api/watch/pages/{page_id}/copy")
 async def watch_page_copy(page_id: str, _user: str = Depends(require_user)):
-    # Живая копия: сохранённое тело страницы с подсветкой изменений.
+    # Живая копия для песочницы фрейма: полный html-документ с подсветкой.
     # Отдельным запросом, а не в diff: тело тяжёлое, а список и diff
-    # должны оставаться быстрыми. Разметка уже вычищена при записи
-    # (без script/style и on*-атрибутов), здесь отдаём как текст.
+    # должны оставаться быстрыми. Разметка вычищена при записи
+    # (без скриптов и on*-атрибутов), фрейм сверху в sandbox без
+    # скриптов/форм/топ-навигации — клики остаются внутри копии.
     try:
         payload = watch_run.page_copy(page_id)
     except KeyError:

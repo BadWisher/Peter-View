@@ -2023,18 +2023,36 @@ button.chip:hover,
   padding: 0 4%;
 }
 
-/* Копия наблюдаемой страницы: её собственная разметка, не наш текст. */
-.document-content .pvwatch-page {
-  display: grid;
-  gap: 14px;
+/* Копия наблюдаемой страницы: живой фрейм, а не наш текст. */
+.document-content.watch-copy {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
 }
 
-.document-content .pvwatch-page article,
-.document-content .pvwatch-page main,
-.document-content .pvwatch-page section,
+.pvwatch-frame {
+  display: block;
+  width: 100%;
+  min-height: 560px;
+  height: calc(100vh - 340px);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: #fff;
+}
+
+/* Убираем мусор из карточек: место изменения уже подсвечено во фрейме. */
+.issues-list .issue .issue-quote + .issue-fix {
+  margin-top: 6px;
+}
+
 .document-content .pvwatch-page div {
   min-width: 0;
 }
+
+/* Всё ниже — мёртвый запас эры «копия в потоке»: разметка теперь живёт
+во фрейме и нашими стилями не красится. Удалять одним куском нельзя —
+сначала смотрим, что фрейм стабилен на стейдже. */
 
 .document-content .pvwatch-page h1,
 .document-content .pvwatch-page h2,

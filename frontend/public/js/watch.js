@@ -344,18 +344,8 @@ export function watchKindBadge(kind) {
   }[kind] || "Изменение";
 }
 
-export function watchDetail(event) {
-  if (!event || event.kind === "more") return "";
-  const label = event.new_text || event.old_text || "";
-  if (event.kind === "added") return `${label ? `«${label}» — ` : ""}новый элемент, смотри подсветку в копии слева`;
-  if (event.kind === "removed") return `${label ? `«${label}» — ` : ""}элемент убрали, место помечено в копии слева`;
-  if (event.kind === "moved") return "Нажми — покажу место в копии слева";
-  if (event.kind === "tag") return `${label ? `«${label}» — ` : ""}был ${event.old_tag || "?"}, стал ${event.tag || "?"}, смотри подсветку слева`;
-  if (event.kind === "attr") {
-    const d = event.detail || "";
-    if (/оформление/.test(d)) return `${label ? `«${label}» — ` : ""}смотри подсветку в копии слева: ${d}`;
-    return `${label ? `«${label}» — ` : ""}${d}, смотри подсветку слева`;
-  }
+export function watchDetail() {
+  // Место изменения уже подсвечено в копии слева — лишний текст не пишем.
   return "";
 }
 
@@ -378,40 +368,29 @@ export function renderWatchChanges(diff, { status = "", error = "" } = {}) {
 }
 
 export function bindWatchIssues() {
-  const marks = () => Array.from(document.querySelectorAll(".document-content .pvwatch-is-text,.document-content .pvwatch-is-added,.document-content .pvwatch-is-removed,.document-content .pvwatch-ghost,.document-content .pvwatch-is-attr,.document-content .pvwatch-is-moved,.document-content .pvwatch-is-tag"));
-  const highlight = (target) => {
-    document.querySelectorAll(".document-content .pvwatch-active").forEach((node) => node.classList.remove("pvwatch-active"));
-    if (!target) return;
-    target.classList.add("pvwatch-active");
-    target.scrollIntoView({ block: "center", behavior: "smooth" });
+  const frame = () => document.querySelector(".pvwatch-frame");
+  const doc = () => frame()?.contentDocument || null;
+  const marks = () => {
+    const root = doc();
+    if (!root) return [];
+    return Array.from(root.querySelectorAll(".pvwatch-is-text,.pvwatch-is-added,.pvwatch-is-removed,.pvwatch-ghost,.pvwatch-is-attr,.pvwatch-is-moved,.pvwatch-is-tag"));
   };
-  document.querySelectorAll(".review-workspace [data-issue-index]").forEach((element) => element.addEventListener("click", () => {
-    document.querySelectorAll(".issues-list [data-issue-index].active").forEach((other) => other.classList.remove("active"));
-    document.querySelector(`.issues-list [data-issue-index="${element.dataset.issueIndex}"]`)?.classList.add("active");
-    highlight(marks()[Number(element.dataset.issueIndex)] || marks()[0]);
-  }));
-  const copy = document.querySelector(".document-content");
-  if (copy && !copy.dataset.watchClicks) {
-    copy.dataset.watchClicks = "1";
-    // Ссылки/кнопки наблюдаемой страницы в копии глушим: они ведут на живой
-    // сайт и уводят со страницы проверки. Оставляем метки кликабельными
-    // только для подсветки связанных карточек.
-    copy.addEventListener("click", (event) => {
-      const hit = event.target instanceof Element ? event.target.closest("a,button,form") : null;
-      if (!hit || !copy.contains(hit)) return;
-      if (!hit.className || !String(hit.className).includes("pvwatch-is-")) {
-        event.preventDefault();
-        event.stopPropagation();
-        return;
-      }
-      const all = marks();
-      const at = all.indexOf(hit.closest("[class*=pvwatch-is-]") || hit);
-      if (at < 0) return;
+  const highlight = (target) => {
+    const root = doc();
+    if (!root || !target) return;
+    root.querySelectorAll(".pvwatch-active").forEach((node) => node.classList.remove("pvwatch-active"));
+    target.classList.add("pvwatch-active");
+    try { target.scrollIntoView({ block: "center", behavior: "smooth" }); } catch { /* фрейм ещё грузится */ }
+  };
+  document.querySelectorAll(".review-workspace [data-issue-index]").forEach((element) => {
+    if (element.dataset.watchBound) return;
+    element.dataset.watchBound = "1";
+    element.addEventListener("click", () => {
       document.querySelectorAll(".issues-list [data-issue-index].active").forEach((other) => other.classList.remove("active"));
-      document.querySelector(`.issues-list [data-issue-index="${at}"]`)?.classList.add("active");
-      highlight(all[at]);
-    }, true);
-  }
+      document.querySelector(`.issues-list [data-issue-index="${element.dataset.issueIndex}"]`)?.classList.add("active");
+      highlight(marks()[Number(element.dataset.issueIndex)] || marks()[0]);
+    });
+  });
 }
 
 function watchUiSentence(event) {
@@ -452,8 +431,13 @@ function watchUiSentence(event) {
   return "";
 }
 
-// Копия страницы: то же сохранённое тело, без скриптов. Подсветку
-// в разметку ставит бэкенд (классы pvwatch-is-*), тут только вставка.
+// Копия страницы: то же сохранённое тело, но в песочнице iframe.
+// В поток встраивать нельзя: чужая вёрстка (grid/flex у body, сбросы
+// margin) ломает нашу панель, а наши стили превращают копию в «просто
+// текст». Фрейм с sandbox="allow-same-origin" глушит скрипты, формы
+// и переходы (клики остаются внутри), родные стили копии работают как
+// на живом сайте. Подсветку в разметку ставит бэкенд (pvwatch-is-*),
+// ниже только мост «карточка ↔ метка во фрейме».
 export function watchCopyUrl(pageId) {
   return `/api/watch/pages/${encodeURIComponent(pageId)}/copy`;
 }
@@ -461,19 +445,28 @@ export function watchCopyUrl(pageId) {
 export function renderWatchCopy(diff, pageId) {
   if (!diff?.copy && !diff?.has_copy) return "";
   const n = Math.max(1, watchChanges(diff).length);
-  const body = diff?.copy
-    ? `<div class="document-content" aria-live="polite"><div class="pvwatch-page">${diff.copy}</div></div>`
-    : `<div class="document-content" data-watch-copy="${escapeHTML(pageId)}" aria-live="polite">Загружаю копию…</div>`;
-  return `${body}<aside class="document-map" aria-label="Карта изменений">${Array.from({ length: 22 }, () => "<span></span>").join("")}${Array.from({ length: Math.min(12, n) }, (_, index) => `<button class="map-point warning" style="--y:${Math.min(88, 8 + index * 7)}%" type="button" data-issue-index="${index}" aria-label="Изменение ${index + 1}"></button>`).join("")}</aside>`;
+  const frame = `<iframe class="pvwatch-frame" title="Сохранённая копия страницы" sandbox="allow-same-origin" src="${diff?.copy ? `about:blank` : watchCopyUrl(pageId)}" data-watch-frame="${escapeHTML(pageId)}"${diff?.copy ? ` data-watch-inline="1"` : ""}></iframe>`;
+  return `<div class="document-content watch-copy" aria-live="polite">${frame}</div><aside class="document-map" aria-label="Карта изменений">${Array.from({ length: 22 }, () => "<span></span>").join("")}${Array.from({ length: Math.min(12, n) }, (_, index) => `<button class="map-point warning" style="--y:${Math.min(88, 8 + index * 7)}%" type="button" data-issue-index="${index}" aria-label="Изменение ${index + 1}"></button>`).join("")}</aside>`;
 }
 
-export function bindWatchCopy() {
-  document.querySelectorAll("[data-watch-copy]").forEach(async (box) => {
-    try {
-      const res = await fetch(watchCopyUrl(box.dataset.watchCopy), { credentials: "same-origin" });
-      if (!res.ok) return;
-      box.outerHTML = `<div class="document-content" aria-live="polite"><div class="pvwatch-page">${await res.text()}</div></div>`;
-    } catch { /* копия уже в diff.copy — список находок выше всё сказал */ }
+export function bindWatchCopy(diff) {
+  const inline = diff?.copy || "";
+  document.querySelectorAll("[data-watch-frame]").forEach((frame) => {
+    const paint = async () => {
+      try {
+        if (inline && frame.dataset.watchInline) {
+          frame.srcdoc = inline;
+          return;
+        }
+        const res = await fetch(watchCopyUrl(frame.dataset.watchFrame), { credentials: "same-origin" });
+        if (!res.ok) return;
+        frame.srcdoc = await res.text();
+      } catch { /* копия уже в diff.copy — список находок выше всё сказал */ }
+    };
+    if (frame.dataset.watchReady) return;
+    frame.dataset.watchReady = "1";
+    frame.addEventListener("load", () => bindWatchIssues());
+    paint();
   });
   bindWatchIssues();
 }
@@ -634,7 +627,7 @@ export async function renderWatch() {
       </section>
     </div>`);
     document.querySelector(".back-watch").addEventListener("click", () => openWatch(groupId));
-    bindWatchCopy();
+    bindWatchCopy(diff);
     document.querySelector(".run-watch-page").addEventListener("click", () => startWatchRun(`/api/watch/pages/${encodeURIComponent(pageId)}/run`));
     document.querySelector(".delete-watch-page")?.addEventListener("click", () => {
       confirmAction({
