@@ -327,27 +327,37 @@ def _pair_snaps(page_id: str) -> tuple[dict | None, dict | None]:
     return current, previous
 
 
-def _loads_nodes(raw: str) -> list[dict]:
+def _loads_nodes(raw: str) -> tuple[list[dict], bool]:
+    """Узлы снимка и признак «снимок полный».
+
+    Старые снимки до подъёма DOM_CAP хранили обрезанный JSON. Достаём из них
+    целые узлы, но сравнивать такой неполный набор с полным нельзя: хвост
+    страницы diff_nodes посчитает добавленным и выдаст сотни ложных изменений.
+    """
     try:
         data = json.loads(raw or "[]")
+        return (data if isinstance(data, list) else []), True
     except (ValueError, TypeError):
-        # снимки до подъёма DOM_CAP хранили обрезанный JSON; достаём целые узлы
         end = (raw or "").rfind("},")
         if end < 0:
-            return []
+            return [], False
         try:
             data = json.loads(raw[:end] + "]")
         except (ValueError, TypeError):
-            return []
-    return data if isinstance(data, list) else []
+            return [], False
+        return (data if isinstance(data, list) else []), False
 
 
 def _hunks_and_ui(current: dict | None, previous: dict | None) -> tuple[list[dict], list[dict], list[dict]]:
     if not previous or not (current.get("dom") or previous.get("dom")):
         hunks = text_hunks(previous["text"] if previous else "", current["text"]) if (current and previous) else []
         return hunks, [], []
-    old_nodes = _loads_nodes(previous.get("dom") or "")
-    new_nodes = _loads_nodes(current.get("dom") or "")
+    old_nodes, old_full = _loads_nodes(previous.get("dom") or "")
+    new_nodes, new_full = _loads_nodes(current.get("dom") or "")
+    if not (old_full and new_full):
+        # один из снимков обрезан, честный UI-дифф по ним невозможен
+        hunks = text_hunks(normalized_text(previous["text"]), normalized_text(current["text"]))
+        return hunks, [], []
     ui = watch_dom.diff_nodes(old_nodes, new_nodes)
     marks = [{"path": event.get("path") or "", "kind": event.get("kind") or ""}
              for event in ui if event.get("path") and event.get("kind") != "more"]
@@ -356,8 +366,12 @@ def _hunks_and_ui(current: dict | None, previous: dict | None) -> tuple[list[dic
     return hunks, ui, marks
 
 
-def _copy_pair(previous: dict, current: dict) -> tuple[list[dict], list[dict]]:
-    return _loads_nodes(previous.get("dom") or ""), _loads_nodes(current.get("dom") or "")
+def _copy_pair(previous: dict, current: dict) -> tuple[list[dict], list[dict]] | None:
+    old_nodes, old_full = _loads_nodes(previous.get("dom") or "")
+    new_nodes, new_full = _loads_nodes(current.get("dom") or "")
+    if not (old_full and new_full):
+        return None
+    return old_nodes, new_nodes
 
 
 def page_diff(page_id: str) -> dict:
@@ -368,7 +382,9 @@ def page_diff(page_id: str) -> dict:
     if not current:
         return {"page": page, "hunks": [], "ui": [], "marks": [], "has_copy": False, "previous": None, "current": None}
     hunks, ui, marks = _hunks_and_ui(current, previous)
-    has_copy = bool(previous) and bool(current.get("body"))
+    # копия есть всегда, когда сохранено тело: меняться там нечему — не повод
+    # прятать страницу
+    has_copy = bool(current.get("body"))
     return {
         "page": page,
         "current": {
@@ -397,8 +413,10 @@ def page_copy(page_id: str) -> str:
         return ""
     body = current.get("body") or ""
     if previous:
-        old_nodes, new_nodes = _copy_pair(previous, current)
-        ui = watch_dom.diff_nodes(old_nodes, new_nodes)
-        body = watch_dom.mark_copy(body, old_nodes, new_nodes, ui)
+        pair = _copy_pair(previous, current)
+        if pair is not None:
+            old_nodes, new_nodes = pair
+            ui = watch_dom.diff_nodes(old_nodes, new_nodes)
+            body = watch_dom.mark_copy(body, old_nodes, new_nodes, ui)
     url = (page.get("url") or "").replace('"', "")
     return watch_dom.copy_document(url, body)

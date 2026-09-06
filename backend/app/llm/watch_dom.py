@@ -14,6 +14,8 @@ _VOLATILE = [
     re.compile(r"\b\d{1,2}\.\d{1,2}\.\d{2,4}(?:\s+\d{1,2}:\d{2}(?::\d{2})?)?"),
     re.compile(r"\b\d{1,2}:\d{2}(?::\d{2})?\b"),
     re.compile(r"\b[0-9a-f]{16,}\b", re.I),
+    # uuid вида 360bf20f-3c4d-45f7-9a53-51ccbd4e: генерится на каждую загрузку
+    re.compile(r"\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b", re.I),
     re.compile(r"\b\d[\d\s]*просмотр\w*", re.I),
     re.compile(r"обновлено.*", re.I),
 ]
