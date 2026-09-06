@@ -138,7 +138,15 @@ async def _form_login(
         raise ValueError("Для формы входа нужны логин и пароль")
     page = await safe_request(client, "GET", login_url)
     soup = BeautifulSoup(page.text, "lxml")
-    form = soup.find("form")
+    form = None
+    for candidate in soup.find_all("form"):
+        for inp in candidate.find_all("input"):
+            if (inp.get("type") or "").lower() == "password":
+                form = candidate
+                break
+        if form is not None:
+            break
+    form = form or soup.find("form")
     if form is None:
         raise ValueError(
             "На странице входа нет формы (возможно, вход через JS или SSO — такой портал наблюдение не поддерживает)"
@@ -209,7 +217,13 @@ async def _fetch_page(client: httpx.AsyncClient, url: str, auth: httpx.Auth | No
         )
         raise ValueError(f"Со страницы пришло почти пусто ({len(text)} символов){hint}")
     soup = BeautifulSoup(html, "lxml")
-    if soup.find("input", {"type": "password"}) and "парол" in html.lower():
+    has_pass = any(
+        (inp.get("type") or "").lower() == "password" for inp in soup.find_all("input")
+    )
+    lowered = html.lower()
+    if has_pass and any(
+        mark in lowered for mark in ("парол", "password", "sign in", "log in", "войти", "вход")
+    ):
         raise ValueError("Портал снова показал форму входа — сессия протухла, проверь пароль группы")
     return html, rendered
 
