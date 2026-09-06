@@ -361,12 +361,7 @@ def page_diff(page_id: str) -> dict:
     if not current:
         return {"page": page, "hunks": [], "ui": [], "marks": [], "has_copy": False, "previous": None, "current": None}
     hunks, ui, marks = _hunks_and_ui(current, previous)
-    raw_copy = ""
-    if previous:
-        raw_copy = watch_dom.copy_document(
-            (page.get("url") or ""),
-            watch_dom.mark_copy(current.get("body") or "", *_copy_pair(previous, current), ui),
-        )
+    has_copy = bool(previous) and bool(current.get("body"))
     return {
         "page": page,
         "current": {
@@ -382,8 +377,7 @@ def page_diff(page_id: str) -> dict:
         "hunks": hunks,
         "ui": ui,
         "marks": marks,
-        "has_copy": bool(raw_copy),
-        "copy": raw_copy,
+        "has_copy": has_copy,
     }
 
 

@@ -36,6 +36,7 @@ jobs:
           cp frontend/public/logo.png site/logo.png
           cp frontend/public/favicon.png site/favicon.png
           cp docs/screenshots/01-login.png docs/screenshots/02-check.png site/assets/
+          cp -r docs/preview site/preview
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site

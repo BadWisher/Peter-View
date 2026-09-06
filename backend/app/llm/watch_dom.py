@@ -36,7 +36,7 @@ _HIDDEN_STYLE = re.compile(r"display\s*:\s*none|visibility\s*:\s*hidden", re.I)
 MAX_NODES = 2000
 MAX_TEXT = 120
 MAX_EVENTS = 200
-COPY_LIMIT = 60000
+COPY_LIMIT = 400000
 
 
 def mask_volatile(value: str) -> str:
@@ -149,7 +149,7 @@ def snapshot_nodes(html: str) -> list[dict]:
     return nodes
 
 
-def cleaned_body(html: str, limit: int = 60000) -> str:
+def cleaned_body(html: str, limit: int = 400000) -> str:
     soup = BeautifulSoup(html or "", "lxml")
     for dead in soup.find_all(("script", "noscript", "template")):
         dead.decompose()
