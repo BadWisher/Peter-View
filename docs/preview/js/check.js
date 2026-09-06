@@ -551,10 +551,12 @@ export function watchJob(jobId) {
 
 export function normalizedIssues() {
   const issues = state.currentReport?.issues || [];
-  return issues.map((issue, index) => ({
+  const rows = issues.map((issue, index) => ({
     id: issue.id ?? index,
     severity: issue.severity || "warning",
     line: (issue.line ?? issue.line_number ?? issue.block_index ?? index) + (issue.block_index !== undefined ? 1 : 0),
+    block: issue.block_index ?? issue.line ?? issue.line_number ?? index,
+    at: (issue.context || issue.line_text || issue.text || issue.fragment || "").indexOf(issue.span_text || issue.fragment || issue.match || ""),
     message: issue.message || issue.description || issue.title || "Замечание",
     fragment: issue.fragment || issue.match || issue.span_text || issue.text || "",
     recommendation: issue.recommendation || issue.replacement || issue.suggestion || issue.replace || "",
@@ -563,6 +565,10 @@ export function normalizedIssues() {
     context: issue.context || issue.line_text || issue.text || issue.fragment || "",
     raw: issue,
   }));
+  const numbered = rows.filter((item) => Number.isFinite(Number(item.block)));
+  const rest = rows.filter((item) => !Number.isFinite(Number(item.block)));
+  numbered.sort((a, b) => Number(a.block) - Number(b.block) || (a.at < 0 ? 1e9 : a.at) - (b.at < 0 ? 1e9 : b.at) || String(a.fragment).localeCompare(String(b.fragment)));
+  return [...numbered, ...rest];
 }
 
 export function reportText(report = state.currentReport) {
@@ -573,8 +579,8 @@ export function reportText(report = state.currentReport) {
 }
 
 export function visibleIssues() {
-  return normalizedIssues().filter((issue, index) => {
-    if (state.hiddenIssues.has(index)) return false;
+  return normalizedIssues().filter((issue) => {
+    if (state.hiddenIssues.has(issue.id)) return false;
     return state.issueFilter === "all" || issue.severity === state.issueFilter;
   });
 }
@@ -791,7 +797,7 @@ export function bindReview() {
 export async function exportReport() {
   if (!state.currentReport) return;
   try {
-    const issues = normalizedIssues().filter((_, index) => !state.hiddenIssues.has(index)).map((item) => item.raw);
+    const issues = normalizedIssues().filter((item) => !state.hiddenIssues.has(item.id)).map((item) => item.raw);
     const blob = await api("/api/report-issues", {
       method: "POST",
       body: JSON.stringify({ issues, source: state.currentReport.document || state.currentReport.source || "Текст" }),

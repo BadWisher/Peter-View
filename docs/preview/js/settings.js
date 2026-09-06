@@ -40,7 +40,7 @@ export async function renderSettings() {
     try {
       await api("/api/settings", { method: "PUT", body: JSON.stringify(payload) });
       toast("Настройки сохранены");
-      renderApp();
+      hooks.renderApp();
       return;
     } catch (error) { showError(error); }
     setBusy(button, false);
