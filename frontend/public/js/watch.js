@@ -345,8 +345,7 @@ export function renderWatchChanges(diff, { status = "", error = "" } = {}) {
   const items = watchChanges(diff);
   if (!items.length) {
     if (status === "pending") return `<div class="empty-state">${icon("icon-clock")}<div><h3>Ещё не проверялась</h3><p>Нажми «Проверить», чтобы снять первый снимок.</p></div></div>`;
-    if (status === "same") return `<div class="empty-state">${icon("icon-check")}<div><h3>Без изменений</h3><p>Проверь ещё раз позже.</p></div></div>`;
-    return `<div class="empty-state">${icon("icon-eye")}<div><h3>Сравнить пока нечего</h3><p>Нужны два снимка: проверь страницу дважды.</p></div></div>`;
+    return `<div class="empty-state">${icon("icon-check")}<div><h3>Без изменений</h3><p>Проверь ещё раз позже.</p></div></div>`;
   }
   return `<div class="issues-list">${items.map((item, index) => {
     if (item.note) return `<button class="issue" type="button" data-issue-index="${index}"><span class="badge warning">${escapeHTML(watchKindBadge(item.event?.kind))}</span><span class="issue-location">${escapeHTML(item.loc || "структура")}</span><strong>${escapeHTML(watchUiSentence(item.event))}</strong></button>`;
@@ -610,7 +609,7 @@ export async function renderWatch() {
     renderShell(`
     <div class="review-view">
       <section class="review-toolbar">
-        <div class="review-toolbar-title"><button class="text-link back-watch" type="button">${icon("icon-arrow")} ${escapeHTML(group.name)}</button><strong>${escapeHTML(diff.page?.title || page?.title || "Адрес")}</strong><small>${checkedBit} · ${summary || "изменений нет"}${status === "same" && summary ? " · нового нет" : ""}</small></div>
+        <div class="review-toolbar-title"><button class="text-link back-watch" type="button">${icon("icon-arrow")} ${escapeHTML(group.name)}</button><strong>${escapeHTML(diff.page?.title || page?.title || "Адрес")}</strong><small>${checkedBit}${summary ? ` · ${summary}` : " · изменений нет"}</small></div>
         <div class="head-actions">
           <button class="button secondary run-watch-page" type="button" ${running ? "disabled" : ""}>${icon("icon-refresh")}${running ? "Проверяем…" : "Проверить"}</button>
           <a class="button secondary watch-original" href="${escapeHTML(diff.page?.url || page?.url || "")}" target="_blank" rel="noopener" title="Живой сайт в новой вкладке — копия слева это сохранённый снимок">${icon("icon-link")}Оригинал</a>

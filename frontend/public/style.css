@@ -2031,11 +2031,16 @@ button.chip:hover,
   padding: 0;
 }
 
+.document-scroll:has(.watch-copy) {
+  align-content: start;
+  padding: 18px 13px 60px;
+}
+
 .pvwatch-frame {
   display: block;
   width: 100%;
-  min-height: 560px;
-  height: calc(100vh - 340px);
+  min-height: 240px;
+  height: 520px;
   border: 0;
   border-radius: var(--radius-sm);
   background: #fff;
