@@ -238,7 +238,7 @@ class WatchCopyTests(unittest.TestCase):
         copy = watch_run.page_copy(page["id"])
         self.assertTrue(copy.startswith("<!DOCTYPE html>"))
         self.assertIn("font-family:serif", copy)
-        self.assertIn('<base href="https://portal.example.test/styled">', copy)
+        self.assertIn('<base href="https://portal.example.test/styled" target="_blank">', copy)
         self.assertIn("pvwatch-is-", copy)
 
     def test_copy_shows_ghost_where_block_was_removed(self):

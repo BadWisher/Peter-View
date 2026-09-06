@@ -259,8 +259,12 @@ export function watchChanges(diff) {
   }
   // Та же правка текста видна и в структуре — второй раз её не повторяем.
   // Сдвиг блока тоже даёт del/add в тексте: слова те же, место другое.
+  // Порядок карточек = порядку меток во фрейме: ui идёт в том же порядке,
+  // что diff_nodes, а text-кейсы без своей метки пришиваем к абзацу ниже.
+  // Иначе индекс N карточки смотрит на метку M — «клик стирает всё».
+  const ordered = [...ui].sort((a, b) => (a.path || "").localeCompare(b.path || ""));
   const movedTexts = new Set(
-    ui.filter((e) => e.kind === "moved").flatMap((e) => [e.old_text || "", e.new_text || ""]).filter(Boolean),
+    ordered.filter((e) => e.kind === "moved").flatMap((e) => [e.old_text || "", e.new_text || ""]).filter(Boolean),
   );
   const movedFirst = movedTexts.size ? [...movedTexts][0] : "";
   const textCovered = out.some((item) => {
@@ -268,17 +272,17 @@ export function watchChanges(diff) {
     return t && !movedTexts.has(t);
   });
   const moved = [];
-  for (const event of ui) {
+  for (const event of ordered) {
     if (event.kind === "text" && textCovered) continue;
     if (event.kind === "text") {
-      out.push({ oldText: event.old_text || "", newText: event.new_text || "", loc: watchTagLabel(event.tag), event });
+      out.push({ oldText: event.old_text || "", newText: event.new_text || "", loc: watchTagLabel(event.tag), event, path: event.path || "" });
       continue;
     }
     if (event.kind === "moved") {
       moved.push(event);
       continue;
     }
-    out.push({ oldText: "", newText: "", note: watchUiSentence(event), loc: watchTagLabel(event.tag), event });
+    out.push({ oldText: "", newText: "", note: watchUiSentence(event), loc: watchTagLabel(event.tag), event, path: event.path || "" });
   }
   // Один сдвиг — одна карточка. Иначе переезд кнопки мимо абзаца даёт
   // пять строк: add/del текста плюс «переставили» на каждый затронутый узел.
@@ -293,7 +297,9 @@ export function watchChanges(diff) {
     out.push({ oldText: "", newText: "", note, loc: watchTagLabel(event.tag), event });
   } else if (moved.length > 1) {
     const names = [...new Set(moved.map((e) => e.new_text || e.old_text || "").filter(Boolean))].slice(0, 3);
-    const first = moved[0];
+    // Групповая карточка сдвига: честная метка — первый узел группы,
+    // а не первый попавшийся. Иначе клик ведёт не туда.
+    const first = [...moved].sort((a, b) => (a.path || "").localeCompare(b.path || ""))[0];
     const note = names.length
       ? `Переставили: ${names.map((n) => `«${n}»`).join(", ")}.`
       : "Элементы переставили местами.";
@@ -368,27 +374,59 @@ export function renderWatchChanges(diff, { status = "", error = "" } = {}) {
 }
 
 export function bindWatchIssues() {
-  const frame = () => document.querySelector(".pvwatch-frame");
-  const doc = () => frame()?.contentDocument || null;
+  const frames = () => Array.from(document.querySelectorAll(".pvwatch-frame"));
+  const docOf = (node) => {
+    if (node?.ownerDocument && node.ownerDocument !== document) return node.ownerDocument;
+    return frames().map((f) => f.contentDocument).find(Boolean) || null;
+  };
   const marks = () => {
-    const root = doc();
-    if (!root) return [];
-    return Array.from(root.querySelectorAll(".pvwatch-is-text,.pvwatch-is-added,.pvwatch-is-removed,.pvwatch-ghost,.pvwatch-is-attr,.pvwatch-is-moved,.pvwatch-is-tag"));
+    const out = [];
+    for (const frame of frames()) {
+      const root = frame.contentDocument;
+      if (!root) continue;
+      out.push(...root.querySelectorAll(".pvwatch-is-text,.pvwatch-is-added,.pvwatch-is-removed,.pvwatch-ghost,.pvwatch-is-attr,.pvwatch-is-moved,.pvwatch-is-tag"));
+    }
+    return out;
   };
   const highlight = (target) => {
-    const root = doc();
+    const root = docOf(target);
     if (!root || !target) return;
+    const frame = frames().find((f) => f.contentDocument === root);
     root.querySelectorAll(".pvwatch-active").forEach((node) => node.classList.remove("pvwatch-active"));
     target.classList.add("pvwatch-active");
     try { target.scrollIntoView({ block: "center", behavior: "smooth" }); } catch { /* фрейм ещё грузится */ }
+    // Номер метки в плоском списке находок ↔ узел: скролл фрейма не двигает
+    // страницу, но карточка должна сказать, куда смотреть.
+    try { frame?.scrollIntoView({ block: "nearest", behavior: "smooth" }); } catch { /* рядом и так видно */ }
   };
   document.querySelectorAll(".review-workspace [data-issue-index]").forEach((element) => {
     if (element.dataset.watchBound) return;
     element.dataset.watchBound = "1";
-    element.addEventListener("click", () => {
+    element.addEventListener("click", (click) => {
+      click.preventDefault();
+      click.stopPropagation();
+      // Карточки и метки идут в одном порядке (по path), но части карточек
+      // без своей метки (текстовые дубли, групповой сдвиг) сдвигают индекс.
+      // Поэтому целимся не по номеру, а по path карточки → метка с тем же
+      // путём. Номера остались для a11y/карты. Fallback по индексу — только
+      // когда path нет: ищем ANY, не marks()[0], чтобы клик не «стирал всё».
+      const items = watchChanges(window.__watchDiff || {});
+      const item = items[Number(element.dataset.issueIndex)];
+      const list = marks();
+      if (!list.length) return;
+      let target = null;
+      const want = (item?.event?.path || item?.path || "").trim();
+      if (want) {
+        for (const node of list) {
+          if (node.dataset?.pvwatchPath === want) { target = node; break; }
+        }
+        if (!target) target = list.find((node) => node.textContent?.includes((item?.event?.new_text || item?.event?.old_text || "").slice(0, 24))) || null;
+      }
+      if (!target) target = list[Number(element.dataset.issueIndex)] || null;
+      if (!target) return;
       document.querySelectorAll(".issues-list [data-issue-index].active").forEach((other) => other.classList.remove("active"));
       document.querySelector(`.issues-list [data-issue-index="${element.dataset.issueIndex}"]`)?.classList.add("active");
-      highlight(marks()[Number(element.dataset.issueIndex)] || marks()[0]);
+      highlight(target);
     });
   });
 }
@@ -434,10 +472,10 @@ function watchUiSentence(event) {
 // Копия страницы: то же сохранённое тело, но в песочнице iframe.
 // В поток встраивать нельзя: чужая вёрстка (grid/flex у body, сбросы
 // margin) ломает нашу панель, а наши стили превращают копию в «просто
-// текст». Фрейм с sandbox="allow-same-origin" глушит скрипты, формы
-// и переходы (клики остаются внутри), родные стили копии работают как
-// на живом сайте. Подсветку в разметку ставит бэкенд (pvwatch-is-*),
-// ниже только мост «карточка ↔ метка во фрейме».
+// текст». Фрейм с sandbox глушит скрипты, формы и топ-навигацию
+// (клики уходят в base target=_blank, не в топ), родные стили копии
+// работают как на живом сайте. Подсветку в разметку ставит бэкенд
+// (pvwatch-is-* + data-pvwatch-path), ниже мост «карточка ↔ метка».
 export function watchCopyUrl(pageId) {
   return `/api/watch/pages/${encodeURIComponent(pageId)}/copy`;
 }
@@ -445,11 +483,12 @@ export function watchCopyUrl(pageId) {
 export function renderWatchCopy(diff, pageId) {
   if (!diff?.copy && !diff?.has_copy) return "";
   const n = Math.max(1, watchChanges(diff).length);
-  const frame = `<iframe class="pvwatch-frame" title="Сохранённая копия страницы" sandbox="allow-same-origin" src="${diff?.copy ? `about:blank` : watchCopyUrl(pageId)}" data-watch-frame="${escapeHTML(pageId)}"${diff?.copy ? ` data-watch-inline="1"` : ""}></iframe>`;
+  const frame = `<iframe class="pvwatch-frame" title="Сохранённая копия страницы" sandbox="allow-same-origin allow-popups" src="${diff?.copy ? `about:blank` : watchCopyUrl(pageId)}" data-watch-frame="${escapeHTML(pageId)}"${diff?.copy ? ` data-watch-inline="1"` : ""}></iframe>`;
   return `<div class="document-content watch-copy" aria-live="polite">${frame}</div><aside class="document-map" aria-label="Карта изменений">${Array.from({ length: 22 }, () => "<span></span>").join("")}${Array.from({ length: Math.min(12, n) }, (_, index) => `<button class="map-point warning" style="--y:${Math.min(88, 8 + index * 7)}%" type="button" data-issue-index="${index}" aria-label="Изменение ${index + 1}"></button>`).join("")}</aside>`;
 }
 
 export function bindWatchCopy(diff) {
+  window.__watchDiff = diff;
   const inline = diff?.copy || "";
   document.querySelectorAll("[data-watch-frame]").forEach((frame) => {
     const paint = async () => {

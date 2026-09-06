@@ -192,25 +192,30 @@ def cleaned_body(html: str, limit: int = 60000) -> str:
     # Вычищенное тело для живой копии: без скриптов, но С родными стилями.
     # Без них копия складывается в голый текст и не похожа на страницу.
     # Безопасность даёт песочница iframe (sandbox без скриптов/форм/
-    # топ-навигации), а не вырезание разметки: href/src/class/style оставляем,
-    # иначе едут картинки, вёрстка и перекраски кнопок. Режем только скрипты
-    # и inline-обработчики. Внешний css (<link>) не тащим: он тяжёлый, а наша
-    # CSP всё равно его режет — хватает инлайновых <style> из head.
+    # топ-навигации и попапов + base target=_blank), а не вырезание разметки:
+    # href/src/class/style оставляем, иначе едут картинки, вёрстка
+    # и перекраски кнопок. Режем только скрипты и inline-обработчики.
+    # Внешний css (<link rel=stylesheet>) оставляем как есть: srcdoc-фрейм
+    # попробует его подтянуть, не выйдет — не страшно, инлайна хватит.
     soup = BeautifulSoup(html or "", "lxml")
     for dead in soup.find_all(("script", "noscript", "template")):
         dead.decompose()
-    head_styles = ""
+    head_keep = ""
     head = soup.find("head")
     if isinstance(head, Tag):
         # Стили живут в head — без них body-копия всегда «просто текст».
-        head_styles = "".join(str(s) for s in head.find_all("style"))
+        bits = list(head.find_all("style"))
+        bits += [l for l in head.find_all("link")
+                 if "stylesheet" in str(l.get("rel") or "").lower()
+                 or str(l.get("href") or "").endswith(".css")]
+        head_keep = "".join(str(s) for s in bits)
     body = soup.find("body") or soup
     if not isinstance(body, Tag):
-        return head_styles[:limit]
+        return head_keep[:limit]
     for tag in body.find_all(True):
         for attr in ("onclick", "onload", "onerror", "onmouseover", "onfocus", "onblur"):
             tag.attrs.pop(attr, None)
-    out = head_styles + (body.decode_contents() or "")
+    out = head_keep + (body.decode_contents() or "")
     return out[:limit]
 
 
@@ -471,6 +476,8 @@ def mark_copy(body: str, old_nodes: list[dict], new_nodes: list[dict],
                 if "pvwatch-is-text" not in cls:
                     cls.append("pvwatch-is-text")
                 target["class"] = cls
+                target["data-pvwatch-path"] = path
+                target["data-pvwatch-kind"] = kind
             continue
         path = event.get("path") or ""
         if kind == "removed":
@@ -493,7 +500,11 @@ def mark_copy(body: str, old_nodes: list[dict], new_nodes: list[dict],
         mark = f"pvwatch-is-{kind}"
         if mark not in cls:
             cls.append(mark)
-        target["class"] = cls
+        # Тот же path, что в diff.ui: фронт целится карточка→метка по path,
+        # а не по номеру. Без data-атрибута индексы разъезжаются и клик
+        # подсвечивает чужой узел — «клик стирает всё».
+        target["data-pvwatch-path"] = path
+        target["data-pvwatch-kind"] = kind
 
     out = container.decode_contents() if isinstance(container, Tag) else str(soup)
     return (out or "")[:COPY_LIMIT]
@@ -522,7 +533,7 @@ def copy_document(url: str, body: str) -> str:
     else:
         body_bits.append(body or "")
     safe_url = (url or "").replace('"', "")
-    base = f'<base href="{safe_url}">' if safe_url.startswith("http") else ""
+    base = f'<base href="{safe_url}" target="_blank">' if safe_url.startswith("http") else ""
     doc = (
         "<!DOCTYPE html><html><head><meta charset='utf-8'>"
         f"{base}{''.join(head_bits)}</head>"
