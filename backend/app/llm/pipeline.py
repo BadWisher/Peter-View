@@ -396,6 +396,11 @@ def _build_report(document: Document, guide: StyleGuide, issues: list[dict], sta
         ui_issues.append(ui)
 
     ui_issues = _group_duplicates(ui_issues)
+    ui_issues.sort(key=lambda item: (
+        item.get("block_index", 0),
+        next((pos for pos in [((blocks_by_index.get(item.get("block_index"), "") or "").find(item.get("span_text") or ""))] if pos >= 0), 10**9),
+        str(item.get("span_text") or item.get("replacement") or item.get("message") or ""),
+    ))
 
     partial = stats.failed > 0
     report = {

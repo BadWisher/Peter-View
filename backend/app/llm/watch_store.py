@@ -86,6 +86,20 @@ def _init_db() -> None:
             );
             """
         )
+        # Структура интерфейса живёт рядом с текстом: хэш структуры ловит
+        # новые/пропавшие/переехавшие элементы, dom — их позиции для диффа.
+        # body — вычищенное тело для живой копии (без скриптов).
+        # Миграция мягкая: на старых базах колонок нет — добавляем.
+        for stmt in (
+            "ALTER TABLE snapshots ADD COLUMN struct_hash TEXT NOT NULL DEFAULT ''",
+            "ALTER TABLE snapshots ADD COLUMN dom TEXT NOT NULL DEFAULT ''",
+            "ALTER TABLE snapshots ADD COLUMN body TEXT NOT NULL DEFAULT ''",
+            "ALTER TABLE pages ADD COLUMN struct_hash TEXT",
+        ):
+            try:
+                conn.execute(stmt)
+            except sqlite3.OperationalError:
+                pass  # колонка уже есть
         conn.commit()
 
 
@@ -146,7 +160,7 @@ def _row_group(row: sqlite3.Row) -> dict[str, Any]:
 
 
 def _row_page(row: sqlite3.Row) -> dict[str, Any]:
-    return {
+    data = {
         "id": row["id"],
         "group_id": row["group_id"],
         "url": row["url"],
@@ -158,6 +172,11 @@ def _row_page(row: sqlite3.Row) -> dict[str, Any]:
         "last_error": row["last_error"],
         "content_hash": row["content_hash"],
     }
+    try:
+        data["struct_hash"] = row["struct_hash"]
+    except (IndexError, KeyError):
+        data["struct_hash"] = None
+    return data
 
 
 def list_groups() -> list[dict[str, Any]]:
@@ -352,25 +371,32 @@ def record_snapshot(
     content_hash: str,
     changed: bool,
     error: str | None = None,
+    struct_hash: str = "",
+    dom: str = "",
+    body: str = "",
 ) -> None:
     now = time.time()
     clipped = text[:TEXT_CAP]
+    clipped_dom = (dom or "")[:TEXT_CAP]
+    # Тело для живой копии режем отдельно: ему хватает 60к, а общий кап
+    # может быть больше. Пустое тело на ошибке не трогаем.
+    clipped_body = (body or "")[:60000]
     status = "error" if error else ("changed" if changed else "same")
     with _lock, _connect() as conn:
         conn.execute(
             """
-            INSERT INTO snapshots (page_id, checked_at, content_hash, text, changed, error)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO snapshots (page_id, checked_at, content_hash, text, changed, error, struct_hash, dom, body)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            (page_id, now, content_hash, clipped, 1 if changed else 0, error),
+            (page_id, now, content_hash, clipped, 1 if changed else 0, error, struct_hash, clipped_dom, clipped_body),
         )
         conn.execute(
             """
-            UPDATE pages SET last_status=?, last_checked_at=?, last_error=?, content_hash=?,
+            UPDATE pages SET last_status=?, last_checked_at=?, last_error=?, content_hash=?, struct_hash=?,
                 last_changed_at = CASE WHEN ? THEN ? ELSE last_changed_at END
             WHERE id=?
             """,
-            (status, now, error, content_hash, 1 if changed else 0, now, page_id),
+            (status, now, error, content_hash, struct_hash, 1 if changed else 0, now, page_id),
         )
         extra = conn.execute(
             """
@@ -395,9 +421,16 @@ def mark_group_run(group_id: str) -> None:
 
 def latest_snapshots(page_id: str, limit: int = 2) -> list[dict[str, Any]]:
     with _lock, _connect() as conn:
+        cols = [row[1] for row in conn.execute("PRAGMA table_info(snapshots)").fetchall()]
+        extra = ""
+        if "struct_hash" in cols:
+            extra += ", struct_hash, dom"
+        else:
+            extra += ", '' AS struct_hash, '' AS dom"
+        extra += ", body" if "body" in cols else ", '' AS body"
         rows = conn.execute(
-            """
-            SELECT id, checked_at, content_hash, text, changed, error
+            f"""
+            SELECT id, checked_at, content_hash, text, changed, error{extra}
             FROM snapshots WHERE page_id = ?
             ORDER BY checked_at DESC LIMIT ?
             """,

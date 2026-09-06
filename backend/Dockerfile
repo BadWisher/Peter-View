@@ -4,6 +4,9 @@ FROM python:3.12-slim@sha256:57cd7c3a7a273101a6485ba99423ee568157882804b1124b4dd
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     wget ca-certificates gosu \
+    libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 \
+    libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 \
+    libgbm1 libasound2 libpango-1.0-0 libcairo2 \
     && rm -rf /var/lib/apt/lists/*
 
 # Непривилегированный пользователь для рантайма (см. entrypoint.sh).
@@ -19,7 +22,9 @@ RUN VALE_SHA=$(wget -qO- "https://github.com/errata-ai/vale/releases/download/v$
 WORKDIR /app
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt \
+    && python -m playwright install --with-deps chromium 2>/dev/null \
+        || python -m playwright install chromium || true
 
 COPY --chown=appuser:appuser vale/ /app/vale/
 COPY --chown=appuser:appuser styleguide/ /app/styleguide/

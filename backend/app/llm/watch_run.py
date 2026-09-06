@@ -6,16 +6,21 @@ import asyncio
 import datetime as dt
 import difflib
 import hashlib
+import json
 import logging
 import os
+import re
 from urllib.parse import urljoin
 
 import httpx
 from bs4 import BeautifulSoup
 
-from ..extractors import extract_html
+from ..extractors import extract_html, normalize_spaces
 from ..net_guard import BlockedURLError, safe_request
 from . import watch_store as store
+from . import watch_dom
+from . import watch_render
+from .watch_dom import _VOLATILE
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +30,10 @@ USER_AGENT = os.getenv(
 )
 WATCH_HOUR = int(os.getenv("PROOFREADER_WATCH_HOUR", "4"))
 CONTEXT_LINES = 2
+# Слишком короткий текст почти всегда означает пустой каркас страницы
+# (JS-портал без рендера, каптча, заглушка). Такое считаем ошибкой съёма,
+# а не «без изменений», иначе наблюдение молча замирает.
+MIN_SNAPSHOT_CHARS = int(os.getenv("PROOFREADER_WATCH_MIN_CHARS", "24"))
 
 
 def fingerprint(text: str) -> str:
@@ -33,6 +42,18 @@ def fingerprint(text: str) -> str:
 
 def snapshot_text(html: str) -> str:
     return extract_html(html, include_chrome=False).strip()
+
+
+def normalized_text(text: str) -> str:
+    out = []
+    for line in text.splitlines():
+        line = normalize_spaces(line)
+        for pat in _VOLATILE:
+            line = pat.sub("", line)
+        line = re.sub(r"\s+", " ", line).strip(" -–—•·")
+        if line:
+            out.append(line)
+    return "\n".join(out)
 
 
 def collapse_hunks(hunks: list[dict]) -> list[dict]:
@@ -62,7 +83,33 @@ def text_hunks(old: str, new: str) -> list[dict]:
             hunks.append({"op": "del", "lines": old_lines[i1:i2]})
         elif tag == "insert":
             hunks.append({"op": "add", "lines": new_lines[j1:j2]})
-    return collapse_hunks(hunks)
+    return collapse_hunks(mark_word_diff(hunks))
+
+
+def mark_word_diff(hunks: list[dict]) -> list[dict]:
+    out: list[dict] = []
+    i = 0
+    while i < len(hunks):
+        cur = hunks[i]
+        nxt = hunks[i + 1] if i + 1 < len(hunks) else None
+        if (
+            cur["op"] == "del" and nxt and nxt["op"] == "add"
+            and len(cur["lines"]) == 1 and len(nxt["lines"]) == 1
+            and difflib.SequenceMatcher(a=cur["lines"][0].split(), b=nxt["lines"][0].split()).ratio() > 0.3
+        ):
+            old_words = cur["lines"][0].split()
+            new_words = nxt["lines"][0].split()
+            keep = [False] * len(new_words)
+            for match in difflib.SequenceMatcher(a=old_words, b=new_words).get_matching_blocks():
+                for j in range(match.b, min(match.b + match.size, len(keep))):
+                    keep[j] = True
+            out.append({**cur, "words": old_words})
+            out.append({**nxt, "words": new_words, "same": keep})
+            i += 2
+            continue
+        out.append(cur)
+        i += 1
+    return out
 
 
 def _guess_fields(form) -> tuple[str, str]:
@@ -91,31 +138,44 @@ async def _form_login(
         raise ValueError("Для формы входа нужны логин и пароль")
     page = await safe_request(client, "GET", login_url)
     soup = BeautifulSoup(page.text, "lxml")
-    form = soup.find("form")
-    action = login_url
+    form = None
+    for candidate in soup.find_all("form"):
+        for inp in candidate.find_all("input"):
+            if (inp.get("type") or "").lower() == "password":
+                form = candidate
+                break
+        if form is not None:
+            break
+    form = form or soup.find("form")
+    if form is None:
+        raise ValueError(
+            "На странице входа нет формы (возможно, вход через JS или SSO — такой портал наблюдение не поддерживает)"
+        )
+    action = urljoin(login_url, form.get("action") or login_url)
     payload: dict[str, str] = {}
     user_field = group.get("username_field") or "username"
     pass_field = group.get("password_field") or "password"
-    if form:
-        action = urljoin(login_url, form.get("action") or login_url)
-        for inp in form.find_all("input"):
-            name = (inp.get("name") or "").strip()
-            if not name:
-                continue
-            itype = (inp.get("type") or "text").lower()
-            if itype in ("submit", "button", "image", "file"):
-                continue
-            payload[name] = inp.get("value") or ""
-        guessed_user, guessed_pass = _guess_fields(form)
-        if user_field not in payload:
-            user_field = guessed_user
-        if pass_field not in payload:
-            pass_field = guessed_pass
+    for inp in form.find_all("input"):
+        name = (inp.get("name") or "").strip()
+        if not name:
+            continue
+        itype = (inp.get("type") or "text").lower()
+        if itype in ("submit", "button", "image", "file"):
+            continue
+        payload[name] = inp.get("value") or ""
+    guessed_user, guessed_pass = _guess_fields(form)
+    if user_field not in payload:
+        user_field = guessed_user
+    if pass_field not in payload:
+        pass_field = guessed_pass
     payload[user_field] = username
     payload[pass_field] = password
     resp = await safe_request(client, "POST", action, data=payload)
     if resp.status_code >= 400:
         raise ValueError(f"Вход не удался (HTTP {resp.status_code})")
+    again = BeautifulSoup(resp.text, "lxml")
+    if again.find("input", {"type": "password"}):
+        raise ValueError("Похоже, вход не удался: портал снова показал форму входа")
 
 
 async def _login(client: httpx.AsyncClient, group: dict) -> httpx.Auth | None:
@@ -132,11 +192,40 @@ async def _login(client: httpx.AsyncClient, group: dict) -> httpx.Auth | None:
     return None
 
 
-async def _fetch_page(client: httpx.AsyncClient, url: str, auth: httpx.Auth | None) -> str:
+async def _fetch_page(client: httpx.AsyncClient, url: str, auth: httpx.Auth | None) -> tuple[str, str]:
     resp = await safe_request(client, "GET", url, auth=auth)
+    if resp.status_code == 401:
+        raise ValueError("Портал просит войти заново (HTTP 401) — проверь логин и пароль группы")
     if resp.status_code >= 400:
         raise ValueError(f"Страница недоступна (HTTP {resp.status_code})")
-    return snapshot_text(resp.text)
+    html = resp.text
+    rendered = False
+    text = snapshot_text(html)
+    if len(text) < MIN_SNAPSHOT_CHARS and watch_render.render_available():
+        try:
+            html = await watch_render.render_html(url)
+            rendered = True
+        except ValueError:
+            raise
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("Рендер %s не удался: %s", url, exc)
+    text = snapshot_text(html)
+    if len(text) < MIN_SNAPSHOT_CHARS:
+        hint = "" if rendered else (
+            " — возможно, нужен JS (поставь playwright и chromium), либо портал отдал заглушку"
+            if watch_render.render_available() is False else " — возможно, нужен JS или портал отдал заглушку"
+        )
+        raise ValueError(f"Со страницы пришло почти пусто ({len(text)} символов){hint}")
+    soup = BeautifulSoup(html, "lxml")
+    has_pass = any(
+        (inp.get("type") or "").lower() == "password" for inp in soup.find_all("input")
+    )
+    lowered = html.lower()
+    if has_pass and any(
+        mark in lowered for mark in ("парол", "password", "sign in", "log in", "войти", "вход")
+    ):
+        raise ValueError("Портал снова показал форму входа — сессия протухла, проверь пароль группы")
+    return html, rendered
 
 
 async def check_page(page_id: str, client: httpx.AsyncClient | None = None, auth: httpx.Auth | None = None) -> dict:
@@ -156,13 +245,21 @@ async def check_page(page_id: str, client: httpx.AsyncClient | None = None, auth
     try:
         if own_client:
             auth = await _login(client, group)
-        text = await _fetch_page(client, page["url"], auth)
-        digest = fingerprint(text)
+        html, _rendered = await _fetch_page(client, page["url"], auth)
+        text = snapshot_text(html)
+        nodes = watch_dom.snapshot_nodes(html)
+        body = watch_dom.cleaned_body(html)
+        digest = fingerprint(normalized_text(text))
+        struct = watch_dom.fingerprint_nodes(nodes)
         previous = store.latest_snapshots(page_id, limit=1)
-        changed = bool(previous) and previous[0]["content_hash"] != digest
-        if not previous:
-            changed = False
-        store.record_snapshot(page_id, text=text, content_hash=digest, changed=changed)
+        changed = False
+        if previous:
+            changed = previous[0]["content_hash"] != digest or (previous[0].get("struct_hash") or "") != struct
+        store.record_snapshot(
+            page_id, text=text, content_hash=digest, changed=changed,
+            struct_hash=struct, dom=json.dumps(nodes, ensure_ascii=False),
+            body=body,
+        )
         return store.get_page(page_id)  # type: ignore[return-value]
     except (BlockedURLError, ValueError, httpx.HTTPError) as exc:
         message = str(exc)
@@ -217,16 +314,59 @@ async def run_daily_if_due() -> None:
     store.set_daily_stamp(dt.datetime.now().strftime("%Y-%m-%d"))
 
 
+def _pair_snaps(page_id: str) -> tuple[dict | None, dict | None]:
+    snaps = store.latest_snapshots(page_id, limit=20)
+    if not snaps:
+        return None, None
+    changed_at = next((i for i, snap in enumerate(snaps) if snap.get("changed")), None)
+    if changed_at is None:
+        # Все прогоны холостые: показывать нечего, пару не выдумываем.
+        return snaps[0], None
+    current = snaps[changed_at]
+    previous = snaps[changed_at + 1] if changed_at + 1 < len(snaps) else None
+    return current, previous
+
+
+def _loads_nodes(raw: str) -> list[dict]:
+    try:
+        data = json.loads(raw or "[]")
+    except (ValueError, TypeError):
+        return []
+    return data if isinstance(data, list) else []
+
+
+def _hunks_and_ui(current: dict | None, previous: dict | None) -> tuple[list[dict], list[dict], list[dict]]:
+    if not previous or not (current.get("dom") or previous.get("dom")):
+        hunks = text_hunks(previous["text"] if previous else "", current["text"]) if (current and previous) else []
+        return hunks, [], []
+    old_nodes = _loads_nodes(previous.get("dom") or "")
+    new_nodes = _loads_nodes(current.get("dom") or "")
+    ui = watch_dom.diff_nodes(old_nodes, new_nodes)
+    marks = [{"path": event.get("path") or "", "kind": event.get("kind") or ""}
+             for event in ui if event.get("path") and event.get("kind") != "more"]
+    hunks = text_hunks(normalized_text(previous["text"]) if previous else "",
+                       normalized_text(current["text"])) if previous else []
+    return hunks, ui, marks
+
+
+def _copy_pair(previous: dict, current: dict) -> tuple[list[dict], list[dict]]:
+    return _loads_nodes(previous.get("dom") or ""), _loads_nodes(current.get("dom") or "")
+
+
 def page_diff(page_id: str) -> dict:
     page = store.get_page(page_id)
     if page is None:
         raise KeyError("Адрес не найден")
-    snaps = store.latest_snapshots(page_id, limit=2)
-    if not snaps:
-        return {"page": page, "hunks": [], "previous": None, "current": None}
-    current = snaps[0]
-    previous = snaps[1] if len(snaps) > 1 else None
-    hunks = text_hunks(previous["text"] if previous else "", current["text"]) if previous else []
+    current, previous = _pair_snaps(page_id)
+    if not current:
+        return {"page": page, "hunks": [], "ui": [], "marks": [], "has_copy": False, "previous": None, "current": None}
+    hunks, ui, marks = _hunks_and_ui(current, previous)
+    raw_copy = ""
+    if previous:
+        raw_copy = watch_dom.copy_document(
+            (page.get("url") or ""),
+            watch_dom.mark_copy(current.get("body") or "", *_copy_pair(previous, current), ui),
+        )
     return {
         "page": page,
         "current": {
@@ -240,4 +380,24 @@ def page_diff(page_id: str) -> dict:
             "error": previous["error"],
         } if previous else None,
         "hunks": hunks,
+        "ui": ui,
+        "marks": marks,
+        "has_copy": bool(raw_copy),
+        "copy": raw_copy,
     }
+
+
+def page_copy(page_id: str) -> str:
+    page = store.get_page(page_id)
+    if page is None:
+        raise KeyError("Адрес не найден")
+    current, previous = _pair_snaps(page_id)
+    if not current:
+        return ""
+    body = current.get("body") or ""
+    if previous:
+        old_nodes, new_nodes = _copy_pair(previous, current)
+        ui = watch_dom.diff_nodes(old_nodes, new_nodes)
+        body = watch_dom.mark_copy(body, old_nodes, new_nodes, ui)
+    url = (page.get("url") or "").replace('"', "")
+    return watch_dom.copy_document(url, body)
