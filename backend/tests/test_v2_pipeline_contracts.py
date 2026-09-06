@@ -10,6 +10,8 @@ from app.llm.pipeline_v2 import _dedupe_candidates
 from app.llm.schemas import parse_worker_issues, validate_final_issues
 from app.llm.styleguide import StyleGuide
 
+PROSE = "Раздел описывает source данных и правила его обработки в системе."
+
 
 def _guide() -> StyleGuide:
     return StyleGuide(
@@ -231,7 +233,7 @@ def test_verifier_failure_marks_partial_and_does_not_publish_unverified(
         }],
     )
     document = Document([
-        Block(0, "source", "source", {"type": "paragraph"})
+        Block(0, PROSE, PROSE, {"type": "paragraph"})
     ], source="test")
     candidate = {
         "block_index": 0,
