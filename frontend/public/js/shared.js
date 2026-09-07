@@ -101,7 +101,7 @@ export const routeMeta = {
   guides: "Style Guide",
   screenshots: "Скриншоты",
   history: "История",
-  watch: "Наблюдение",
+  watch: "Мониторинг",
   insights: "Аналитика",
   settings: "Настройки",
   users: "Пользователи",
@@ -112,7 +112,7 @@ export const FEATURE_ROUTES = { documents: "documents", watch: "watch", api: "ap
 export const navItems = [
   ["check", "icon-check", "Вычитка"],
   ["documents", "icon-folder", "Документы"],
-  ["watch", "icon-eye", "Наблюдение"],
+  ["watch", "icon-eye", "Мониторинг"],
   ["api", "icon-code", "API"],
   ["guides", "icon-book", "Style Guide"],
   ["screenshots", "icon-image", "Скриншоты"],

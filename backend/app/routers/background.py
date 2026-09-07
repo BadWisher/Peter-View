@@ -59,7 +59,7 @@ async def start_watch_daily():
             try:
                 await watch_run.run_daily_if_due()
             except Exception as e:  # noqa: BLE001
-                logger.warning("Наблюдение не выполнено: %s", e)
+                logger.warning("Мониторинг не выполнен: %s", e)
             await asyncio.sleep(30 * 60)
 
     asyncio.create_task(loop())

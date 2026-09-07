@@ -264,6 +264,58 @@ class WatchCopyTests(unittest.TestCase):
         copy = watch_run.page_copy(page["id"])
         self.assertIn("Новая версия регламента", copy)
 
+    def test_copy_drops_empty_lazy_shells(self):
+        group = store.create_group("Портал", auth_kind="none", created_by="editor")
+        page = store.add_page(group["id"], "https://portal.example.test/lazy", "Ленивая")
+        first = ("<html><body><main><h1>Регламент</h1><p>Текст тот же самый длинный.</p>"
+                 "<turbo-frame id='x'></turbo-frame></main></body></html>")
+        second = ("<html><body><main><h1>Регламент</h1><p>Текст тот же самый длинный.</p>"
+                  "<turbo-frame id='x'></turbo-frame><a href='/new'>Новая версия</a></main></body></html>")
+        # Пустой turbo-frame триггерит браузерный рендер; в тесте он не нужен.
+        with patch.object(watch_run.watch_render, "render_available", return_value=False):
+            with patch.object(watch_run, "safe_request", new=AsyncMock(return_value=_resp(first))):
+                asyncio.run(watch_run.check_page(page["id"]))
+            with patch.object(watch_run, "safe_request", new=AsyncMock(return_value=_resp(second))):
+                asyncio.run(watch_run.check_page(page["id"]))
+        copy = watch_run.page_copy(page["id"])
+        self.assertNotIn("<turbo-frame", copy)
+        self.assertIn("Новая версия", copy)
+
+    def test_copy_freezes_clicks(self):
+        page = self._two_snaps()
+        copy = watch_run.page_copy(page["id"])
+        self.assertIn("pointer-events:none", copy)
+
+
+class WatchNoiseTests(unittest.TestCase):
+    def test_empty_wrapper_shift_is_not_reported(self):
+        # Голые div-обёртки без текста и значимых атрибутов, которые
+        # появляются/исчезают из-за перестановки соседей, не должны
+        # рождать карточку «Что-то добавили на страницу».
+        before = "<html><body><main><div><p>Абзац про регламент доступа.</p></div></main></body></html>"
+        after = ("<html><body><main><div></div><div><p>Абзац про регламент доступа.</p></div>"
+                 "<div></div></main></body></html>")
+        events = watch_run.watch_dom.diff_nodes(
+            watch_run.watch_dom.snapshot_nodes(before),
+            watch_run.watch_dom.snapshot_nodes(after),
+        )
+        empty_added = [e for e in events
+                       if e["kind"] in ("added", "removed") and not (e.get("new_text") or e.get("old_text"))]
+        self.assertEqual(empty_added, [])
+
+    def test_identical_events_merge_with_count(self):
+        before = "<html><body><main><p>Основа страницы достаточной длины.</p></main></body></html>"
+        after = ("<html><body><main><p>Основа страницы достаточной длины.</p>"
+                 "<button>Update</button><button>Update</button><button>Update</button></main></body></html>")
+        events = watch_run.watch_dom.diff_nodes(
+            watch_run.watch_dom.snapshot_nodes(before),
+            watch_run.watch_dom.snapshot_nodes(after),
+        )
+        added = [e for e in events if e["kind"] == "added" and e.get("new_text") == "Update"]
+        self.assertEqual(len(added), 1)
+        self.assertEqual(added[0]["count"], 3)
+        self.assertEqual(len(added[0]["paths"]), 3)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -2325,6 +2325,14 @@ button.chip:hover,
   justify-self: start;
 }
 
+.issue-count {
+  align-self: center;
+  justify-self: end;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-meta);
+}
+
 .issue-location {
   align-self: center;
   color: var(--muted);

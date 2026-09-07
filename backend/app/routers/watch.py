@@ -11,7 +11,7 @@ from ..llm import watch_run, watch_store
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(tags=["Наблюдение"])
+router = APIRouter(tags=["Мониторинг"])
 
 _watch_running: set[str] = set()
 
@@ -150,7 +150,7 @@ async def watch_run_group(group_id: str, _user: str = Depends(require_user)):
         try:
             await watch_run.check_group(group_id)
         except Exception:  # noqa: BLE001
-            logger.exception("Проверка группы наблюдения %s не удалась", group_id)
+            logger.exception("Проверка группы мониторинга %s не удалась", group_id)
         finally:
             _watch_running.discard(group_id)
 
@@ -173,7 +173,7 @@ async def watch_run_page(page_id: str, _user: str = Depends(require_user)):
         try:
             await watch_run.check_page(page_id)
         except Exception:  # noqa: BLE001
-            logger.exception("Проверка адреса наблюдения %s не удалась", page_id)
+            logger.exception("Проверка адреса мониторинга %s не удалась", page_id)
         finally:
             _watch_running.discard(key)
 

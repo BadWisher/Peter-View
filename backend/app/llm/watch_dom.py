@@ -108,6 +108,19 @@ def _own_text(tag: Tag) -> str:
 
 _COPY_SKIP = ("style", "link", "base", "meta", "title")
 
+# Узел несёт смысл, только если в нём есть текст или цепляющаяся за глаз
+# характеристика. Голый div/span-обёртка с одной class'ой, которая
+# появляется и исчезает из-за перестановки соседних блоков, — это шум, а не
+# изменение интерфейса: такие узлы не должны рождать события added/removed.
+_INFORMATIVE_ATTRS = ("href", "src", "alt", "id", "name", "value", "placeholder", "type", "title")
+
+
+def _informative(node: dict) -> bool:
+    if node.get("text"):
+        return True
+    attrs = node.get("attrs") or {}
+    return any(attrs.get(key) for key in _INFORMATIVE_ATTRS)
+
 
 def _sibling_index(tag: Tag, skip: tuple = ()) -> int:
     n = 0
@@ -321,6 +334,8 @@ def diff_nodes(old: list[dict], new: list[dict]) -> list[dict]:
             })
     gone = [i for i in gone if i not in moved_old]
     for i in gone:
+        if not _informative(old[i]):
+            continue
         events.append({
             "kind": "removed", "tag": old[i]["tag"], "path": old[i]["path"],
             "where": _where(old[i]), "old_text": old[i]["text"],
@@ -329,6 +344,8 @@ def diff_nodes(old: list[dict], new: list[dict]) -> list[dict]:
         })
     for j in came:
         if j in moved_new:
+            continue
+        if not _informative(new[j]):
             continue
         events.append({
             "kind": "added", "tag": new[j]["tag"], "path": new[j]["path"],
@@ -340,6 +357,21 @@ def diff_nodes(old: list[dict], new: list[dict]) -> list[dict]:
     events.sort(key=lambda e: ({"added": 0, "removed": 1, "moved": 2,
                                 "tag": 3, "attr": 4, "text": 5}.get(e["kind"], 6),
                                e["path"]))
+    # Одинаковые события (например, десяток безымянных кнопок «Update»)
+    # показываем одной карточкой со счётчиком, но подсвечиваем все места.
+    merged: dict[tuple, dict] = {}
+    deduped: list[dict] = []
+    for e in events:
+        key = (e["kind"], e.get("tag", ""), e.get("old_text", ""), e.get("new_text", ""))
+        first = merged.get(key)
+        if first is None:
+            merged[key] = e
+            e["paths"] = [e["path"]]
+            deduped.append(e)
+        else:
+            first["paths"].append(e["path"])
+            first["count"] = len(first["paths"])
+    events = deduped
     if len(events) > MAX_EVENTS:
         events = events[:MAX_EVENTS]
         events.append({"kind": "more", "tag": "", "path": "",
@@ -387,36 +419,66 @@ def mark_copy(body: str, old_nodes: list[dict], new_nodes: list[dict],
             continue
         path = event.get("path") or ""
         if kind == "removed":
-            ghost = soup.new_tag("div")
-            ghost["class"] = ["pvwatch-ghost", "pvwatch-is-removed"]
             label = event.get("old_text") or event.get("detail") or "блок"
-            ghost.string = f"Тут был блок «{label}» — его убрали"
-            anchor = by_path.get(path)
-            if anchor is not None and anchor.parent is not None:
-                anchor.insert_after(ghost)
-            elif isinstance(container, Tag):
-                container.append(ghost)
+            for spot in event.get("paths") or [path]:
+                ghost = soup.new_tag("div")
+                ghost["class"] = ["pvwatch-ghost", "pvwatch-is-removed"]
+                ghost.string = f"Тут был блок «{label}» — его убрали"
+                anchor = by_path.get(spot)
+                if anchor is not None and anchor.parent is not None:
+                    anchor.insert_after(ghost)
+                elif isinstance(container, Tag):
+                    container.append(ghost)
             continue
-        target = by_path.get(path)
-        if target is None:
-            continue
-        cls = list(target.get("class") or [])
-        if isinstance(cls, str):
-            cls = cls.split()
-        mark = f"pvwatch-is-{kind}"
-        if mark not in cls:
-            cls.append(mark)
-            target["class"] = cls
-        target["data-pvwatch-path"] = path
-        target["data-pvwatch-kind"] = kind
+        for spot in event.get("paths") or [path]:
+            target = by_path.get(spot)
+            if target is None:
+                continue
+            cls = list(target.get("class") or [])
+            if isinstance(cls, str):
+                cls = cls.split()
+            mark = f"pvwatch-is-{kind}"
+            if mark not in cls:
+                cls.append(mark)
+                target["class"] = cls
+            target["data-pvwatch-path"] = spot
+            target["data-pvwatch-kind"] = kind
 
     out = container.decode_contents() if isinstance(container, Tag) else str(soup)
     return (out or "")[:COPY_LIMIT]
 
 
+_LOADING_SHELLS = ("turbo-frame", "include-fragment", "poll-include")
+
+
+def _drop_loading_shells(holder: Tag) -> None:
+    """Статичный HTML часто приносит пустые динамические контейнеры и
+    пульсирующие скелетоны: без JS они не заполнятся никогда, а в копии
+    выглядит так, будто страница вечно догружается. Режем только пустое и
+    только то, где не стоит наша метка изменения."""
+    for el in holder.find_all(_LOADING_SHELLS):
+        if not el.get_text(strip=True) and not el.find(True):
+            el.decompose()
+    for el in holder.find_all(True, class_=re.compile(r"skeleton|placeholder|anim-pulse", re.I)):
+        if "pvwatch-is" in str(el.get("class") or "") or el.get("data-pvwatch-path"):
+            continue
+        if not el.get_text(strip=True):
+            el.decompose()
+    # Секция, от которой после зачистки остался один заголовок, — это
+    # ленивый блок (Releases, Contributors): в копии он вечно «недогрузится».
+    for heading in holder.find_all(("h2", "h3")):
+        parent = heading.parent
+        if not isinstance(parent, Tag) or parent.name not in ("div", "section", "aside"):
+            continue
+        if parent.get_text(strip=True) == heading.get_text(strip=True) and len(parent.find_all(True)) <= 3:
+            parent.decompose()
+
+
 def copy_document(url: str, body: str) -> str:
     soup = BeautifulSoup(f"<div>{body or ''}</div>", "lxml")
     holder = soup.find("div")
+    if isinstance(holder, Tag):
+        _drop_loading_shells(holder)
     head_bits: list[str] = []
     body_bits: list[str] = []
     if isinstance(holder, Tag):
@@ -429,9 +491,12 @@ def copy_document(url: str, body: str) -> str:
         body_bits.append(body or "")
     safe_url = (url or "").replace('"', "")
     base = f'<base href="{safe_url}" target="_blank">' if safe_url.startswith("http") else ""
+    # Копия для просмотра, не для пользования: кнопки и ссылки наблюдаемой
+    # страницы не должны нажиматься.
+    frozen = "<style>*,*::before,*::after{pointer-events:none!important}</style>"
     doc = (
         "<!DOCTYPE html><html><head><meta charset='utf-8'>"
-        f"{base}{''.join(head_bits)}</head>"
+        f"{base}{''.join(head_bits)}{frozen}</head>"
         f"<body>{''.join(body_bits)}</body></html>"
     )
     return doc[: COPY_LIMIT + 4000]

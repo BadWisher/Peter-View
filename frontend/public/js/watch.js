@@ -168,7 +168,7 @@ export function bindWatchUrlBar(groupId) {
 export function renderWatchComposer({ back = false } = {}) {
   renderShell(`
     <div class="page">
-      ${back ? `<div class="page-head"><div><button class="text-link back-watch" type="button">${icon("icon-arrow")} Наблюдение</button></div></div>` : ""}
+      ${back ? `<div class="page-head"><div><button class="text-link back-watch" type="button">${icon("icon-arrow")} Мониторинг</button></div></div>` : ""}
       <form class="check-layout watch-setup">
         <section class="panel elevated source-picker">
           <div class="source-content">
@@ -308,24 +308,6 @@ export function watchChanges(diff) {
   });
 }
 
-function watchIssueTitle(item) {
-  if (item.note) return watchKindTitle(item.event?.kind);
-  if (item.oldText && item.newText) return "Текст изменился";
-  if (item.newText) return "Текст добавлен";
-  return "Текст убран";
-}
-
-export function watchKindTitle(kind) {
-  return {
-    added: "Новый элемент",
-    removed: "Элемент убран",
-    moved: "Элемент сместился",
-    tag: "Элемент переоформили",
-    attr: "Элемент переоформили",
-    text: "Текст изменился",
-  }[kind] || "Изменение";
-}
-
 export function watchKindBadge(kind) {
   return {
     added: "Новое",
@@ -348,9 +330,10 @@ export function renderWatchChanges(diff, { status = "", error = "" } = {}) {
     return `<div class="empty-state">${icon("icon-check")}<div><h3>Без изменений</h3><p>Проверь ещё раз позже.</p></div></div>`;
   }
   return `<div class="issues-list">${items.map((item, index) => {
-    if (item.note) return `<button class="issue" type="button" data-issue-index="${index}"><span class="badge warning">${escapeHTML(watchKindBadge(item.event?.kind))}</span><span class="issue-location">${escapeHTML(item.loc || "структура")}</span><strong>${escapeHTML(watchUiSentence(item.event))}</strong></button>`;
+    const count = item.event?.count > 1 ? `<span class="issue-count">×${item.event.count}</span>` : "";
+    if (item.note) return `<button class="issue" type="button" data-issue-index="${index}"><span class="badge warning">${escapeHTML(watchKindBadge(item.event?.kind))}</span>${count}<strong>${escapeHTML(watchUiSentence(item.event))}</strong><span class="issue-location">${escapeHTML(item.loc || "структура")}</span></button>`;
     const quote = item.newText || item.oldText || "";
-    return `<button class="issue" type="button" data-issue-index="${index}"><span class="badge warning">${escapeHTML(watchKindBadge(item.event?.kind))}</span><span class="issue-location">${escapeHTML(item.loc || "текст")}</span><strong>${escapeHTML(watchIssueTitle(item))}</strong><span class="issue-quote">«${escapeHTML(quote)}»</span>${item.oldText && item.newText && item.oldText !== item.newText ? `<span class="issue-fix"><del>${escapeHTML(item.oldText)}</del><ins>${escapeHTML(item.newText)}</ins></span>` : ""}</button>`;
+    return `<button class="issue" type="button" data-issue-index="${index}"><span class="badge warning">${escapeHTML(watchKindBadge(item.event?.kind))}</span>${count}<span class="issue-quote">«${escapeHTML(quote)}»</span>${item.oldText && item.newText && item.oldText !== item.newText ? `<span class="issue-fix"><del>${escapeHTML(item.oldText)}</del><ins>${escapeHTML(item.newText)}</ins></span>` : ""}</button>`;
   }).join("")}</div>`;
 }
 
@@ -369,14 +352,14 @@ export function bindWatchIssues() {
     }
     return out;
   };
-  const highlight = (target) => {
-    const root = docOf(target);
-    if (!root || !target) return;
-    const frame = frames().find((f) => f.contentDocument === root);
-    root.querySelectorAll(".pvwatch-active").forEach((node) => node.classList.remove("pvwatch-active"));
-    target.classList.add("pvwatch-active");
-    try { target.scrollIntoView({ block: "center", behavior: "smooth" }); } catch { /* фрейм ещё грузится */ }
-    try { frame?.scrollIntoView({ block: "nearest", behavior: "smooth" }); } catch { /* рядом и так видно */ }
+  const highlight = (targets) => {
+    const nodes = targets.filter((node) => node && docOf(node));
+    if (!nodes.length) return;
+    new Set(nodes.map(docOf)).forEach((root) => {
+      root.querySelectorAll(".pvwatch-active").forEach((node) => node.classList.remove("pvwatch-active"));
+    });
+    nodes.forEach((node) => node.classList.add("pvwatch-active"));
+    try { nodes[0].scrollIntoView({ block: "center", behavior: "smooth" }); } catch { /* фрейм ещё грузится */ }
   };
   document.querySelectorAll(".review-workspace [data-issue-index]").forEach((element) => {
     if (element.dataset.watchBound) return;
@@ -388,19 +371,20 @@ export function bindWatchIssues() {
       const item = items[Number(element.dataset.issueIndex)];
       const list = marks();
       if (!list.length) return;
-      let target = null;
-      const want = (item?.event?.path || item?.path || "").trim();
-      if (want) {
-        for (const node of list) {
-          if (node.dataset?.pvwatchPath === want) { target = node; break; }
-        }
-        if (!target) target = list.find((node) => node.textContent?.includes((item?.event?.new_text || item?.event?.old_text || "").slice(0, 24))) || null;
+      let targets = [];
+      const wants = (item?.event?.paths || [item?.event?.path || item?.path || ""]).map((p) => String(p).trim()).filter(Boolean);
+      for (const node of list) {
+        if (wants.includes(node.dataset?.pvwatchPath || "")) targets.push(node);
       }
-      if (!target) target = list[Number(element.dataset.issueIndex)] || null;
-      if (!target) return;
+      if (!targets.length && wants.length) {
+        const needle = (item?.event?.new_text || item?.event?.old_text || "").slice(0, 24);
+        if (needle) targets = list.filter((node) => node.textContent?.includes(needle));
+      }
+      if (!targets.length) targets = [list[Number(element.dataset.issueIndex)] || null].filter(Boolean);
+      if (!targets.length) return;
       document.querySelectorAll(".issues-list [data-issue-index].active").forEach((other) => other.classList.remove("active"));
       document.querySelector(`.issues-list [data-issue-index="${element.dataset.issueIndex}"]`)?.classList.add("active");
-      highlight(target);
+      highlight(targets);
     });
   });
 }
@@ -449,13 +433,12 @@ export function watchCopyUrl(pageId) {
 
 export function renderWatchCopy(diff, pageId) {
   if (!diff?.has_copy) return "";
-  const n = Math.max(1, watchChanges(diff).length);
   // Приложение берёт копию отдельным запросом через src (свой CSP). Превью
   // статично и не умеет отдавать /copy, поэтому там копия приходит прямо в
   // diff.copy и грузится через srcdoc.
   const inline = Boolean(diff.copy);
   const frame = `<iframe class="pvwatch-frame" title="Сохранённая копия страницы" sandbox="allow-same-origin allow-popups" ${inline ? `data-watch-inline="1"` : `src="${watchCopyUrl(pageId)}"`} data-watch-frame="${escapeHTML(pageId)}"></iframe>`;
-  return `<div class="document-content watch-copy" aria-live="polite">${frame}</div><aside class="document-map" aria-label="Карта изменений">${Array.from({ length: 22 }, () => "<span></span>").join("")}${Array.from({ length: Math.min(12, n) }, (_, index) => `<button class="map-point warning" style="--y:${Math.min(88, 8 + index * 7)}%" type="button" data-issue-index="${index}" aria-label="Изменение ${index + 1}"></button>`).join("")}</aside>`;
+  return `<div class="document-content watch-copy" aria-live="polite">${frame}</div>`;
 }
 
 export function bindWatchCopy(diff) {
@@ -566,7 +549,7 @@ export async function renderWatch() {
       <div class="page watch-page">
         <div class="page-head">
           <div>
-            <h2>Наблюдение</h2>
+            <h2>Мониторинг</h2>
             <p class="watch-stats">${headStats.length ? watchStats(headStats) : "Следим за страницами"}</p>
           </div>
           <div class="head-actions"><button class="button primary add-watch-group" type="button">${icon("icon-plus")}Группа</button></div>
@@ -598,9 +581,7 @@ export async function renderWatch() {
     const status = diff.page?.last_status || page?.last_status || "pending";
     const summary = watchChangeSummary(diff);
     const checked = diff.page?.last_checked_at || page?.last_checked_at;
-    const changedAt = diff.page?.last_changed_at || page?.last_changed_at;
     const checkedBit = checked ? `Проверено ${escapeHTML(formatDate(checked, false))}` : "Ещё не проверялась";
-    const n = watchChanges(diff).length;
     const statBits = [checkedBit, summary || (status === "changed" ? "" : "Изменений нет")].filter(Boolean);
     renderShell(`
     <div class="review-view">
@@ -616,14 +597,14 @@ export async function renderWatch() {
       ${diff.page?.last_error ? `<div class="partial-status" role="alert">${icon("icon-eye-off")}<span>${escapeHTML(diff.page.last_error)}</span></div>` : ""}
       <section class="review-workspace">
         <article class="document-pane" aria-label="Сохранённая копия страницы">
-          <div class="pane-bar"><span>${escapeHTML(diff.page?.url || page?.url || "")}</span><span>${n ? `${escapeHTML(summary)}` : "Без изменений"}</span></div>
+          <div class="pane-bar"><span>${escapeHTML(diff.page?.url || page?.url || "")}</span></div>
           <div class="document-scroll">
             ${renderWatchCopy(diff, pageId)}
           </div>
         </article>
         <aside class="issues-pane" aria-label="Находки">
           ${renderWatchChanges(diff, { status: diff.page?.last_status, error: diff.page?.last_error })}
-          <footer class="issues-footer"><span>${n ? escapeHTML(summary) : "Изменений нет"}</span>${watchStatusBadge(status, true)}</footer>
+          ${status === "error" ? `<footer class="issues-footer"><span>${escapeHTML(watchStatusLabel(status))}</span></footer>` : ""}
         </aside>
       </section>
     </div>`);
@@ -657,7 +638,7 @@ export async function renderWatch() {
     <div class="page watch-page">
       <div class="page-head">
         <div>
-          <button class="text-link back-watch" type="button">${icon("icon-arrow")} Наблюдение</button>
+          <button class="text-link back-watch" type="button">${icon("icon-arrow")} Мониторинг</button>
           <h2>${escapeHTML(group.name)}</h2>
           <p class="watch-stats">${watchStats(groupStats)}</p>
         </div>

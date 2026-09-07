@@ -32,7 +32,7 @@ WATCH_HOUR = int(os.getenv("PROOFREADER_WATCH_HOUR", "4"))
 CONTEXT_LINES = 2
 # Слишком короткий текст почти всегда означает пустой каркас страницы
 # (JS-портал без рендера, каптча, заглушка). Такое считаем ошибкой съёма,
-# а не «без изменений», иначе наблюдение молча замирает.
+# а не «без изменений», иначе мониторинг молча замирает.
 MIN_SNAPSHOT_CHARS = int(os.getenv("PROOFREADER_WATCH_MIN_CHARS", "24"))
 
 
@@ -149,7 +149,7 @@ async def _form_login(
     form = form or soup.find("form")
     if form is None:
         raise ValueError(
-            "На странице входа нет формы (возможно, вход через JS или SSO — такой портал наблюдение не поддерживает)"
+            "На странице входа нет формы (возможно, вход через JS или SSO — такой портал мониторинг не поддерживает)"
         )
     action = urljoin(login_url, form.get("action") or login_url)
     payload: dict[str, str] = {}
@@ -192,7 +192,30 @@ async def _login(client: httpx.AsyncClient, group: dict) -> httpx.Auth | None:
     return None
 
 
-async def _fetch_page(client: httpx.AsyncClient, url: str, auth: httpx.Auth | None) -> tuple[str, str]:
+def _needs_render(html: str) -> bool:
+    """Статика бедна текстом либо несёт пустые JS-контейнеры (turbo-frame,
+    include-fragment): без браузера они так и останутся заглушками."""
+    if len(snapshot_text(html)) < MIN_SNAPSHOT_CHARS:
+        return True
+    soup = BeautifulSoup(html, "lxml")
+    shells = soup.find_all(("turbo-frame", "include-fragment", "poll-include"))
+    empty = [s for s in shells if not s.get_text(strip=True) and not s.find(True)]
+    return bool(empty)
+
+
+def _client_cookies(client: httpx.AsyncClient) -> list[dict]:
+    out = []
+    for c in client.cookies.jar:
+        out.append({
+            "name": c.name,
+            "value": c.value,
+            "domain": c.domain or "",
+            "path": c.path or "/",
+        })
+    return out
+
+
+async def _fetch_page(client: httpx.AsyncClient, url: str, auth: httpx.Auth | None) -> tuple[str, bool]:
     resp = await safe_request(client, "GET", url, auth=auth)
     if resp.status_code == 401:
         raise ValueError("Портал просит войти заново (HTTP 401) — проверь логин и пароль группы")
@@ -201,9 +224,9 @@ async def _fetch_page(client: httpx.AsyncClient, url: str, auth: httpx.Auth | No
     html = resp.text
     rendered = False
     text = snapshot_text(html)
-    if len(text) < MIN_SNAPSHOT_CHARS and watch_render.render_available():
+    if _needs_render(html) and watch_render.render_available():
         try:
-            html = await watch_render.render_html(url)
+            html = await watch_render.render_html(url, cookies=_client_cookies(client))
             rendered = True
         except ValueError:
             raise
@@ -264,7 +287,7 @@ async def check_page(page_id: str, client: httpx.AsyncClient | None = None, auth
     except (BlockedURLError, ValueError, httpx.HTTPError) as exc:
         message = str(exc)
         store.record_snapshot(page_id, text="", content_hash="", changed=False, error=message)
-        logger.warning("Наблюдение %s: %s", page["url"], message)
+        logger.warning("Мониторинг %s: %s", page["url"], message)
         return store.get_page(page_id)  # type: ignore[return-value]
     finally:
         if own_client:
@@ -297,7 +320,7 @@ async def check_all_groups() -> None:
         try:
             await check_group(group["id"])
         except Exception:  # noqa: BLE001
-            logger.exception("Наблюдение группы %s не выполнено", group["id"])
+            logger.exception("Мониторинг группы %s не выполнен", group["id"])
 
 
 def due_today() -> bool:
