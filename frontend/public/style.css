@@ -2031,16 +2031,24 @@ button.chip:hover,
   padding: 0;
 }
 
+/* В режиме копии панель прокручивается целиком, а скролл живёт внутри
+фрейма: иначе под фиксированным окном остаётся мёртвая пустота. */
 .document-scroll:has(.watch-copy) {
-  align-content: start;
-  padding: 18px 13px 60px;
+  grid-template-rows: minmax(0, 1fr);
+  align-content: stretch;
+  padding: 12px;
+  overflow: hidden;
+}
+
+.document-content.watch-copy {
+  height: 100%;
 }
 
 .pvwatch-frame {
   display: block;
   width: 100%;
-  min-height: 240px;
-  height: 520px;
+  height: 100%;
+  min-height: 420px;
   border: 0;
   border-radius: var(--radius-sm);
   background: #fff;

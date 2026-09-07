@@ -450,16 +450,22 @@ export function watchCopyUrl(pageId) {
 export function renderWatchCopy(diff, pageId) {
   if (!diff?.has_copy) return "";
   const n = Math.max(1, watchChanges(diff).length);
-  const frame = `<iframe class="pvwatch-frame" title="Сохранённая копия страницы" sandbox="allow-same-origin allow-popups" src="${watchCopyUrl(pageId)}" data-watch-frame="${escapeHTML(pageId)}"></iframe>`;
+  // Приложение берёт копию отдельным запросом через src (свой CSP). Превью
+  // статично и не умеет отдавать /copy, поэтому там копия приходит прямо в
+  // diff.copy и грузится через srcdoc.
+  const inline = Boolean(diff.copy);
+  const frame = `<iframe class="pvwatch-frame" title="Сохранённая копия страницы" sandbox="allow-same-origin allow-popups" ${inline ? `data-watch-inline="1"` : `src="${watchCopyUrl(pageId)}"`} data-watch-frame="${escapeHTML(pageId)}"></iframe>`;
   return `<div class="document-content watch-copy" aria-live="polite">${frame}</div><aside class="document-map" aria-label="Карта изменений">${Array.from({ length: 22 }, () => "<span></span>").join("")}${Array.from({ length: Math.min(12, n) }, (_, index) => `<button class="map-point warning" style="--y:${Math.min(88, 8 + index * 7)}%" type="button" data-issue-index="${index}" aria-label="Изменение ${index + 1}"></button>`).join("")}</aside>`;
 }
 
 export function bindWatchCopy(diff) {
   window.__watchDiff = diff;
+  const inline = diff?.copy || "";
   document.querySelectorAll("[data-watch-frame]").forEach((frame) => {
     if (frame.dataset.watchReady) return;
     frame.dataset.watchReady = "1";
     frame.addEventListener("load", () => bindWatchIssues());
+    if (inline && frame.dataset.watchInline) frame.srcdoc = inline;
   });
   bindWatchIssues();
 }

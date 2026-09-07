@@ -208,6 +208,31 @@ export async function copyText(value) {
   }
 }
 
+// Мок сохранённой копии для превью: настоящий /copy статичная страница
+// отдать не может, поэтому копия приходит прямо в diff и грузится srcdoc.
+// Стиль только inline-блоком: внешний CSS srcdoc-фрейм унаследует CSP
+// приложения и не пустит чужие домены.
+function previewWatchCopy() {
+  return [
+    "<!DOCTYPE html><html><head><meta charset='utf-8'><style>",
+    "body{margin:0;padding:28px 32px;background:#fff;color:#1f2937;font:15px/1.65 'Segoe UI',system-ui,sans-serif}",
+    "h1{font-size:24px;margin:0 0 6px}.crumb{color:#6b7c77;font-size:13px;margin-bottom:22px}",
+    "p{margin:0 0 12px;max-width:68ch}.btn{display:inline-block;margin-top:14px;padding:8px 16px;border:1px solid #0b5d4e;border-radius:8px;background:#0b5d4e;color:#fff;font-weight:600}",
+    ".pvwatch-is-added,.pvwatch-is-text{background:#ddf4ef;border-bottom:2px solid #00a88e;border-radius:2px}",
+    ".pvwatch-is-attr,.pvwatch-is-moved,.pvwatch-is-tag{background:#fdf7ec;border-bottom:2px solid #c2820b;border-radius:2px}",
+    ".pvwatch-active{outline:3px solid #0f766e;outline-offset:3px;border-radius:4px}",
+    "</style></head><body>",
+    "<div class='crumb'>Клиентский портал / Документы</div>",
+    "<h1>Регламент доступа</h1>",
+    "<p>Срок действия пароля: <span class='pvwatch-is-text' data-pvwatch-path='body/p#1' data-pvwatch-kind='text'>60 дней</span>. Обновлено 05.09.2026.</p>",
+    "<p>Первый абзац про доступ.</p><p>Второй абзац про сроки.</p>",
+    "<p><a class='btn pvwatch-is-attr' data-pvwatch-path='body/p#4/a#0' data-pvwatch-kind='attr' href='#'>Скачать PDF</a></p>",
+    "<p><a class='pvwatch-is-added' data-pvwatch-path='body/p#5/a#0' data-pvwatch-kind='added' href='#'>Новая версия регламента</a></p>",
+    "<p>Контакты: help@example.test</p>",
+    "</body></html>",
+  ].join("");
+}
+
 export async function previewApi(path, options = {}) {
   const method = options.method || "GET";
 
@@ -343,6 +368,8 @@ export async function previewApi(path, options = {}) {
         { op: "add", lines: ["Срок действия пароля: 60 дней"] },
         { op: "eq", lines: ["Поддержка: portal@example.test"] },
       ],
+      has_copy: true,
+      copy: previewWatchCopy(),
     };
   }
   if (path.startsWith("/api/watch/") && method !== "GET") {
