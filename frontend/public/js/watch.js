@@ -469,8 +469,12 @@ function fitWatchCopy() {
   document.querySelectorAll(".document-content.watch-copy").forEach((box) => {
     const width = box.clientWidth;
     if (!width) return;
-    const scale = Math.min(1, width / COPY_DESKTOP_WIDTH);
-    box.style.setProperty("--pvw-scale", String(scale));
+    // Узкая панель: рисуем на десктопных 1280 и вписываем масштабом.
+    // Широкая: рисуем во всю ширину панели, иначе на 1280 копия
+    // заканчивается посреди панели и справа остаётся пустая полоса.
+    const render = Math.max(COPY_DESKTOP_WIDTH, width);
+    box.style.setProperty("--pvw-scale", String(width / render));
+    box.style.setProperty("--pvw-width", `${render}px`);
   });
 }
 
