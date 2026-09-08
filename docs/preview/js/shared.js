@@ -212,25 +212,95 @@ export async function copyText(value) {
 // отдать не может, поэтому копия приходит прямо в diff и грузится srcdoc.
 // Стиль только inline-блоком: внешний CSS srcdoc-фрейм унаследует CSP
 // приложения и не пустит чужие домены.
-function previewWatchCopy() {
-  return [
-    "<!DOCTYPE html><html><head><meta charset='utf-8'><style>",
-    "body{margin:0;padding:28px 32px;background:#fff;color:#1f2937;font:15px/1.65 'Segoe UI',system-ui,sans-serif}",
-    "h1{font-size:24px;margin:0 0 6px}.crumb{color:#6b7c77;font-size:13px;margin-bottom:22px}",
-    "p{margin:0 0 12px;max-width:68ch}.btn{display:inline-block;margin-top:14px;padding:8px 16px;border:1px solid #0b5d4e;border-radius:8px;background:#0b5d4e;color:#fff;font-weight:600}",
-    ".pvwatch-is-added,.pvwatch-is-text{background:#ddf4ef;border-bottom:2px solid #00a88e;border-radius:2px}",
-    ".pvwatch-is-attr,.pvwatch-is-moved,.pvwatch-is-tag{background:#fdf7ec;border-bottom:2px solid #c2820b;border-radius:2px}",
-    ".pvwatch-active{outline:3px solid #0f766e;outline-offset:3px;border-radius:4px}",
-    "</style></head><body>",
-    "<div class='crumb'>Клиентский портал / Документы</div>",
-    "<h1>Регламент доступа</h1>",
-    "<p>Срок действия пароля: <span class='pvwatch-is-text' data-pvwatch-path='body/p#1' data-pvwatch-kind='text'>60 дней</span>. Обновлено 05.09.2026.</p>",
-    "<p>Первый абзац про доступ.</p><p>Второй абзац про сроки.</p>",
-    "<p><a class='btn pvwatch-is-attr' data-pvwatch-path='body/p#4/a#0' data-pvwatch-kind='attr' href='#'>Скачать PDF</a></p>",
-    "<p><a class='pvwatch-is-added' data-pvwatch-path='body/p#5/a#0' data-pvwatch-kind='added' href='#'>Новая версия регламента</a></p>",
-    "<p>Контакты: help@example.test</p>",
-    "</body></html>",
-  ].join("");
+const COPY_STYLE = [
+  "<!DOCTYPE html><html><head><meta charset='utf-8'><style>",
+  "body{margin:0;padding:28px 32px;background:#fff;color:#1f2937;font:15px/1.65 'Segoe UI',system-ui,sans-serif}",
+  "h1{font-size:24px;margin:0 0 6px}.crumb{color:#6b7c77;font-size:13px;margin-bottom:22px}",
+  "p{margin:0 0 12px;max-width:68ch}.btn{display:inline-block;margin-top:14px;padding:8px 16px;border:1px solid #0b5d4e;border-radius:8px;background:#0b5d4e;color:#fff;font-weight:600}",
+  ".pvwatch-is-added,.pvwatch-is-text{background:#ddf4ef;border-bottom:2px solid #00a88e;border-radius:2px}",
+  ".pvwatch-is-attr,.pvwatch-is-moved,.pvwatch-is-tag{background:#fdf7ec;border-bottom:2px solid #c2820b;border-radius:2px}",
+  ".pvwatch-active{outline:3px solid #0f766e;outline-offset:3px;border-radius:4px}",
+  "</style></head><body>",
+].join("");
+
+// Каждая страница превью показывает свою копию и свои находки, иначе все
+// адреса выглядят одним и тем же примером.
+const PREVIEW_WATCH_PAGES = {
+  home: {
+    title: "Главная", url: "https://portal.example.test/", status: "changed",
+    crumb: "Клиентский портал / Главная",
+    body: [
+      "<h1>Регламент доступа</h1>",
+      "<p>Срок действия пароля: <span class='pvwatch-is-text' data-pvwatch-path='body/p#1' data-pvwatch-kind='text'>60 дней</span>. Обновлено 05.09.2026.</p>",
+      "<p>Первый абзац про доступ.</p><p>Второй абзац про сроки.</p>",
+      "<p><a class='btn pvwatch-is-attr' data-pvwatch-path='body/p#4/a#0' data-pvwatch-kind='attr' href='#'>Скачать PDF</a></p>",
+      "<p><a class='pvwatch-is-added' data-pvwatch-path='body/p#5/a#0' data-pvwatch-kind='added' href='#'>Новая версия регламента</a></p>",
+      "<p>Контакты: help@example.test</p>",
+    ],
+    hunks: [
+      { op: "eq", lines: ["Клиентский портал", "Раздел политик"] },
+      { op: "del", lines: ["Срок действия пароля: 90 дней"] },
+      { op: "add", lines: ["Срок действия пароля: 60 дней"] },
+      { op: "eq", lines: ["Поддержка: portal@example.test"] },
+    ],
+    ui: [
+      { kind: "text", tag: "p", path: "body/p#1", old_text: "Срок действия пароля: 90 дней", new_text: "Срок действия пароля: 60 дней", paths: ["body/p#1"] },
+      { kind: "attr", tag: "a", path: "body/p#4/a#0", old_text: "Скачать PDF", new_text: "Скачать PDF", old_attrs: { href: "/v1" }, attrs: { href: "/v2" }, paths: ["body/p#4/a#0"] },
+      { kind: "added", tag: "a", path: "body/p#5/a#0", new_text: "Новая версия регламента", attrs: { href: "/new" }, paths: ["body/p#5/a#0"] },
+    ],
+  },
+  policies: {
+    title: "Политики", url: "https://portal.example.test/policies", status: "same",
+    crumb: "Клиентский портал / Политики",
+    body: [
+      "<h1>Политики безопасности</h1>",
+      "<p>Политика паролей требует минимум 12 символов.</p>",
+      "<p>Сессия завершается через 30 минут бездействия.</p>",
+      "<p>Двухфакторная авторизация включена для всех ролей.</p>",
+    ],
+    hunks: [{ op: "eq", lines: ["Политики безопасности", "Пароли", "Сессии", "2FA"] }],
+    ui: [],
+  },
+  "pub-1": {
+    title: "Начало работы", url: "https://docs.example.test/start", status: "changed",
+    crumb: "Документация / Начало работы",
+    body: [
+      "<h1>Быстрый старт</h1>",
+      "<p>Установите пакет: <code>npm i peter-view</code>.</p>",
+      "<p>Поддерживаемые версии: <span class='pvwatch-is-text' data-pvwatch-path='body/p#2' data-pvwatch-kind='text'>Node 20 и 22</span>.</p>",
+      "<p><a class='pvwatch-is-added' data-pvwatch-path='body/p#3/a#0' data-pvwatch-kind='added' href='#'>Миграция на v2</a></p>",
+    ],
+    hunks: [
+      { op: "eq", lines: ["Быстрый старт"] },
+      { op: "del", lines: ["Node 18 и 20"] },
+      { op: "add", lines: ["Node 20 и 22"] },
+    ],
+    ui: [
+      { kind: "text", tag: "p", path: "body/p#2", old_text: "Node 18 и 20", new_text: "Node 20 и 22", paths: ["body/p#2"] },
+      { kind: "added", tag: "a", path: "body/p#3/a#0", new_text: "Миграция на v2", attrs: { href: "/migrate" }, paths: ["body/p#3/a#0"] },
+    ],
+  },
+  "pub-2": {
+    title: "API", url: "https://docs.example.test/api", status: "same",
+    crumb: "Документация / API",
+    body: [
+      "<h1>REST API</h1>",
+      "<p>GET /policies — список политик.</p>",
+      "<p>POST /policies — создать политику.</p>",
+      "<p>Все ответы в формате JSON.</p>",
+    ],
+    hunks: [{ op: "eq", lines: ["REST API", "GET", "POST"] }],
+    ui: [],
+  },
+};
+
+function previewWatchPage(pageId) {
+  return PREVIEW_WATCH_PAGES[pageId] || null;
+}
+
+function previewWatchCopy(page) {
+  if (!page) return "";
+  return COPY_STYLE + `<div class='crumb'>${page.crumb}</div>` + page.body.join("") + "</body></html>";
 }
 
 export async function previewApi(path, options = {}) {
@@ -358,18 +428,29 @@ export async function previewApi(path, options = {}) {
     return { ok: true };
   }
   if (path.endsWith("/diff")) {
+    const pageId = decodeURIComponent(path.split("/").at(-2) || "");
+    const page = previewWatchPage(pageId);
+    if (!page) {
+      let found = null;
+      for (const g of previewFixtures.watchGroups) {
+        found = (g.pages || []).find((item) => item.id === pageId);
+        if (found) break;
+      }
+      const status = found?.last_status || "pending";
+      return {
+        page: { id: pageId, title: found?.title || "Адрес", url: found?.url || "", last_status: status, last_error: found?.last_error || null, last_checked_at: found?.last_checked_at || null },
+        current: { checked_at: Date.now() / 1000 - 3600, changed: false, error: found?.last_error || null },
+        previous: null, hunks: [], ui: [], has_copy: false, copy: "",
+      };
+    }
     return {
-      page: { id: "home", title: "Главная", url: "https://portal.example.test/", last_status: "changed", last_checked_at: Date.now() / 1000 - 3600 },
-      current: { checked_at: Date.now() / 1000 - 3600, changed: true, error: null },
+      page: { id: pageId, title: page.title, url: page.url, last_status: page.status, last_checked_at: Date.now() / 1000 - 3600, last_changed_at: page.status === "changed" ? Date.now() / 1000 - 3600 : null },
+      current: { checked_at: Date.now() / 1000 - 3600, changed: page.status === "changed", error: null },
       previous: { checked_at: Date.now() / 1000 - 86400, changed: false, error: null },
-      hunks: [
-        { op: "eq", lines: ["Клиентский портал", "Раздел политик"] },
-        { op: "del", lines: ["Срок действия пароля: 90 дней"] },
-        { op: "add", lines: ["Срок действия пароля: 60 дней"] },
-        { op: "eq", lines: ["Поддержка: portal@example.test"] },
-      ],
+      hunks: page.hunks,
+      ui: page.ui,
       has_copy: true,
-      copy: previewWatchCopy(),
+      copy: previewWatchCopy(page),
     };
   }
   if (path.startsWith("/api/watch/") && method !== "GET") {
