@@ -729,6 +729,12 @@ export async function renderWatch() {
     let diff = { hunks: [], ui: [], page: page || { title: "Адрес", url: "" } };
     try { diff = await api(`/api/watch/pages/${encodeURIComponent(pageId)}/diff`); } catch (error) { showError(error); }
     if (state.route !== "watch") return;
+    // Открыли страницу с непросмотренным изменением — снимаем бейдж у «Мониторинга».
+    if (diff.page?.unseen || page?.unseen) {
+      api(`/api/watch/pages/${encodeURIComponent(pageId)}/seen`, { method: "POST" })
+        .then(() => refreshWatchBadge())
+        .catch(() => {});
+    }
     const running = Boolean(page?.running);
     const status = diff.page?.last_status || page?.last_status || "pending";
     const summary = watchChangeSummary(diff);

@@ -50,6 +50,25 @@ class WatchStoreTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             store.create_group("Портал", auth_kind="form", login_url="not-a-url")
 
+    def test_seen_clears_changed_count(self):
+        # Пока изменение непросмотренное, оно висит в счётчике группы.
+        group = store.create_group("Портал", auth_kind="none", created_by="editor")
+        page = store.add_page(group["id"], "https://portal.example.test/x", "Икс")
+        store.record_snapshot(page["id"], text="старый", content_hash="a", changed=False)
+        store.record_snapshot(page["id"], text="новый", content_hash="b", changed=True)
+        self.assertEqual(store.list_groups()[0]["changed_count"], 1)
+        self.assertTrue(store.get_page(page["id"])["unseen"])
+        # Открыли страницу — бейдж гаснет, но статус «changed» остаётся до
+        # следующей проверки.
+        store.mark_page_seen(page["id"])
+        self.assertEqual(store.list_groups()[0]["changed_count"], 0)
+        self.assertFalse(store.get_page(page["id"])["unseen"])
+        self.assertEqual(store.get_page(page["id"])["last_status"], "changed")
+        # Новое изменение снова становится непросмотренным.
+        store.record_snapshot(page["id"], text="совсем новый", content_hash="c", changed=True)
+        self.assertTrue(store.get_page(page["id"])["unseen"])
+        self.assertEqual(store.list_groups()[0]["changed_count"], 1)
+
 
 class WatchDiffTests(unittest.TestCase):
     def test_fingerprint_stable(self):
@@ -231,6 +250,23 @@ class WatchCopyTests(unittest.TestCase):
         self.assertIn("pvwatch-is-added", copy)
         self.assertIn("pvwatch-is-attr", copy)
         self.assertIn("Новая версия регламента", copy)
+
+    def test_heading_with_image_is_not_dropped_as_lazy_shell(self):
+        # Блок «On-Demand» с диаграммой: заголовок + картинка, текста больше
+        # нет. Раньше зачистка принимала его за недогруженный скелет и резала,
+        # из-за чего в копии схлопывалась вся секция и зияла пустота.
+        group = store.create_group("Портал", auth_kind="none", created_by="editor")
+        page = store.add_page(group["id"], "https://portal.example.test/img", "Картинки")
+        snap = ("<html><body><main><h1>Режимы</h1>"
+                "<div class='image-layout'><h3>On-Demand</h3>"
+                "<div class='image'><img src='/d.png' width='1410' height='940' alt='Схема on-demand'></div></div>"
+                "<p>Поясняющий абзац про режим работы сенсора.</p></main></body></html>")
+        with patch.object(watch_run, "safe_request", new=AsyncMock(return_value=_resp(snap))):
+            asyncio.run(watch_run.check_page(page["id"]))
+        copy = watch_run.page_copy(page["id"])
+        self.assertIn("On-Demand", copy)
+        self.assertIn("d.png", copy)
+        self.assertIn("image-layout", copy)
 
     def test_copy_is_document_with_native_styles_and_base(self):
         group = store.create_group("Портал", auth_kind="none", created_by="editor")

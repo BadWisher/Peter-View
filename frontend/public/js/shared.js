@@ -310,6 +310,27 @@ function previewWatchPage(pageId) {
   return PREVIEW_WATCH_PAGES[pageId] || null;
 }
 
+// Скольжение как на бэкенде: бейдж группы считает изменения, которые ещё
+// не открыли. seen=false у страницы — непросмотренное изменение.
+function previewUnseen(group) {
+  return (group.pages || []).filter((p) => p.last_status === "changed" && !p.seen).length;
+}
+
+function previewMarkSeen(pageId) {
+  for (const g of previewFixtures.watchGroups) {
+    const page = (g.pages || []).find((item) => item.id === pageId);
+    if (page) { page.seen = true; g.changed_count = previewUnseen(g); }
+  }
+}
+
+function previewPageUnseen(pageId) {
+  for (const g of previewFixtures.watchGroups) {
+    const page = (g.pages || []).find((item) => item.id === pageId);
+    if (page) return page.last_status === "changed" && !page.seen;
+  }
+  return false;
+}
+
 function previewWatchCopy(page, version = "new") {
   if (!page) return "";
   const body = (version === "old" ? page.prev_body : page.body) || page.body;
@@ -369,6 +390,9 @@ export async function previewApi(path, options = {}) {
     return next;
   }
   if (path === "/api/watch/groups" && method === "GET") {
+    for (const g of previewFixtures.watchGroups) {
+      if (g.pages) g.changed_count = previewUnseen(g);
+    }
     return { groups: previewFixtures.watchGroups };
   }
   if (path === "/api/watch/groups" && method === "POST") {
@@ -400,12 +424,13 @@ export async function previewApi(path, options = {}) {
         { id: "pub-2", group_id: id, url: "https://docs.example.test/api", title: "API", enabled: true, last_status: "same", last_checked_at: Date.now() / 1000 - 86400, last_changed_at: null, last_error: null },
       ]
       : [
-        { id: "home", group_id: id, url: "https://portal.example.test/", title: "Главная", enabled: true, last_status: "changed", last_checked_at: Date.now() / 1000 - 3600, last_changed_at: Date.now() / 1000 - 3600, last_error: null },
+        { id: "home", group_id: id, url: "https://portal.example.test/", title: "Главная", enabled: true, last_status: "changed", last_checked_at: Date.now() / 1000 - 3600, last_changed_at: Date.now() / 1000 - 3600, last_error: null, seen: false },
         { id: "policies", group_id: id, url: "https://portal.example.test/policies", title: "Политики", enabled: true, last_status: "same", last_checked_at: Date.now() / 1000 - 3600, last_changed_at: null, last_error: null },
         { id: "billing", group_id: id, url: "https://portal.example.test/billing", title: "Биллинг", enabled: true, last_status: "error", last_checked_at: Date.now() / 1000 - 3600, last_changed_at: null, last_error: "Страница недоступна (HTTP 401)" },
       ]);
     if (!group.pages) group.pages = pages;
     group.page_count = group.pages.length;
+    group.changed_count = previewUnseen(group);
     return { ...group, login_url: group.login_url || "https://portal.example.test/login", username: group.username || "docs", username_field: group.username_field || "username", password_field: group.password_field || "password", pages: group.pages };
   }
   if (/^\/api\/watch\/groups\/[^/]+$/.test(path) && method === "PATCH") {
@@ -458,7 +483,7 @@ export async function previewApi(path, options = {}) {
       };
     }
     return {
-      page: { id: pageId, title: page.title, url: page.url, last_status: page.status, last_checked_at: Date.now() / 1000 - 3600, last_changed_at: page.status === "changed" ? Date.now() / 1000 - 3600 : null },
+      page: { id: pageId, title: page.title, url: page.url, last_status: page.status, unseen: previewPageUnseen(pageId), last_checked_at: Date.now() / 1000 - 3600, last_changed_at: page.status === "changed" ? Date.now() / 1000 - 3600 : null },
       current: { checked_at: Date.now() / 1000 - 3600, changed: page.status === "changed", error: null },
       previous: { checked_at: Date.now() / 1000 - 86400, changed: false, error: null },
       hunks: page.hunks,
@@ -468,6 +493,10 @@ export async function previewApi(path, options = {}) {
       copy: previewWatchCopy(page),
       copy_old: previewWatchCopy(page, "old"),
     };
+  }
+  if (/^\/api\/watch\/pages\/[^/]+\/seen$/.test(path) && method === "POST") {
+    previewMarkSeen(decodeURIComponent(path.split("/")[4]));
+    return { ok: true };
   }
   if (path.startsWith("/api/watch/") && method !== "GET") {
     return { status: "started", ok: true, id: `preview-${Date.now()}` };

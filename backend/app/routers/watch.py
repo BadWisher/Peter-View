@@ -190,6 +190,15 @@ async def watch_page_diff(page_id: str, _user: str = Depends(require_user)):
         raise HTTPException(404, "Адрес не найден")
 
 
+@router.post("/api/watch/pages/{page_id}/seen")
+async def watch_page_seen(page_id: str, _user: str = Depends(require_user)):
+    """Отметить изменение просмотренным: бейдж у навигации должен погаснуть."""
+    if watch_store.get_page(page_id) is None:
+        raise HTTPException(404, "Адрес не найден")
+    watch_store.mark_page_seen(page_id)
+    return {"ok": True}
+
+
 @router.get("/api/watch/pages/{page_id}/copy")
 async def watch_page_copy(page_id: str, v: str = "new", _user: str = Depends(require_user)):
     # Живая копия для фрейма: полный html-документ с подсветкой.

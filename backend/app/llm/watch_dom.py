@@ -570,12 +570,21 @@ def _drop_loading_shells(holder: Tag) -> None:
             el.decompose()
     # Секция, от которой после зачистки остался один заголовок, — это
     # ленивый блок (Releases, Contributors): в копии он вечно «недогрузится».
+    # Но заголовок с картинкой или ссылкой — это настоящий контент (например
+    # блок «On-Demand» с диаграммой), а не пустая заглушка: такие не трогаем.
     for heading in holder.find_all(("h2", "h3")):
         parent = heading.parent
         if not isinstance(parent, Tag) or parent.name not in ("div", "section", "aside"):
             continue
-        if parent.get_text(strip=True) == heading.get_text(strip=True) and len(parent.find_all(True)) <= 3:
-            parent.decompose()
+        if parent.get_text(strip=True) != heading.get_text(strip=True):
+            continue
+        if len(parent.find_all(True)) > 3:
+            continue
+        if parent.find(("img", "svg", "video", "canvas", "iframe", "picture")):
+            continue
+        if any(a.get("href") for a in parent.find_all("a")):
+            continue
+        parent.decompose()
 
 
 def copy_document(url: str, body: str) -> str:

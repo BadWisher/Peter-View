@@ -69,6 +69,7 @@ def _init_db() -> None:
                 last_status TEXT NOT NULL DEFAULT 'pending',
                 last_checked_at REAL,
                 last_changed_at REAL,
+                seen_changed_at REAL,
                 last_error TEXT,
                 content_hash TEXT,
                 FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE
@@ -98,6 +99,9 @@ def _init_db() -> None:
             "ALTER TABLE snapshots ADD COLUMN dom TEXT NOT NULL DEFAULT ''",
             "ALTER TABLE snapshots ADD COLUMN body TEXT NOT NULL DEFAULT ''",
             "ALTER TABLE pages ADD COLUMN struct_hash TEXT",
+            # seen_changed_at — момент, когда пользователь просмотрел изменение.
+            # Пока он не позже last_changed_at, изменение считается непросмотренным.
+            "ALTER TABLE pages ADD COLUMN seen_changed_at REAL",
         ):
             try:
                 conn.execute(stmt)
@@ -179,6 +183,18 @@ def _row_page(row: sqlite3.Row) -> dict[str, Any]:
         data["struct_hash"] = row["struct_hash"]
     except (IndexError, KeyError):
         data["struct_hash"] = None
+    try:
+        seen = row["seen_changed_at"]
+    except (IndexError, KeyError):
+        seen = None
+    data["seen_changed_at"] = seen
+    # Изменение считается непросмотренным, пока его не открыли: статус
+    # «changed» висит до следующей проверки, а бейдж должен гаснуть сразу.
+    data["unseen"] = (
+        data["last_status"] == "changed"
+        and data["last_changed_at"] is not None
+        and (seen is None or seen < data["last_changed_at"])
+    )
     return data
 
 
@@ -188,7 +204,8 @@ def list_groups() -> list[dict[str, Any]]:
             """
             SELECT g.*,
                    (SELECT COUNT(*) FROM pages p WHERE p.group_id = g.id) AS page_count,
-                   (SELECT COUNT(*) FROM pages p WHERE p.group_id = g.id AND p.last_status = 'changed') AS changed_count,
+                   (SELECT COUNT(*) FROM pages p WHERE p.group_id = g.id AND p.last_status = 'changed'
+                        AND (p.seen_changed_at IS NULL OR p.seen_changed_at < p.last_changed_at)) AS changed_count,
                    (SELECT COUNT(*) FROM pages p WHERE p.group_id = g.id AND p.last_status = 'error') AS error_count
             FROM groups g
             ORDER BY g.name COLLATE NOCASE
@@ -359,6 +376,21 @@ def update_page(page_id: str, **fields: Any) -> dict[str, Any]:
         )
         conn.commit()
     return get_page(page_id)  # type: ignore[return-value]
+
+
+def mark_page_seen(page_id: str) -> None:
+    """Отметить, что пользователь посмотрел последнее изменение адреса.
+
+    Метку ставим равной времени изменения: бейдж спадает сразу, а если
+    следующая проверка найдёт новое изменение, last_changed_at уйдёт вперёд
+    и изменение снова станет непросмотренным.
+    """
+    with _lock, _connect() as conn:
+        conn.execute(
+            "UPDATE pages SET seen_changed_at = last_changed_at WHERE id = ?",
+            (page_id,),
+        )
+        conn.commit()
 
 
 def delete_page(page_id: str) -> None:
