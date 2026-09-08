@@ -3,6 +3,7 @@ from __future__ import annotations
 from pydantic import BaseModel
 
 import asyncio
+import datetime as dt
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Response
@@ -190,17 +191,32 @@ async def watch_page_diff(page_id: str, _user: str = Depends(require_user)):
 
 
 @router.get("/api/watch/pages/{page_id}/copy")
-async def watch_page_copy(page_id: str, _user: str = Depends(require_user)):
-    # Живая копия для песочницы фрейма: полный html-документ с подсветкой.
+async def watch_page_copy(page_id: str, v: str = "new", _user: str = Depends(require_user)):
+    # Живая копия для фрейма: полный html-документ с подсветкой.
     # Отдельным запросом, а не в diff: тело тяжёлое, а список и diff
-    # должны оставаться быстрыми. Разметка вычищена при записи
-    # (без скриптов и on*-атрибутов), фрейм сверху в sandbox без
-    # скриптов/форм/топ-навигации — клики остаются внутри копии.
+    # должны оставаться быстрыми. v=old отдаёт прошлый снимок с теми же
+    # метками, чтобы переключать «было / стало» на месте.
     try:
-        payload = watch_run.page_copy(page_id)
+        payload = watch_run.page_copy(page_id, "old" if v == "old" else "new")
     except KeyError:
         raise HTTPException(404, "Адрес не найден")
     return Response(content=payload, media_type="text/html; charset=utf-8")
+
+
+@router.get("/api/watch/pages/{page_id}/shot")
+async def watch_page_shot(page_id: str, v: str = "new", _user: str = Depends(require_user)):
+    # Та же копия, но картинкой: браузер сфотографирует размеченный
+    # документ целиком, файл уходит пользователю как вложение.
+    try:
+        png = await watch_run.page_shot(page_id, "old" if v == "old" else "new")
+    except KeyError:
+        raise HTTPException(404, "Адрес не найден")
+    except ValueError as exc:
+        raise HTTPException(503, str(exc))
+    stamp = dt.datetime.now().strftime("%Y-%m-%d")
+    name = f"stranica-{page_id}-{v}-{stamp}.png"
+    return Response(content=png, media_type="image/png",
+                    headers={"Content-Disposition": f'attachment; filename="{name}"'})
 
 
 @router.get("/api/watch/pages/{page_id}/history")

@@ -237,6 +237,13 @@ const PREVIEW_WATCH_PAGES = {
       "<p><a class='pvwatch-is-added' data-pvwatch-path='body/p#5/a#0' data-pvwatch-kind='added' href='#'>Новая версия регламента</a></p>",
       "<p>Контакты: help@example.test</p>",
     ],
+    prev_body: [
+      "<h1>Регламент доступа</h1>",
+      "<p>Срок действия пароля: <span class='pvwatch-is-text' data-pvwatch-path='body/p#1' data-pvwatch-kind='text'>90 дней</span>. Обновлено 01.09.2026.</p>",
+      "<p>Первый абзац про доступ.</p><p>Второй абзац про сроки.</p>",
+      "<p><a class='btn pvwatch-is-attr' data-pvwatch-path='body/p#4/a#0' data-pvwatch-kind='attr' href='#'>Скачать PDF</a></p>",
+      "<p>Контакты: help@example.test</p>",
+    ],
     hunks: [
       { op: "eq", lines: ["Клиентский портал", "Раздел политик"] },
       { op: "del", lines: ["Срок действия пароля: 90 дней"] },
@@ -244,9 +251,9 @@ const PREVIEW_WATCH_PAGES = {
       { op: "eq", lines: ["Поддержка: portal@example.test"] },
     ],
     ui: [
-      { kind: "text", tag: "p", path: "body/p#1", old_text: "Срок действия пароля: 90 дней", new_text: "Срок действия пароля: 60 дней", paths: ["body/p#1"] },
-      { kind: "attr", tag: "a", path: "body/p#4/a#0", old_text: "Скачать PDF", new_text: "Скачать PDF", old_attrs: { href: "/v1" }, attrs: { href: "/v2" }, paths: ["body/p#4/a#0"] },
-      { kind: "added", tag: "a", path: "body/p#5/a#0", new_text: "Новая версия регламента", attrs: { href: "/new" }, paths: ["body/p#5/a#0"] },
+      { kind: "text", tag: "p", path: "body/p#1", old_paths: ["body/p#1"], old_text: "Срок действия пароля: 90 дней", new_text: "Срок действия пароля: 60 дней", paths: ["body/p#1"] },
+      { kind: "attr", tag: "a", path: "body/p#4/a#0", old_paths: ["body/p#4/a#0"], old_text: "Скачать PDF", new_text: "Скачать PDF", old_attrs: { href: "/v1" }, attrs: { href: "/v2" }, paths: ["body/p#4/a#0"] },
+      { kind: "added", tag: "a", path: "body/p#5/a#0", old_paths: [], new_text: "Новая версия регламента", attrs: { href: "/new" }, paths: ["body/p#5/a#0"] },
     ],
   },
   policies: {
@@ -270,14 +277,19 @@ const PREVIEW_WATCH_PAGES = {
       "<p>Поддерживаемые версии: <span class='pvwatch-is-text' data-pvwatch-path='body/p#2' data-pvwatch-kind='text'>Node 20 и 22</span>.</p>",
       "<p><a class='pvwatch-is-added' data-pvwatch-path='body/p#3/a#0' data-pvwatch-kind='added' href='#'>Миграция на v2</a></p>",
     ],
+    prev_body: [
+      "<h1>Быстрый старт</h1>",
+      "<p>Установите пакет: <code>npm i peter-view</code>.</p>",
+      "<p>Поддерживаемые версии: <span class='pvwatch-is-text' data-pvwatch-path='body/p#2' data-pvwatch-kind='text'>Node 18 и 20</span>.</p>",
+    ],
     hunks: [
       { op: "eq", lines: ["Быстрый старт"] },
       { op: "del", lines: ["Node 18 и 20"] },
       { op: "add", lines: ["Node 20 и 22"] },
     ],
     ui: [
-      { kind: "text", tag: "p", path: "body/p#2", old_text: "Node 18 и 20", new_text: "Node 20 и 22", paths: ["body/p#2"] },
-      { kind: "added", tag: "a", path: "body/p#3/a#0", new_text: "Миграция на v2", attrs: { href: "/migrate" }, paths: ["body/p#3/a#0"] },
+      { kind: "text", tag: "p", path: "body/p#2", old_paths: ["body/p#2"], old_text: "Node 18 и 20", new_text: "Node 20 и 22", paths: ["body/p#2"] },
+      { kind: "added", tag: "a", path: "body/p#3/a#0", old_paths: [], new_text: "Миграция на v2", attrs: { href: "/migrate" }, paths: ["body/p#3/a#0"] },
     ],
   },
   "pub-2": {
@@ -298,9 +310,11 @@ function previewWatchPage(pageId) {
   return PREVIEW_WATCH_PAGES[pageId] || null;
 }
 
-function previewWatchCopy(page) {
+function previewWatchCopy(page, version = "new") {
   if (!page) return "";
-  return COPY_STYLE + `<div class='crumb'>${page.crumb}</div>` + page.body.join("") + "</body></html>";
+  const body = (version === "old" ? page.prev_body : page.body) || page.body;
+  if (!body) return "";
+  return COPY_STYLE + `<div class='crumb'>${page.crumb}</div>` + body.join("") + "</body></html>";
 }
 
 export async function previewApi(path, options = {}) {
@@ -440,7 +454,7 @@ export async function previewApi(path, options = {}) {
       return {
         page: { id: pageId, title: found?.title || "Адрес", url: found?.url || "", last_status: status, last_error: found?.last_error || null, last_checked_at: found?.last_checked_at || null },
         current: { checked_at: Date.now() / 1000 - 3600, changed: false, error: found?.last_error || null },
-        previous: null, hunks: [], ui: [], has_copy: false, copy: "",
+        previous: null, hunks: [], ui: [], has_copy: false, has_prev: false, copy: "",
       };
     }
     return {
@@ -450,7 +464,9 @@ export async function previewApi(path, options = {}) {
       hunks: page.hunks,
       ui: page.ui,
       has_copy: true,
+      has_prev: Boolean(page.prev_body),
       copy: previewWatchCopy(page),
+      copy_old: previewWatchCopy(page, "old"),
     };
   }
   if (path.startsWith("/api/watch/") && method !== "GET") {

@@ -372,7 +372,8 @@ export function bindWatchIssues() {
       const list = marks();
       if (!list.length) return;
       let targets = [];
-      const wants = (item?.event?.paths || [item?.event?.path || item?.path || ""]).map((p) => String(p).trim()).filter(Boolean);
+      const wants = [...(item?.event?.paths || [item?.event?.path || item?.path || ""]),
+                     ...(item?.event?.old_paths || [])].map((p) => String(p).trim()).filter(Boolean);
       for (const node of list) {
         if (wants.includes(node.dataset?.pvwatchPath || "")) targets.push(node);
       }
@@ -427,8 +428,29 @@ function watchUiSentence(event) {
   return "";
 }
 
-export function watchCopyUrl(pageId) {
-  return `/api/watch/pages/${encodeURIComponent(pageId)}/copy`;
+export function watchCopyUrl(pageId, version = "new") {
+  return `/api/watch/pages/${encodeURIComponent(pageId)}/copy${version === "old" ? "?v=old" : ""}`;
+}
+
+export function watchShotUrl(pageId, version = "new") {
+  return `/api/watch/pages/${encodeURIComponent(pageId)}/shot${version === "old" ? "?v=old" : ""}`;
+}
+
+// Шапка панели копии: адрес слева, справа переключатель версий и кнопки
+// снимка. Сегменты вместо точек, подписи кнопок только в title.
+export function renderWatchCopyBar(diff, pageId) {
+  const url = escapeHTML(diff.page?.url || "");
+  const tabs = diff.has_prev
+    ? `<div class="copy-tabs" role="tablist">
+         <button class="copy-tab active" type="button" role="tab" data-copy-version="new">Стало</button>
+         <button class="copy-tab" type="button" role="tab" data-copy-version="old">Было</button>
+       </div>`
+    : "";
+  const tools = `<div class="copy-tools">
+      <a class="icon-button copy-shot" href="${watchShotUrl(pageId)}" download title="Скачать страницу картинкой">${icon("icon-download")}</a>
+      <button class="icon-button copy-shot-clip" type="button" title="Скопировать картинку в буфер">${icon("icon-copy")}</button>
+    </div>`;
+  return `<span>${url}</span><div class="copy-actions">${tabs}${tools}</div>`;
 }
 
 export function renderWatchCopy(diff, pageId) {
@@ -441,15 +463,145 @@ export function renderWatchCopy(diff, pageId) {
   return `<div class="document-content watch-copy" aria-live="polite">${frame}</div>`;
 }
 
+const COPY_DESKTOP_WIDTH = 1280;
+
+function fitWatchCopy() {
+  document.querySelectorAll(".document-content.watch-copy").forEach((box) => {
+    const width = box.clientWidth;
+    if (!width) return;
+    const scale = Math.min(1, width / COPY_DESKTOP_WIDTH);
+    box.style.setProperty("--pvw-scale", String(scale));
+  });
+}
+
+// Прошлое превью не умеет рендерить PNG на сервере: картинку копии
+// собираем на клиенте через SVG foreignObject. Живое приложение ходит
+// на /shot, где снимок делает chromium.
+async function rasterizeCopy(html, width = 1280) {
+  // Мёртвый iframe даёт честную высоту: стили копии рассчитаны на body,
+  // в обрезанном div они бы не применились и высота вышла бы меньше.
+  const probe = document.createElement("iframe");
+  probe.style.cssText = `position:fixed;left:-2000px;top:0;width:${width}px;height:640px;border:0`;
+  document.body.appendChild(probe);
+  probe.contentDocument.open();
+  probe.contentDocument.write(html);
+  probe.contentDocument.close();
+  // Документ в iframe записан синхронно, но раскладка считается на следующем
+  // кадре: до неё scrollHeight вернул бы высоту пустого about:blank.
+  await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
+  const height = Math.min(12000, Math.max(640, probe.contentWindow.document.documentElement.scrollHeight));
+  probe.remove();
+  const style = (html.match(/<style>([\s\S]*?)<\/style>/i) || [])[1] || "";
+  const body = (html.match(/<body[^>]*>([\s\S]*)<\/body>/i) || [])[1] || html;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">`
+    + `<foreignObject width="100%" height="100%">`
+    + `<div xmlns="http://www.w3.org/1999/xhtml"><style>${style}</style>${body}</div>`
+    + `</foreignObject></svg>`;
+  const img = new Image();
+  // blob: URL затирает canvas (foreignObject + toBlob не дадут картинку),
+  // data: URL Chromium экспорт разрешает.
+  img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+  await new Promise((res, rej) => { img.onload = res; img.onerror = rej; });
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(0, 0, width, height);
+  ctx.drawImage(img, 0, 0);
+  return await new Promise((res) => canvas.toBlob(res, "image/png"));
+}
+
+async function watchShotBlob(pageId, version) {
+  if (!isPreview) {
+    const resp = await fetch(watchShotUrl(pageId, version), { credentials: "same-origin" });
+    if (!resp.ok) throw new Error(String(resp.status));
+    return await resp.blob();
+  }
+  const html = (version === "old" ? window.__watchDiff?.copy_old : window.__watchDiff?.copy) || "";
+  if (!html) throw new Error("empty");
+  return await rasterizeCopy(html);
+}
+
 export function bindWatchCopy(diff) {
   window.__watchDiff = diff;
   const inline = diff?.copy || "";
   document.querySelectorAll("[data-watch-frame]").forEach((frame) => {
     if (frame.dataset.watchReady) return;
     frame.dataset.watchReady = "1";
-    frame.addEventListener("load", () => bindWatchIssues());
+    frame.addEventListener("load", () => {
+      // Внутренний документ после загрузки новый, слушатели на метках сгорели.
+      delete frame.dataset.markBound;
+      bindWatchIssues();
+    });
     if (inline && frame.dataset.watchInline) frame.srcdoc = inline;
   });
+  document.querySelectorAll(".copy-tab").forEach((tab) => {
+    if (tab.dataset.copyBound) return;
+    tab.dataset.copyBound = "1";
+    tab.addEventListener("click", () => {
+      const frame = document.querySelector(".pvwatch-frame");
+      const pageId = frame?.dataset.watchFrame || state.watch.pageId;
+      if (!frame || !pageId) return;
+      const version = tab.dataset.copyVersion === "old" ? "old" : "new";
+      document.querySelectorAll(".copy-tab").forEach((other) => {
+        other.classList.toggle("active", other === tab);
+      });
+      if (frame.dataset.watchInline) {
+        frame.srcdoc = (version === "old" ? diff.copy_old : diff.copy) || "";
+      } else {
+        frame.src = watchCopyUrl(pageId, version);
+      }
+      document.querySelectorAll(".copy-shot").forEach((a) => {
+        a.href = watchShotUrl(pageId, version);
+      });
+      const clip = document.querySelector(".copy-shot-clip");
+      if (clip) clip.dataset.version = version;
+    });
+  });
+  if (isPreview) {
+    // Статичное превью не отдаёт /shot: перехватываем ссылку и собираем
+    // картинку на клиенте, чтобы кнопка в демо не вела в 404.
+    document.querySelectorAll("a.copy-shot").forEach((a) => {
+      if (a.dataset.copyBound) return;
+      a.dataset.copyBound = "1";
+      a.addEventListener("click", async (event) => {
+        event.preventDefault();
+        const pageId = state.watch.pageId || "";
+        const version = a.href.includes("v=old") ? "old" : "new";
+        try {
+          const blob = await watchShotBlob(pageId, version);
+          downloadBlob(blob, `stranica-${pageId}-${version}.png`);
+        } catch {
+          toast("Не удалось собрать картинку");
+        }
+      });
+    });
+  }
+  const clip = document.querySelector(".copy-shot-clip");
+  if (clip && !clip.dataset.copyBound) {
+    clip.dataset.copyBound = "1";
+    clip.addEventListener("click", async () => {
+      const pageId = state.watch.pageId;
+      if (!pageId) return;
+      const version = clip.dataset.version === "old" ? "old" : "new";
+      clip.disabled = true;
+      try {
+        const blob = await watchShotBlob(pageId, version);
+        await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+        toast("Картинка скопирована");
+      } catch {
+        toast("Браузер не дал доступ к буферу");
+      } finally {
+        clip.disabled = false;
+      }
+    });
+  }
+  fitWatchCopy();
+  if (!window.__watchFitBound) {
+    window.__watchFitBound = true;
+    window.addEventListener("resize", fitWatchCopy);
+  }
   bindWatchIssues();
 }
 
@@ -597,7 +749,7 @@ export async function renderWatch() {
       ${diff.page?.last_error ? `<div class="partial-status" role="alert">${icon("icon-eye-off")}<span>${escapeHTML(diff.page.last_error)}</span></div>` : ""}
       <section class="review-workspace">
         <article class="document-pane" aria-label="Сохранённая копия страницы">
-          <div class="pane-bar"><span>${escapeHTML(diff.page?.url || page?.url || "")}</span></div>
+          <div class="pane-bar">${renderWatchCopyBar(diff, pageId)}</div>
           <div class="document-scroll">
             ${renderWatchCopy(diff, pageId)}
           </div>

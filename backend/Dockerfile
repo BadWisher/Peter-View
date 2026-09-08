@@ -22,9 +22,7 @@ RUN VALE_SHA=$(wget -qO- "https://github.com/errata-ai/vale/releases/download/v$
 WORKDIR /app
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt \
-    && python -m playwright install --with-deps chromium 2>/dev/null \
-        || python -m playwright install chromium || true
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Chromium для мониторинга: без него съём JS-страниц молча деградирует в
 # голый HTML, и копия рендерится кашей. Ставим в общий путь, чтобы рантайм

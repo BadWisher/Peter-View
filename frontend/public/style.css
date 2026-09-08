@@ -1997,6 +1997,46 @@ button.chip:hover,
   white-space: nowrap;
 }
 
+/* Переключатель версий копии: сегменты, а не кнопки вразброс. */
+.copy-actions {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.copy-tabs {
+  display: inline-flex;
+  flex: 0 0 auto;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2, rgba(15, 118, 110, 0.06));
+}
+
+.copy-tab {
+  border: 0;
+  background: none;
+  padding: 3px 12px;
+  border-radius: calc(var(--radius-sm) - 2px);
+  color: var(--muted);
+  font: inherit;
+  cursor: pointer;
+}
+
+.copy-tab.active {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.12);
+}
+
+.copy-tools {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 4px;
+}
+
 .document-scroll {
   display: grid;
   min-height: 0;
