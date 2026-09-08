@@ -26,6 +26,13 @@ RUN pip install --no-cache-dir -r requirements.txt \
     && python -m playwright install --with-deps chromium 2>/dev/null \
         || python -m playwright install chromium || true
 
+# Chromium для мониторинга: без него съём JS-страниц молча деградирует в
+# голый HTML, и копия рендерится кашей. Ставим в общий путь, чтобы рантайм
+# под appuser (см. entrypoint.sh) видел браузер: в /root/.cache он недоступен.
+ENV PLAYWRIGHT_BROWSERS_PATH=/opt/ms-playwright
+RUN playwright install --with-deps chromium \
+    && chmod -R a+rX /opt/ms-playwright
+
 COPY --chown=appuser:appuser vale/ /app/vale/
 COPY --chown=appuser:appuser styleguide/ /app/styleguide/
 COPY --chown=appuser:appuser app/ /app/app/

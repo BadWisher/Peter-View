@@ -192,17 +192,6 @@ async def _login(client: httpx.AsyncClient, group: dict) -> httpx.Auth | None:
     return None
 
 
-def _needs_render(html: str) -> bool:
-    """Статика бедна текстом либо несёт пустые JS-контейнеры (turbo-frame,
-    include-fragment): без браузера они так и останутся заглушками."""
-    if len(snapshot_text(html)) < MIN_SNAPSHOT_CHARS:
-        return True
-    soup = BeautifulSoup(html, "lxml")
-    shells = soup.find_all(("turbo-frame", "include-fragment", "poll-include"))
-    empty = [s for s in shells if not s.get_text(strip=True) and not s.find(True)]
-    return bool(empty)
-
-
 def _client_cookies(client: httpx.AsyncClient) -> list[dict]:
     out = []
     for c in client.cookies.jar:
@@ -223,8 +212,10 @@ async def _fetch_page(client: httpx.AsyncClient, url: str, auth: httpx.Auth | No
         raise ValueError(f"Страница недоступна (HTTP {resp.status_code})")
     html = resp.text
     rendered = False
-    text = snapshot_text(html)
-    if _needs_render(html) and watch_render.render_available():
+    # Браузер есть — снимаем им всегда. Статика обманчива: страница может быть
+    # набита текстом, но раскладывать этот текст по экрану будет JS, и копия
+    # с голого HTML выйдет кашей из наложенных друг на друга слоёв.
+    if watch_render.render_available():
         try:
             html = await watch_render.render_html(url, cookies=_client_cookies(client))
             rendered = True
@@ -234,10 +225,7 @@ async def _fetch_page(client: httpx.AsyncClient, url: str, auth: httpx.Auth | No
             logger.warning("Рендер %s не удался: %s", url, exc)
     text = snapshot_text(html)
     if len(text) < MIN_SNAPSHOT_CHARS:
-        hint = "" if rendered else (
-            " — возможно, нужен JS (поставь playwright и chromium), либо портал отдал заглушку"
-            if watch_render.render_available() is False else " — возможно, нужен JS или портал отдал заглушку"
-        )
+        hint = "" if rendered else ", страница отдаёт пустой каркас даже без JS"
         raise ValueError(f"Со страницы пришло почти пусто ({len(text)} символов){hint}")
     soup = BeautifulSoup(html, "lxml")
     has_pass = any(
@@ -269,6 +257,9 @@ async def check_page(page_id: str, client: httpx.AsyncClient | None = None, auth
         if own_client:
             auth = await _login(client, group)
         html, _rendered = await _fetch_page(client, page["url"], auth)
+        # Деперсонализация до любой обработки: в базу, дифф и копию должны
+        # попасть уже замаскированные почту и телефоны, а не оригинал.
+        html = watch_dom.depersonalize(html)
         text = snapshot_text(html)
         nodes = watch_dom.snapshot_nodes(html)
         body = watch_dom.cleaned_body(html)
@@ -424,22 +415,39 @@ def page_diff(page_id: str) -> dict:
         "ui": ui,
         "marks": marks,
         "has_copy": has_copy,
+        # Переключатель «было / стало» имеет смысл, только когда есть прошлый
+        # снимок с телом: без него показывать вторую вкладку нечего.
+        "has_prev": bool(previous and previous.get("body")),
     }
 
 
-def page_copy(page_id: str) -> str:
+def page_copy(page_id: str, version: str = "new") -> str:
     page = store.get_page(page_id)
     if page is None:
         raise KeyError("Адрес не найден")
     current, previous = _pair_snaps(page_id)
     if not current:
         return ""
-    body = current.get("body") or ""
-    if previous:
-        pair = _copy_pair(previous, current)
-        if pair is not None:
-            old_nodes, new_nodes = pair
-            ui = watch_dom.diff_nodes(old_nodes, new_nodes)
-            body = watch_dom.mark_copy(body, old_nodes, new_nodes, ui)
+    if version == "old" and previous and previous.get("body"):
+        snap = previous
+    else:
+        snap = current
+    body = snap.get("body") or ""
+    # Дифф всегда old→new (прошлый снимок → текущий): только тогда пути
+    # совпадают с тем, что mark_copy читает из version.
+    pair = _copy_pair(previous, current) if previous else None
+    if pair is not None:
+        old_nodes, new_nodes = pair
+        ui = watch_dom.diff_nodes(old_nodes, new_nodes)
+        body = watch_dom.mark_copy(body, old_nodes, new_nodes, ui, version=version)
     url = (page.get("url") or "").replace('"', "")
     return watch_dom.copy_document(url, body)
+
+
+async def page_shot(page_id: str, version: str = "new") -> bytes:
+    if not watch_render.render_available():
+        raise ValueError("Для снимка нужен chromium: поставь playwright и браузер")
+    html = page_copy(page_id, version)
+    if not html:
+        raise KeyError("Снимка страницы ещё нет")
+    return await watch_render.screenshot_html(html)

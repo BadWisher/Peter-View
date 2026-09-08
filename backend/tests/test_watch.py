@@ -78,6 +78,11 @@ class WatchFetchTests(unittest.TestCase):
         self._db_patch = patch.object(store, "DB_FILE", self.db)
         self._db_patch.start()
         self.addCleanup(self._db_patch.stop)
+        # Браузер в тестах не поднимаем: страницы фейковые, и рендер должен
+        # оставаться заглушкой, иначе check_page полезет в сеть.
+        off = patch.object(watch_run.watch_render, "render_available", return_value=False)
+        off.start()
+        self.addCleanup(off.stop)
         store._init_db()
 
     def _group_page(self, **kw):
@@ -200,6 +205,9 @@ class WatchCopyTests(unittest.TestCase):
         self._db_patch = patch.object(store, "DB_FILE", self.db)
         self._db_patch.start()
         self.addCleanup(self._db_patch.stop)
+        off = patch.object(watch_run.watch_render, "render_available", return_value=False)
+        off.start()
+        self.addCleanup(off.stop)
         store._init_db()
 
     def _two_snaps(self):
@@ -315,6 +323,107 @@ class WatchNoiseTests(unittest.TestCase):
         self.assertEqual(len(added), 1)
         self.assertEqual(added[0]["count"], 3)
         self.assertEqual(len(added[0]["paths"]), 3)
+
+
+class WatchDepersonalizeTests(unittest.TestCase):
+    def test_masks_contacts_and_docs(self):
+        html = ("<html><body><p>Пишите на ivan.petrov@corp.example, звоните +7 (912) 345-67-89.</p>"
+                "<p>Карта 4276 1234 5678 9012, ИНН 7701234567.</p></body></html>")
+        out = watch_run.watch_dom.depersonalize(html)
+        self.assertNotIn("ivan.petrov@", out)
+        self.assertIn("i•••@corp.example", out)
+        self.assertNotIn("345-67-89", out)
+        self.assertNotIn("4276 1234 5678 9012", out)
+        self.assertNotIn("7701234567", out)
+        self.assertIn("Карта", out)  # слова на месте, маскируются только данные
+
+    def test_leaves_plain_text_alone(self):
+        html = "<html><body><p>Срок действия пароля: 90 дней.</p></body></html>"
+        out = watch_run.watch_dom.depersonalize(html)
+        self.assertIn("90 дней", out)
+
+    def test_masks_mailto_links(self):
+        html = '<html><body><a href="mailto:boss@corp.ru">Почта</a></body></html>'
+        out = watch_run.watch_dom.depersonalize(html)
+        self.assertNotIn("boss@corp.ru", out)
+        self.assertIn("mailto:", out)
+
+
+class WatchSessionStateTests(unittest.TestCase):
+    def test_typed_input_and_switch_state_are_not_events(self):
+        # Пользователь набрал текст в поле и переключил чекбокс: интерфейс
+        # не менялся, снимки различаться не должны.
+        before = ('<html><body><main><h1>Форма</h1>'
+                  '<input name="q" type="text" value=""><input name="agree" type="checkbox">'
+                  '<p>Постоянный текст формы обратной связи.</p></main></body></html>')
+        after = ('<html><body><main><h1>Форма</h1>'
+                 '<input name="q" type="text" value="привет мир"><input name="agree" type="checkbox" checked>'
+                 '<p>Постоянный текст формы обратной связи.</p></main></body></html>')
+        events = watch_run.watch_dom.diff_nodes(
+            watch_run.watch_dom.snapshot_nodes(before),
+            watch_run.watch_dom.snapshot_nodes(after),
+        )
+        self.assertEqual(events, [])
+
+    def test_added_field_is_still_reported(self):
+        before = "<html><body><main><h1>Форма</h1><p>Постоянный текст формы обратной связи.</p></main></body></html>"
+        after = ('<html><body><main><h1>Форма</h1><p>Постоянный текст формы обратной связи.</p>'
+                 '<input name="extra" type="text"></main></body></html>')
+        events = watch_run.watch_dom.diff_nodes(
+            watch_run.watch_dom.snapshot_nodes(before),
+            watch_run.watch_dom.snapshot_nodes(after),
+        )
+        self.assertEqual([e["kind"] for e in events], ["added"])
+
+
+class WatchVersionViewTests(unittest.TestCase):
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self.db = Path(self._tmp.name) / "watch.db"
+        self._db_patch = patch.object(store, "DB_FILE", self.db)
+        self._db_patch.start()
+        self.addCleanup(self._db_patch.stop)
+        off = patch.object(watch_run.watch_render, "render_available", return_value=False)
+        off.start()
+        self.addCleanup(off.stop)
+        store._init_db()
+
+    def test_old_view_marks_same_events_on_old_paths(self):
+        group = store.create_group("Портал", auth_kind="none", created_by="editor")
+        page = store.add_page(group["id"], "https://portal.example.test/vers", "Версии")
+        first = ("<html><body><main><h1>Регламент</h1><p>Текст тот же самый длинный.</p>"
+                 "<a href='/v1'>Скачать PDF</a><a href='/x'>Лишняя ссылка</a></main></body></html>")
+        second = ("<html><body><main><h1>Регламент</h1><p>Текст тот же самый длинный!</p>"
+                  "<a href='/v2'>Скачать PDF</a></main></body></html>")
+        with patch.object(watch_run, "safe_request", new=AsyncMock(return_value=_resp(first))):
+            asyncio.run(watch_run.check_page(page["id"]))
+        with patch.object(watch_run, "safe_request", new=AsyncMock(return_value=_resp(second))):
+            asyncio.run(watch_run.check_page(page["id"]))
+        new_copy = watch_run.page_copy(page["id"], "new")
+        old_copy = watch_run.page_copy(page["id"], "old")
+        # Новый текст есть только в новой версии.
+        self.assertIn("длинный!", new_copy)
+        self.assertNotIn("длинный!", old_copy)
+        # Пропавшая ссылка: в старой версии она на месте и помечена,
+        # в новой о ней напоминает призрак.
+        self.assertIn("Лишняя ссылка", old_copy)
+        self.assertIn("pvwatch-is-removed", old_copy)
+        self.assertIn("Тут был блок", new_copy)
+        # Призраков-заглушек в прошлой версии нет: там блок ещё на месте.
+        self.assertNotIn('class="pvwatch-ghost"', old_copy)
+        diff = watch_run.page_diff(page["id"])
+        self.assertTrue(diff["has_prev"])
+
+    def test_events_carry_old_paths(self):
+        before = "<html><body><main><h1>Регламент</h1><p>Текст тот же самый длинный.</p></main></body></html>"
+        after = "<html><body><main><h1>Регламент</h1><p>Текст тот же самый короткий.</p></main></body></html>"
+        events = watch_run.watch_dom.diff_nodes(
+            watch_run.watch_dom.snapshot_nodes(before),
+            watch_run.watch_dom.snapshot_nodes(after),
+        )
+        self.assertTrue(events)
+        self.assertTrue(all("old_paths" in e for e in events))
 
 
 if __name__ == "__main__":

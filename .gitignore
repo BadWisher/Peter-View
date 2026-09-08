@@ -12,3 +12,4 @@ backend/data/
 .cursor/
 site/
 .mkdocs-venv/
+.shots/

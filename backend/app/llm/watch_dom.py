@@ -29,11 +29,26 @@ SKIP_TAGS = frozenset({
 
 KEPT_ATTRS = frozenset({
     "id", "name", "type", "href", "src", "alt", "title",
-    "placeholder", "value", "role", "for", "action", "method",
-    "selected", "checked", "disabled", "readonly", "required", "open",
+    "placeholder", "role", "for", "action", "method", "required",
 })
 
+# Всё, что пользователь меняет сам, пока просто сидит на странице: набитый
+# текст в полях, отмеченные чекбоксы, выбранный пункт списка, открытые
+# выпадашки. Это состояние сессии, а не интерфейса, и мониторить его нельзя:
+# каждый снимок отличался бы от прошлого из-за случайного ввода. Поэтому
+# value/checked/selected/open/disabled в KEPT_ATTRS намеренно нет.
+
 _HIDDEN_STYLE = re.compile(r"display\s*:\s*none|visibility\s*:\s*hidden", re.I)
+
+# Личные данные, которым не место в сохранённом снимке: мониторинг хранит
+# страницы целиком, а на корпоративных порталах в разметке светятся почты,
+# телефоны и номера документов. Снимок деперсонализируется до записи в базу,
+# поэтому и дифф, и копия, и PNG выходят уже замаскированными.
+_EMAIL = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+")
+_PHONE = re.compile(r"(?<!\d)(?:\+7|8)[\s(]*\(?\d{3}\)?[\s-]?\d{3}[\s-]?\d{2}[\s-]?\d{2}(?!\d)")
+_CARD = re.compile(r"(?<!\d)(?:\d[ -]?){15}\d(?!\d)")
+_INN = re.compile(r"(?<!\d)\d{10}(?:\d{2})?(?!\d)")
+_SNILS = re.compile(r"(?<!\d)\d{3}[ -]?\d{3}[ -]?\d{3}[ -]?\d{2}(?!\d)")
 
 MAX_NODES = 2000
 MAX_TEXT = 120
@@ -46,6 +61,62 @@ def mask_volatile(value: str) -> str:
     for pat in _VOLATILE:
         value = pat.sub("", value)
     return re.sub(r"\s+", " ", value).strip(" -–—•·")
+
+
+def _mask_text(value: str) -> str:
+    """Замена для текстовых узлов: маскируем только личные данные, всё
+    остальное остаётся как есть, иначе мониторинг перестанет показывать
+    содержимое страниц."""
+    value = _EMAIL.sub(_mask_middle, value)
+    value = _CARD.sub("•" * 16, value)
+    value = _PHONE.sub(_mask_phone, value)
+    value = _SNILS.sub("•" * 11, value)
+    value = _INN.sub("•" * 10, value)
+    return value
+
+
+def _mask_middle(match) -> str:
+    raw = match.group(0)
+    login, _, domain = raw.partition("@")
+    keep = login[:1] if login else ""
+    return f"{keep}•••@{domain}"
+
+
+def _mask_phone(match) -> str:
+    raw = match.group(0)
+    digits = re.sub(r"\D", "", raw)
+    return raw[:1] + "•" * (len(digits) - 1) if len(digits) > 4 else raw
+
+
+def depersonalize(html: str) -> str:
+    """Вычистить из HTML личное: почту, телефоны, карты, СНИЛС, ИНН.
+
+    Трогаем только текст и атрибуты, где человек оставляет свои данные
+    (href mailto/tel, alt, title, placeholder). Атрибут src не трогаем:
+    порезанный URL сломает картинку, а идентификаторы в путях сайтов
+    встречаются редко и это уже вопрос к самому сайту.
+    """
+    soup = BeautifulSoup(html or "", "lxml")
+    for node in soup.find_all(string=True):
+        if node.parent is not None and node.parent.name in ("script", "style"):
+            continue
+        cleaned = _mask_text(str(node))
+        if cleaned != str(node):
+            node.replace_with(cleaned)
+    for tag in soup.find_all(True):
+        for attr in ("alt", "title", "placeholder", "aria-label"):
+            raw = tag.get(attr)
+            if not raw or isinstance(raw, list):
+                continue
+            cleaned = _mask_text(str(raw))
+            if cleaned != raw:
+                tag[attr] = cleaned
+        for attr in ("href", "src"):
+            raw = str(tag.get(attr) or "")
+            if raw.startswith(("mailto:", "tel:")):
+                head, _, rest = raw.partition(":")
+                tag[attr] = f"{head}:{_mask_text(rest)}"
+    return str(soup)
 
 
 def _clean_style(raw: str) -> str:
@@ -292,7 +363,7 @@ def diff_nodes(old: list[dict], new: list[dict]) -> list[dict]:
                 kind, detail = _fine_kind(old[a], new[best])
                 events.append({
                     "kind": kind, "tag": new[best]["tag"], "old_tag": old[a]["tag"],
-                    "path": new[best]["path"],
+                    "path": new[best]["path"], "old_path": old[a]["path"],
                     "where": _where(new[best]), "old_text": old[a]["text"],
                     "new_text": new[best]["text"], "detail": detail,
                     "old_attrs": old[a]["attrs"], "attrs": new[best]["attrs"],
@@ -327,6 +398,7 @@ def diff_nodes(old: list[dict], new: list[dict]) -> list[dict]:
             moved_old.add(i)
             events.append({
                 "kind": "moved", "tag": new[j]["tag"], "path": new[j]["path"],
+                "old_path": old[i]["path"],
                 "where": _where(new[j]), "old_text": old[i]["text"],
                 "new_text": new[j]["text"],
                 "detail": f"{old[i]['path']} → {new[j]['path']}",
@@ -338,6 +410,7 @@ def diff_nodes(old: list[dict], new: list[dict]) -> list[dict]:
             continue
         events.append({
             "kind": "removed", "tag": old[i]["tag"], "path": old[i]["path"],
+            "old_path": old[i]["path"],
             "where": _where(old[i]), "old_text": old[i]["text"],
             "new_text": "", "detail": old[i]["text"] or _sig(old[i]).split("|")[2][:80],
             "attrs": old[i]["attrs"], "old_attrs": old[i]["attrs"],
@@ -349,6 +422,7 @@ def diff_nodes(old: list[dict], new: list[dict]) -> list[dict]:
             continue
         events.append({
             "kind": "added", "tag": new[j]["tag"], "path": new[j]["path"],
+            "old_path": "",
             "where": _where(new[j]), "old_text": "",
             "new_text": new[j]["text"], "detail": new[j]["text"] or _sig(new[j]).split("|")[2][:80],
             "attrs": new[j]["attrs"], "old_attrs": {},
@@ -367,9 +441,12 @@ def diff_nodes(old: list[dict], new: list[dict]) -> list[dict]:
         if first is None:
             merged[key] = e
             e["paths"] = [e["path"]]
+            e["old_paths"] = [p for p in [e.get("old_path")] if p]
             deduped.append(e)
         else:
             first["paths"].append(e["path"])
+            if e.get("old_path"):
+                first["old_paths"].append(e["old_path"])
             first["count"] = len(first["paths"])
     events = deduped
     if len(events) > MAX_EVENTS:
@@ -381,7 +458,14 @@ def diff_nodes(old: list[dict], new: list[dict]) -> list[dict]:
 
 
 def mark_copy(body: str, old_nodes: list[dict], new_nodes: list[dict],
-              events: list[dict]) -> str:
+              events: list[dict], version: str = "new") -> str:
+    """Разметить тело снимка метками изменений.
+
+    version="new" — текущий снимок: подсвечиваем, что добавилось и поменялось,
+    пропавшие блоки показываем призраком «тут был блок».
+    version="old" — прошлый снимок: те же места, но уже глазами прошлого,
+    чтобы переключение «было / стало» подсвечивало одно и то же.
+    """
     soup = BeautifulSoup(f"<div>{body or ''}</div>", "lxml")
     container = soup.find("div")
     if not isinstance(container, Tag):
@@ -410,27 +494,47 @@ def mark_copy(body: str, old_nodes: list[dict], new_nodes: list[dict],
         ".pvwatch-is-removed,.pvwatch-ghost{margin:8px 0;padding:8px 10px;color:#9d2c24;background:#fdf1f0;border:1px dashed #d52a1d;border-radius:8px}"
         ".pvwatch-active{outline:3px solid #0f766e;outline-offset:3px;border-radius:4px}"
     )
-    if isinstance(container, Tag):
-        container.insert(0, paint)
+    container.insert(0, paint)
 
     for event in events:
         kind = event.get("kind") or ""
         if kind == "more":
             continue
-        path = event.get("path") or ""
-        if kind == "removed":
-            label = event.get("old_text") or event.get("detail") or "блок"
-            for spot in event.get("paths") or [path]:
-                ghost = soup.new_tag("div")
-                ghost["class"] = ["pvwatch-ghost", "pvwatch-is-removed"]
-                ghost.string = f"Тут был блок «{label}» — его убрали"
-                anchor = by_path.get(spot)
-                if anchor is not None and anchor.parent is not None:
-                    anchor.insert_after(ghost)
-                elif isinstance(container, Tag):
-                    container.append(ghost)
-            continue
-        for spot in event.get("paths") or [path]:
+        if version == "old":
+            spots = event.get("old_paths") or ([event["old_path"]] if event.get("old_path") else [])
+            # В прошлом снимке нет того, что ещё не добавилось.
+            if kind == "added" or not spots:
+                continue
+            # Пропавшее здесь на месте, призрак не нужен: просто красная метка.
+            if kind == "removed":
+                for spot in spots:
+                    target = by_path.get(spot)
+                    if target is None:
+                        continue
+                    cls = list(target.get("class") or [])
+                    if isinstance(cls, str):
+                        cls = cls.split()
+                    if "pvwatch-is-removed" not in cls:
+                        cls.append("pvwatch-is-removed")
+                        target["class"] = cls
+                    target["data-pvwatch-path"] = spot
+                    target["data-pvwatch-kind"] = kind
+                continue
+        else:
+            spots = event.get("paths") or [event.get("path") or ""]
+            if kind == "removed":
+                label = event.get("old_text") or event.get("detail") or "блок"
+                for spot in spots:
+                    ghost = soup.new_tag("div")
+                    ghost["class"] = ["pvwatch-ghost", "pvwatch-is-removed"]
+                    ghost.string = f"Тут был блок «{label}», его убрали"
+                    anchor = by_path.get(spot)
+                    if anchor is not None and anchor.parent is not None:
+                        anchor.insert_after(ghost)
+                    else:
+                        container.append(ghost)
+                continue
+        for spot in spots:
             target = by_path.get(spot)
             if target is None:
                 continue
