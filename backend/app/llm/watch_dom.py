@@ -235,6 +235,37 @@ def snapshot_nodes(html: str) -> list[dict]:
     return nodes
 
 
+_SHELL_ATTRS = ("class", "id", "lang", "dir", "style")
+
+
+def page_shell(html: str) -> dict:
+    """Атрибуты <html> и <body> отдельным блоком.
+
+    На порталах раскладку страницы часто включают классы именно на body
+    (g-page1, is-logged-in и т.п.): правило вида `.g-page1 .section-attacks
+    {position:relative; z-index:6}` без него не срабатывает, и цветные слои
+    наезжают друг на друга. Тело снимка хранится без обёртки body, поэтому
+    атрибуты едут рядом своим полем и возвращаются только в копии.
+    """
+    soup = BeautifulSoup(html or "", "lxml")
+    out: dict[str, dict[str, str]] = {}
+    for name in ("html", "body"):
+        tag = soup.find(name)
+        if not isinstance(tag, Tag):
+            continue
+        attrs: dict[str, str] = {}
+        for key in _SHELL_ATTRS:
+            if not tag.has_attr(key):
+                continue
+            raw = tag.get(key)
+            if isinstance(raw, list):
+                raw = " ".join(str(v) for v in raw)
+            attrs[key] = str(raw)[:600]
+        if attrs:
+            out[name] = attrs
+    return out
+
+
 def cleaned_body(html: str, limit: int = 400000) -> str:
     soup = BeautifulSoup(html or "", "lxml")
     for dead in soup.find_all(("script", "noscript", "template")):
@@ -587,7 +618,17 @@ def _drop_loading_shells(holder: Tag) -> None:
         parent.decompose()
 
 
-def copy_document(url: str, body: str) -> str:
+def _shell_attrs(attrs: dict | None) -> str:
+    parts = []
+    for key in _SHELL_ATTRS:
+        value = (attrs or {}).get(key)
+        if value:
+            parts.append(f' {key}="{value.replace(chr(34), "")}"')
+    return "".join(parts)
+
+
+def copy_document(url: str, body: str, shell: dict | None = None,
+                  fonts: list[str] | None = None) -> str:
     soup = BeautifulSoup(f"<div>{body or ''}</div>", "lxml")
     holder = soup.find("div")
     if isinstance(holder, Tag):
@@ -611,9 +652,18 @@ def copy_document(url: str, body: str) -> str:
         "<style>a,button,input,select,textarea,label,summary,iframe,"
         "[role=button],[role=link],[onclick],[data-hydro-click]{pointer-events:none!important}</style>"
     )
+    # Атрибуты оболочки возвращаем на место: без классов на body половина
+    # порталов теряет раскладку (слои наезжают, колонки схлопываются).
+    html_attrs = _shell_attrs((shell or {}).get("html"))
+    body_attrs = _shell_attrs((shell or {}).get("body"))
+    # Внешние шрифты копия тянуть не может: браузер требует для них CORS,
+    # а сайты его для шрифтов обычно не отдают, и текст тихо падает в serif.
+    # Поэтому на съёме шрифты скачиваются и вставляются сюда base64-ом.
+    font_bits = "".join(f"<style>{css}</style>" for css in (fonts or []))
     doc = (
-        "<!DOCTYPE html><html><head><meta charset='utf-8'>"
-        f"{base}{''.join(head_bits)}{frozen}</head>"
-        f"<body>{''.join(body_bits)}</body></html>"
+        f"<!DOCTYPE html><html{html_attrs}><head><meta charset='utf-8'>"
+        f"{base}{''.join(head_bits)}{frozen}{font_bits}</head>"
+        f"<body{body_attrs}>{''.join(body_bits)}</body></html>"
     )
-    return doc[: COPY_LIMIT + 4000]
+    # Шрифты в head не должны съедать бюджет тела: кап поднимаем на их размер.
+    return doc[: COPY_LIMIT + 4000 + sum(len(f) for f in (fonts or []))]

@@ -82,22 +82,34 @@ def _init_db() -> None:
                 text TEXT NOT NULL,
                 changed INTEGER NOT NULL DEFAULT 0,
                 error TEXT,
+                shell TEXT NOT NULL DEFAULT '',
                 FOREIGN KEY (page_id) REFERENCES pages(id) ON DELETE CASCADE
             );
             CREATE TABLE IF NOT EXISTS meta (
                 key TEXT PRIMARY KEY,
                 value TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS fonts (
+                origin TEXT PRIMARY KEY,
+                css TEXT NOT NULL,
+                updated_at REAL NOT NULL
+            );
             """
         )
         # Структура интерфейса живёт рядом с текстом: хэш структуры ловит
         # новые/пропавшие/переехавшие элементы, dom — их позиции для диффа.
         # body — вычищенное тело для живой копии (без скриптов).
+        # Шрифты принадлежат сайту, а не снимку: на портале сто страниц,
+        # и держать по копии гарнитуры для каждой — расточительство, поэтому
+        # таблица fonts кэширует base64 по origin.
         # Миграция мягкая: на старых базах колонок нет — добавляем.
         for stmt in (
             "ALTER TABLE snapshots ADD COLUMN struct_hash TEXT NOT NULL DEFAULT ''",
             "ALTER TABLE snapshots ADD COLUMN dom TEXT NOT NULL DEFAULT ''",
             "ALTER TABLE snapshots ADD COLUMN body TEXT NOT NULL DEFAULT ''",
+            # shell — атрибуты <html>/<body> снимка: на порталах классы на body
+            # включают раскладку, без них копия наезжает слоями друг на друга.
+            "ALTER TABLE snapshots ADD COLUMN shell TEXT NOT NULL DEFAULT ''",
             "ALTER TABLE pages ADD COLUMN struct_hash TEXT",
             # seen_changed_at — момент, когда пользователь просмотрел изменение.
             # Пока он не позже last_changed_at, изменение считается непросмотренным.
@@ -409,6 +421,7 @@ def record_snapshot(
     struct_hash: str = "",
     dom: str = "",
     body: str = "",
+    shell: str = "",
 ) -> None:
     now = time.time()
     clipped = text[:TEXT_CAP]
@@ -420,10 +433,11 @@ def record_snapshot(
     with _lock, _connect() as conn:
         conn.execute(
             """
-            INSERT INTO snapshots (page_id, checked_at, content_hash, text, changed, error, struct_hash, dom, body)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO snapshots (page_id, checked_at, content_hash, text, changed, error, struct_hash, dom, body, shell)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            (page_id, now, content_hash, clipped, 1 if changed else 0, error, struct_hash, clipped_dom, clipped_body),
+            (page_id, now, content_hash, clipped, 1 if changed else 0, error, struct_hash, clipped_dom, clipped_body,
+             (shell or "")[:4000]),
         )
         conn.execute(
             """
@@ -463,6 +477,7 @@ def latest_snapshots(page_id: str, limit: int = 2) -> list[dict[str, Any]]:
         else:
             extra += ", '' AS struct_hash, '' AS dom"
         extra += ", body" if "body" in cols else ", '' AS body"
+        extra += ", shell" if "shell" in cols else ", '' AS shell"
         rows = conn.execute(
             f"""
             SELECT id, checked_at, content_hash, text, changed, error{extra}
@@ -499,6 +514,29 @@ def set_daily_stamp(value: str) -> None:
         conn.execute(
             "INSERT INTO meta (key, value) VALUES ('last_daily', ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",
             (value,),
+        )
+        conn.commit()
+
+
+def cached_fonts(origin: str) -> tuple[str, float]:
+    """Закэшированный CSS шрифтов сайта и возраст записи в секундах."""
+    with _lock, _connect() as conn:
+        row = conn.execute(
+            "SELECT css, updated_at FROM fonts WHERE origin = ?", (origin,)
+        ).fetchone()
+    if row is None:
+        return "", 0.0
+    return row["css"], time.time() - float(row["updated_at"])
+
+
+def remember_fonts(origin: str, css: str) -> None:
+    with _lock, _connect() as conn:
+        conn.execute(
+            """
+            INSERT INTO fonts (origin, css, updated_at) VALUES (?, ?, ?)
+            ON CONFLICT(origin) DO UPDATE SET css=excluded.css, updated_at=excluded.updated_at
+            """,
+            (origin, css, time.time()),
         )
         conn.commit()
 

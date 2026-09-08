@@ -462,5 +462,102 @@ class WatchVersionViewTests(unittest.TestCase):
         self.assertTrue(all("old_paths" in e for e in events))
 
 
+class WatchShellTests(unittest.TestCase):
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self.db = Path(self._tmp.name) / "watch.db"
+        self._db_patch = patch.object(store, "DB_FILE", self.db)
+        self._db_patch.start()
+        self.addCleanup(self._db_patch.stop)
+        off = patch.object(watch_run.watch_render, "render_available", return_value=False)
+        off.start()
+        self.addCleanup(off.stop)
+        store._init_db()
+
+    def test_page_shell_extracts_html_and_body_attrs(self):
+        html = ('<html lang="ru"><head></head>'
+                '<body class="g-page1 g-site" id="b1"><p>Текст.</p></body></html>')
+        shell = watch_run.watch_dom.page_shell(html)
+        self.assertEqual(shell["html"]["lang"], "ru")
+        self.assertIn("g-page1", shell["body"]["class"])
+        self.assertEqual(shell["body"]["id"], "b1")
+
+    def test_copy_restores_body_classes(self):
+        # Классы на body включают раскладку портала; без них слои наезжают.
+        group = store.create_group("Портал", auth_kind="none", created_by="editor")
+        page = store.add_page(group["id"], "https://portal.example.test/shell", "Оболочка")
+        snap = ('<html lang="ru"><body class="g-page1 g-site"><main><h1>Регламент</h1>'
+                '<p>Длинный текст регламента доступа.</p></main></body></html>')
+        with patch.object(watch_run, "safe_request", new=AsyncMock(return_value=_resp(snap))):
+            asyncio.run(watch_run.check_page(page["id"]))
+        copy = watch_run.page_copy(page["id"])
+        self.assertIn('class="g-page1 g-site"', copy)
+        self.assertIn('lang="ru"', copy)
+
+
+class WatchFontTests(unittest.TestCase):
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self.db = Path(self._tmp.name) / "watch.db"
+        self._db_patch = patch.object(store, "DB_FILE", self.db)
+        self._db_patch.start()
+        self.addCleanup(self._db_patch.stop)
+        store._init_db()
+
+    def test_font_face_rebuilt_with_data_url(self):
+        block = ('@font-face{font-family:"Kaspersky";font-weight:700;'
+                 'src:url("/a.woff2") format("woff2");unicode-range:U+400-45F}')
+        css = watch_run._font_face_css(block, {"/a.woff2": "data:font/woff2;base64,AAAA"})
+        self.assertIn('font-family:"Kaspersky"', css)
+        self.assertIn("font-weight:700", css)
+        self.assertIn("unicode-range:U+400-45F", css)
+        self.assertIn('url("data:font/woff2;base64,AAAA")', css)
+        # Собираем src заново только из base64: format() и eot-запаски не нужны.
+        self.assertNotIn("format(", css)
+
+    def test_font_face_without_inlined_source_dropped(self):
+        block = '@font-face{font-family:"X";src:url("/a.eot")}'
+        self.assertIsNone(watch_run._font_face_css(block, {}))
+
+    def test_collect_fonts_inlines_woff2_only(self):
+        css = ('@font-face{font-family:"X";src:url("/f.woff2") format("woff2"),'
+               'url("/f.eot") format("embedded-opentype")}')
+        fetched = []
+
+        async def fake(client, method, url, **kw):
+            fetched.append(url)
+            if url.endswith(".css"):
+                return httpx.Response(200, text=css, request=httpx.Request(method, url))
+            return httpx.Response(200, content=b"BINARY", request=httpx.Request(method, url))
+
+        html = ('<html><head><link rel="stylesheet" href="/s.css"></head>'
+                '<body><p>Текст.</p></body></html>')
+        with patch.object(watch_run, "safe_request", new=fake):
+            out = asyncio.run(watch_run._collect_fonts(None, "https://p.test/", html))
+        self.assertIn("@font-face", out)
+        self.assertIn("data:font/woff2;base64,", out)
+        self.assertNotIn(".eot", out)
+        self.assertNotIn("https://p.test/f.eot", fetched)
+
+    def test_copy_embeds_cached_fonts(self):
+        store.remember_fonts("https://portal.example.test",
+                             '@font-face{font-family:"X";src:url("data:font/woff2;base64,AAAA")}')
+        css, age = store.cached_fonts("https://portal.example.test")
+        self.assertIn("font-family", css)
+        self.assertLess(age, 5)
+        self.assertEqual(store.cached_fonts("https://nope.test")[0], "")
+
+    def test_copy_document_appends_font_styles(self):
+        doc = watch_run.watch_dom.copy_document(
+            "https://p.test/", "<p>Текст.</p>",
+            shell={"body": {"class": "g-site"}},
+            fonts=['@font-face{font-family:"X";src:url("data:font/woff2;base64,AAAA")}'])
+        self.assertIn('class="g-site"', doc)
+        self.assertIn("@font-face", doc)
+        self.assertIn("data:font/woff2;base64,AAAA", doc)
+
+
 if __name__ == "__main__":
     unittest.main()

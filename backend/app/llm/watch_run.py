@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import base64
 import datetime as dt
 import difflib
 import hashlib
@@ -204,6 +205,88 @@ def _client_cookies(client: httpx.AsyncClient) -> list[dict]:
     return out
 
 
+# Копия страницы не может сама тянуть веб-шрифты: браузер требует для них
+# CORS, сайты его для шрифтов обычно не отдают, и текст тихо падает в serif.
+# Поэтому при проверке вытаскиваем @font-face из внешних таблиц стилей,
+# качаем woff2 и кладём в кэш уже base64-ом; копия подставляет его из кэша.
+_FONT_FACE = re.compile(r"@font-face\s*\{[^}]*\}")
+_FONT_URL = re.compile(r"url\(\s*[\"']?([^\"')]+)[\"']?\s*\)")
+_MODERN_FONT = re.compile(r"\.woff2?$", re.I)
+FONTS_TOTAL_BUDGET = int(os.getenv("PROOFREADER_WATCH_FONTS_BUDGET", str(2 * 1024 * 1024)))
+FONTS_REFRESH_AFTER = 6 * 3600.0
+
+
+def _origin_of(url: str) -> str:
+    parts = httpx.URL(url)
+    return f"{parts.scheme}://{parts.host}"
+
+
+def _font_face_css(block: str, inlined: dict[str, str]) -> str | None:
+    """Собрать @font-face заново: дескрипторы как были, src только из base64.
+
+    Собираем с нуля, а не правим исходный блок: eot и ttf-запасные варианты
+    в копии только зря грузились бы, а unicode-range и company оставляем —
+    с ним браузер подгружает гарнитуру ровно там, где надо.
+    """
+    keep = []
+    for prop in ("font-family", "font-style", "font-weight", "font-stretch", "unicode-range"):
+        m = re.search(rf"{prop}\s*:\s*([^;}}]+)[;}}]", block)
+        if m:
+            keep.append(f"{prop}:{m.group(1).strip()}")
+    srcs = [inlined[u] for u in _FONT_URL.findall(block) if u in inlined]
+    if not srcs:
+        return None
+    keep.append("src:" + ",".join(f'url("{s}")' for s in srcs))
+    return "@font-face{" + ";".join(keep) + "}"
+
+
+async def _collect_fonts(client: httpx.AsyncClient, page_url: str, html: str) -> str:
+    """CSS гарнитур страницы со шрифтами, вложенными base64-ом."""
+    soup = BeautifulSoup(html or "", "lxml")
+    sheets = []
+    for link in soup.find_all("link"):
+        rel = " ".join(link.get("rel") or []).lower()
+        href = str(link.get("href") or "")
+        if "stylesheet" in rel or href.lower().endswith(".css"):
+            sheets.append(urljoin(page_url, href))
+    blocks: list[str] = []
+    fetched: dict[str, str] = {}
+    budget = FONTS_TOTAL_BUDGET
+    for sheet_href in sheets[:8]:
+        try:
+            resp = await safe_request(client, "GET", sheet_href)
+            css = resp.text
+        except Exception:  # noqa: BLE001
+            continue
+        for block in _FONT_FACE.findall(css):
+            urls = [u for u in _FONT_URL.findall(block)
+                    if _MODERN_FONT.search(urljoin(sheet_href, u).split("?", 1)[0])]
+            if not urls:
+                continue
+            inlined: dict[str, str] = {}
+            for u in urls:
+                absu = urljoin(sheet_href, u)
+                if absu not in fetched:
+                    if budget <= 0:
+                        break
+                    try:
+                        fr = await safe_request(client, "GET", absu, max_bytes=700_000)
+                        blob = fr.content
+                    except Exception:  # noqa: BLE001
+                        fetched[absu] = ""
+                        continue
+                    bare = absu.split("?", 1)[0].lower()
+                    mime = "font/woff2" if bare.endswith(".woff2") else "font/woff"
+                    fetched[absu] = f"data:{mime};base64,{base64.b64encode(blob).decode()}"
+                    budget -= len(blob)
+                if fetched[absu]:
+                    inlined[u] = fetched[absu]
+            rebuilt = _font_face_css(block, inlined)
+            if rebuilt:
+                blocks.append(rebuilt)
+    return "".join(blocks)
+
+
 async def _fetch_page(client: httpx.AsyncClient, url: str, auth: httpx.Auth | None) -> tuple[str, bool]:
     resp = await safe_request(client, "GET", url, auth=auth)
     if resp.status_code == 401:
@@ -260,6 +343,17 @@ async def check_page(page_id: str, client: httpx.AsyncClient | None = None, auth
         # Деперсонализация до любой обработки: в базу, дифф и копию должны
         # попасть уже замаскированные почту и телефоны, а не оригинал.
         html = watch_dom.depersonalize(html)
+        # Гарнитуру сайта кэшируем по origin и обновляем не чаще раза в
+        # несколько часов: шрифты меняются реже страниц, а качать их дорого.
+        origin = _origin_of(page["url"])
+        cached, age = store.cached_fonts(origin)
+        if not cached or age > FONTS_REFRESH_AFTER:
+            try:
+                css = await _collect_fonts(client, page["url"], html)
+                if css:
+                    store.remember_fonts(origin, css)
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("Шрифты %s не собраны: %s", page["url"], exc)
         text = snapshot_text(html)
         nodes = watch_dom.snapshot_nodes(html)
         body = watch_dom.cleaned_body(html)
@@ -272,7 +366,7 @@ async def check_page(page_id: str, client: httpx.AsyncClient | None = None, auth
         store.record_snapshot(
             page_id, text=text, content_hash=digest, changed=changed,
             struct_hash=struct, dom=json.dumps(nodes, ensure_ascii=False),
-            body=body,
+            body=body, shell=json.dumps(watch_dom.page_shell(html), ensure_ascii=False),
         )
         return store.get_page(page_id)  # type: ignore[return-value]
     except (BlockedURLError, ValueError, httpx.HTTPError) as exc:
@@ -441,7 +535,15 @@ def page_copy(page_id: str, version: str = "new") -> str:
         ui = watch_dom.diff_nodes(old_nodes, new_nodes)
         body = watch_dom.mark_copy(body, old_nodes, new_nodes, ui, version=version)
     url = (page.get("url") or "").replace('"', "")
-    return watch_dom.copy_document(url, body)
+    try:
+        shell = json.loads(snap.get("shell") or "{}")
+    except ValueError:
+        shell = {}
+    # Шрифты берём из кэса сайта: в копии они не загрузятся сами (CORS),
+    # а base64-версия из кэса играет гарнитуру один в один с оригиналом.
+    fonts_css, _age = store.cached_fonts(_origin_of(page.get("url") or ""))
+    return watch_dom.copy_document(url, body, shell=shell,
+                                   fonts=[fonts_css] if fonts_css else None)
 
 
 async def page_shot(page_id: str, version: str = "new") -> bytes:

@@ -474,6 +474,17 @@ function fitWatchCopy() {
   });
 }
 
+// Панель справа дорисовывается позже, чем мы считаем масштаб: без
+// слежения за размером копии копия остаётся в старом масштабе, и справа
+// зияет пустота. ResizeObserver ловит и появление скроллбара, и сдвиг
+// сетки, и поворот окна — слушать только window.resize недостаточно.
+function watchCopyResize() {
+  if (typeof ResizeObserver === "undefined") return;
+  if (!window.__watchFitObserver) window.__watchFitObserver = new ResizeObserver(() => fitWatchCopy());
+  window.__watchFitObserver.disconnect();
+  document.querySelectorAll(".document-content.watch-copy").forEach((box) => window.__watchFitObserver.observe(box));
+}
+
 // Прошлое превью не умеет рендерить PNG на сервере: картинку копии
 // собираем на клиенте через SVG foreignObject. Живое приложение ходит
 // на /shot, где снимок делает chromium.
@@ -598,6 +609,7 @@ export function bindWatchCopy(diff) {
     });
   }
   fitWatchCopy();
+  watchCopyResize();
   if (!window.__watchFitBound) {
     window.__watchFitBound = true;
     window.addEventListener("resize", fitWatchCopy);
