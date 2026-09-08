@@ -2041,14 +2041,22 @@ button.chip:hover,
 }
 
 .document-content.watch-copy {
+  position: relative;
   height: 100%;
+  overflow: hidden;
 }
 
+/* Копия рисуется на десктопной ширине и вписывается в панель масштабом:
+узкий фрейм сбивает адаптивные сайты (GitHub, порталы) на мобильную
+вёрстку, и место изменения уезжает в свёрнутое меню. */
 .pvwatch-frame {
-  display: block;
-  width: 100%;
-  height: 100%;
-  min-height: 420px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1280px;
+  height: calc(100% / var(--pvw-scale, 1));
+  transform: scale(var(--pvw-scale, 1));
+  transform-origin: top left;
   border: 0;
   border-radius: var(--radius-sm);
   background: #fff;

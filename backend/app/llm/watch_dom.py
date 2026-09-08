@@ -492,8 +492,12 @@ def copy_document(url: str, body: str) -> str:
     safe_url = (url or "").replace('"', "")
     base = f'<base href="{safe_url}" target="_blank">' if safe_url.startswith("http") else ""
     # Копия для просмотра, не для пользования: кнопки и ссылки наблюдаемой
-    # страницы не должны нажиматься.
-    frozen = "<style>*,*::before,*::after{pointer-events:none!important}</style>"
+    # страницы не нажимаются. Тело не глушим целиком, иначе копия перестаёт
+    # прокручиваться мышью.
+    frozen = (
+        "<style>a,button,input,select,textarea,label,summary,iframe,"
+        "[role=button],[role=link],[onclick],[data-hydro-click]{pointer-events:none!important}</style>"
+    )
     doc = (
         "<!DOCTYPE html><html><head><meta charset='utf-8'>"
         f"{base}{''.join(head_bits)}{frozen}</head>"

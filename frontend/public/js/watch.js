@@ -441,6 +441,17 @@ export function renderWatchCopy(diff, pageId) {
   return `<div class="document-content watch-copy" aria-live="polite">${frame}</div>`;
 }
 
+const COPY_DESKTOP_WIDTH = 1280;
+
+function fitWatchCopy() {
+  document.querySelectorAll(".document-content.watch-copy").forEach((box) => {
+    const width = box.clientWidth;
+    if (!width) return;
+    const scale = Math.min(1, width / COPY_DESKTOP_WIDTH);
+    box.style.setProperty("--pvw-scale", String(scale));
+  });
+}
+
 export function bindWatchCopy(diff) {
   window.__watchDiff = diff;
   const inline = diff?.copy || "";
@@ -450,6 +461,11 @@ export function bindWatchCopy(diff) {
     frame.addEventListener("load", () => bindWatchIssues());
     if (inline && frame.dataset.watchInline) frame.srcdoc = inline;
   });
+  fitWatchCopy();
+  if (!window.__watchFitBound) {
+    window.__watchFitBound = true;
+    window.addEventListener("resize", fitWatchCopy);
+  }
   bindWatchIssues();
 }
 
