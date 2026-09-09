@@ -1,84 +1,172 @@
-# Стек: compose-файлы, образы, nginx
+# Стек контейнеров
 
-Страница-справочник: что из чего собирается и как это соединено. Для запуска читайте [Установку](deploy.md), здесь детали и подводные камни.
+Эта страница справочник развертывания: из каких файлов собирается стек, что
+содержат образы и как настроен nginx. Она нужна администратору, которому нужно
+понять или изменить состав стека. Для самого запуска служит страница
+**Развертывание**, здесь собраны детали и подводные камни.
 
-## docker-compose.yml (базовый)
+Страница отвечает на вопросы: чем отличаются три compose-файла, что установлено
+в образ backend, какие маршруты как обрабатывает nginx и что где лежит на
+диске. Полный список переменных находится на странице **Переменные
+окружения**.
 
-Три сервиса, сеть `internal` (bridge), том `backend-data`.
+## Базовый файл docker-compose.yml
 
-### backend
+Файл описывает три сервиса, сеть `internal` типа bridge и том `backend-data`.
+Параметры каждого сервиса описаны ниже.
 
-- Сборка из `./backend`, `restart: unless-stopped`, `env_file: .env`.
-- Блок `environment` переопределяет `.env`: `LANGUAGETOOL_URL=http://languagetool:8010/v2/check`, `STYLEGUIDE_PATH=/app/styleguide/rules.yaml`, `STYLEGUIDE_STORE_DIR=/app/data/styleguides`, `PROOFREADER_DOCS=false`.
-- Тома: `backend-data:/app/data`, `./backups:/app/backups`, read-only `./backend/styleguide/rules.yaml:/app/styleguide/rules.yaml` (встроенный базовый гайд редактируется на хосте и подхватывается без пересборки; заметьте, это mount конкретного файла, а не каталога).
-- `depends_on: languagetool (service_healthy)`. Healthcheck: `wget http://localhost:8000/api/health`, каждые 10 с, старт-пауза 20 с, 12 попыток.
-- `mem_limit: 2g`. Логи json-file 10 МБ × 3 файла. Порт не публикуется.
+### Сервис backend
 
-### frontend
+Параметры сервиса backend перечислены ниже.
 
-- Сборка из `./frontend` (nginx + статика), единственный опубликованный порт: `${PROOFREADER_PORT:-3080}:80` на всех интерфейсах.
-- `depends_on: backend (service_healthy)`. Healthcheck `wget http://127.0.0.1/`.
-- Без mem_limit.
+- Сборка из каталога `./backend`, политика `restart: unless-stopped`, файл
+  окружения подключается строкой `env_file: .env`.
+- Блок `environment` переопределяет значения из `.env`:
+  `LANGUAGETOOL_URL=http://languagetool:8010/v2/check`,
+  `STYLEGUIDE_PATH=/app/styleguide/rules.yaml`,
+  `STYLEGUIDE_STORE_DIR=/app/data/styleguides`, `PROOFREADER_DOCS=false`.
+- Монтируются три пути: том `backend-data` в `/app/data`, каталог
+  `./backups` в `/app/backups` и только для чтения файл
+  `./backend/styleguide/rules.yaml` в `/app/styleguide/rules.yaml`. Встроенный
+  базовый гайд редактируется на хосте и подхватывается без пересборки. В
+  compose-файле смонтирован конкретный файл, а не весь каталог.
+- Зависимость `depends_on: languagetool` с условием `service_healthy`.
+  Проверка готовности обращается к `wget http://localhost:8000/api/health`
+  каждые 10 секунд, стартовая пауза 20 секунд, 12 попыток.
+- Лимит памяти `mem_limit: 2g`. Логи пишутся драйвером json-file с ротацией
+  10 мегабайт на 3 файла. Порт наружу не публикуется.
 
-### languagetool
+### Сервис frontend
 
-- Образ `erikvl87/languagetool`, запинен по digest (обновляется руками или Dependabot'ом... не обновляется: см. [hardening](hardening.md)).
-- `ENABLED_LANGUAGES=ru`, JVM `Xms=512m`/`Xmx=1g`, `mem_limit: 1536m`.
-- Healthcheck по `/v2/languages`, start_period 90 с (Java долго греется).
+Сервис frontend описан следующими параметрами.
 
-## docker-compose.prod.yml
+- Сборка из каталога `./frontend` (nginx и статика). Публикуется единственный
+  порт: `${PROOFREADER_PORT:-3080}:80` на всех интерфейсах.
+- Зависимость `depends_on: backend` с условием `service_healthy`. Проверка
+  готовности обращается к `wget http://127.0.0.1/`.
+- Лимита памяти нет.
 
-Минимальный overlay для развёртывания из registry: подменяет `image:` у backend и frontend на `ghcr.io/${GHCR_REPOSITORY}/...:${IMAGE_SHA}` с `pull_policy: always`. Обе переменные обязательны (`:?`). `build:` из базового файла сохраняется, но не используется при pull. Остальные параметры наследуются.
+### Сервис languagetool
 
-## docker-compose.corp-proxy.yml
+Для сервиса languagetool важны такие параметры.
 
-Overlay для VDI за прокси; включается `PROOFREADER_CORP_PROXY=true` в `.env` (deploy.sh и Makefile подставляют файл по этой переменной). Добавляет сервис `proxy-bridge` (alpine/socat, `network_mode: host`, слушает `172.17.0.1:3128`, форвардит в `CORP_PROXY_UPSTREAM`) и проксирует им backend: `build.network: host`, `extra_hosts` c `host-gateway`, переменные `HTTP(S)_PROXY` + `NO_PROXY`. Побочный эффект: зависимость от languagetool ослабляется с `service_healthy` до `service_started` (быстрый старт на VDI, но проверка может стартануть до готовности LT).
+- Используется образ `erikvl87/languagetool`, закрепленный по digest.
+  Закрепление обновляется вручную или Dependabot, и фактически не обновляется;
+  последствия разобраны на странице **Жесткая настройка для публичного хоста**.
+- Переменная `ENABLED_LANGUAGES=ru`, параметры JVM `Xms=512m` и `Xmx=1g`,
+  лимит `mem_limit: 1536m`.
+- Проверка готовности обращается к пути `/v2/languages` со `start_period` 90
+  секунд, потому что Java прогревается долго.
 
-## Образы
+## Overlay docker-compose.prod.yml
 
-### backend/Dockerfile
+Файл минимальный и служит для развертывания из реестра. Он подменяет поле
+`image:` у сервисов backend и frontend на
+`ghcr.io/${GHCR_REPOSITORY}/...:${IMAGE_SHA}` с `pull_policy: always`. Обе
+переменные обязательны (проверка конструкции `:?`). Блок `build:` из базового
+файла сохраняется, но при загрузке образов не используется. Остальные параметры
+наследуются.
 
-- База `python:3.12-slim` по digest.
-- apt: `ca-certificates`, `gosu`, библиотеки Chromium (libnss3, libgbm1 и т. п.) для Playwright.
-- Vale 3.9.1: бинарь качается с GitHub releases. **Комментарий в Dockerfile обещает проверку sha256 «сборка падает, если содержимое изменилось», но сравнения хэша в коде нет** бинарь просто распаковывается. Практический вывод: доверяйте mirror'у, где хотите контроль, пиньте digest образа после сборки.
-- `pip install -r requirements.txt` (pins: fastapi, uvicorn, httpx, pymorphy3, razdel, playwright, bcrypt, openai, lxml, python-docx, ...).
-- `playwright install --with-deps chromium` в общий каталог `/opt/ms-playwright` (иначе root-кэш не виден рантайм-пользователю).
-- Non-root: пользователь `appuser` (uid 10001); `entrypoint.sh` чинит права старого тома и через `gosu` роняет привилегии перед запуском uvicorn.
-- CMD: `uvicorn app.main:app --host 0.0.0.0 --port 8000 --timeout-keep-alive 300`.
+## Overlay docker-compose.corp-proxy.yml
 
-### frontend/Dockerfile
+Файл рассчитан на хосты с доступом в интернет через корпоративный прокси и
+включается значением `PROOFREADER_CORP_PROXY=true` в файле `.env`; скрипт
+**deploy.sh** и **Makefile** подставляют overlay по этой переменной. Overlay
+добавляет сервис `proxy-bridge` (образ alpine/socat, `network_mode: host`,
+слушает адрес `172.17.0.1:3128` и форвардит трафик в `CORP_PROXY_UPSTREAM`) и
+настраивает проксирование для backend: `build.network: host`, запись
+`extra_hosts` с host-gateway и переменные `HTTP_PROXY`, `HTTPS_PROXY` и
+`NO_PROXY`.
 
-`nginx:alpine` по digest, два COPY (`nginx.conf` и `public/`). Никакой сборки: фронтенд работает как есть, без бандлера.
+У overlay есть побочный эффект: зависимость от сервиса languagetool ослабляется
+с `service_healthy` до `service_started`. Быстрый старт на хосте с прокси
+получается ценой того, что проверка может начаться до готовности LanguageTool.
 
-## nginx.conf: карта location'ов
+## Состав образов
+
+### Файл backend/Dockerfile
+
+Порядок сборки описан шагами ниже.
+
+1. Базовый образ `python:3.12-slim`, закрепленный по digest. Дайджест делает
+   сборку воспроизводимой: тег не может «уплыть».
+2. Через apt ставятся `ca-certificates`, `gosu` и библиотеки Chromium (libnss3,
+   libgbm1 и другие), необходимые Playwright.
+3. Vale версии 3.9.1 скачивается бинарем с GitHub releases. Комментарий в
+   Dockerfile утверждает, что контроль sha256 роняет сборку при изменении
+   содержимого, но в коде хеш только вычисляется и печатается, а сравнения с
+   ожидаемым значением нет. Полагаться в этом месте нужно на зеркало загрузки,
+   а где требуется контроль, закрепляйте digest собранного образа.
+4. Зависимости Python ставятся командой `pip install -r requirements.txt`
+   (среди закрепленных пакетов fastapi, uvicorn, httpx, pymorphy3, razdel,
+   playwright, bcrypt, openai, lxml, python-docx и другие).
+5. Chromium ставится командой `playwright install --with-deps chromium` в
+   общий каталог `/opt/ms-playwright`. В каталоге root-кэша браузер был бы
+   недоступен рантайм-пользователю.
+6. Создается непривилегированный пользователь `appuser` (uid 10001). Файл
+   `entrypoint.sh` чинит права старого тома и через `gosu` сбрасывает
+   привилегии перед запуском uvicorn.
+7. Команда запуска выглядит как
+   `uvicorn app.main:app --host 0.0.0.0 --port 8000 --timeout-keep-alive 300`.
+
+### Файл frontend/Dockerfile
+
+Используется `nginx:alpine` по digest и два оператора COPY: для `nginx.conf` и
+для каталога `public/`. Сборки нет: фронтенд работает как есть, без сборщика.
+
+## Карта location в nginx.conf
+
+Обработку путей показывает таблица ниже.
 
 | Путь | Особенность |
 |---|---|
-| `/` | статика, SPA-fallback на `index.html` |
-| `/api/jobs/*/stream` | SSE: `proxy_buffering off`, `X-Accel-Buffering: no`, таймауты 600 с |
-| `/api/docs`, `/api/redoc` | Swagger/ReDoc с ослабленным CSP (jsDelivr, redoc.ly, gstatic) |
+| `/` | статика, запасной вариант SPA ведет на `index.html` |
+| `/api/jobs/*/stream` | SSE: `proxy_buffering off`, заголовок `X-Accel-Buffering: no`, тайм-ауты 600 секунд |
+| `/api/docs`, `/api/redoc` | Swagger и ReDoc с ослабленным CSP (jsDelivr, redoc.ly, gstatic) |
 | `/api/watch/pages/*/copy` | отдельный CSP для iframe-копии: `script-src 'none'`, `frame-ancestors 'self'`, `no-store` |
-| `/api/` (всё остальное) | реверс на `backend:8000`, `client_max_body_size 50m`, read/send timeout 600 с, буферизация ON |
+| `/api/` (остальное) | обратный прокси на `backend:8000`, `client_max_body_size 50m`, тайм-ауты чтения и отправки 600 секунд, буферизация включена |
 
-Заголовок `= /api/check-url` настроен как SSE-прокс (буферизация выключена), но фронтенд этим эндпоинтом не пользуется (использует jobs) локации наследует историю и безопасна, но мертва.
+Локация `= /api/check-url` настроена как прокси SSE (буферизация выключена), но
+фронтенд этим эндпоинтом не пользуется, поскольку работает через очередь задач.
+Локация унаследовала историю и безопасна, но мертва.
 
-Заголовки уровня server (наследуемые location'ами без своих `add_header`): CSP `default-src 'self'; script-src 'self'`, `nosniff`, `X-Frame-Options DENY`, `Referrer-Policy no-referrer`, `Permissions-Policy`, и `Cache-Control: no-cache` на всё.
+Заголовки уровня server, которые наследуют location'ы без собственных
+`add_header`: CSP `default-src 'self'; script-src 'self'`, `nosniff`,
+`X-Frame-Options DENY`, `Referrer-Policy no-referrer`, `Permissions-Policy` и
+`Cache-Control: no-cache` на все ответы.
 
-**Про кэш:** `no-cache` на все ресурсы это осознанно, чтобы обновление фронта не требовало hard-refresh. Цена нет кэширования шрифтов и JS, трафик туда-сюда копеечный, зато никогда не «старый app.js». Ручной cache-busting (`?v=48/49` в `index.html`) частично бессмысленен при `no-cache`, но импорты ES-модулей версионируются только так.
+Отключенное кэширование на всех ресурсах сделано намеренно, чтобы обновление
+фронтенда не требовало принудительной перезагрузки страницы у пользователя.
+Расплата за это отсутствие кэша шрифтов и JS-модулей и лишний трафик, который
+внутри команды незначителен, зато «старый app.js» больше не встречается. Ручной
+cache-busting (`?v=48` и `?v=49` в `index.html`) при `no-cache` частично
+бессмыслен, но импорты ES-модулей версионируются только так.
 
-**Чего в конфиге нет:** HTTPS (слушает 80), gzip-настроек (дефолт alpine-образа), rate limiting, отдельных access/error логов. Всё это ложится на внешний прокси ([TLS](tls-proxy.md)) или остаётся дырой по недосмотру ([hardening](hardening.md)).
+В конфигурации nginx нет HTTPS (слушается порт 80), настроек gzip (действует
+значение по умолчанию из alpine-образа), ограничения частоты запросов и
+отдельных логов доступа и ошибок. Все это ложится на внешний прокси
+(см. страницу **TLS и обратный прокси**) или остается незакрытым (см. страницу
+**Жесткая настройка для публичного хоста**).
 
-## Что где живёт на диске
+## Размещение данных на диске
 
-| Путь в контейнере | Хост | Назначение |
+Соответствие путей внутри контейнера путям на хосте показывает таблица ниже.
+
+| Путь в контейнере | Путь на хосте | Назначение |
 |---|---|---|
-| `/app/data` | том `backend-data` | users.json, llm_settings.json (0600), rules.json, user_prefs.json, audit.jsonl, jobs.db, watch.db, styleguides/, repo/, статистика |
-| `/app/backups` | `./backups` | снапшоты бэкапов |
-| `/app/styleguide/rules.yaml` | `./backend/styleguide/rules.yaml` (ro) | встроенный базовый гайд |
-| `/app/vale`, `/app/app`, `/app/eval` | внутри образа | Vale-конфиги, код, eval-наборы |
+| `/app/data` | том `backend-data` | `users.json`, `llm_settings.json` (права 0600), `rules.json`, `user_prefs.json`, `audit.jsonl`, `jobs.db`, `watch.db`, каталоги `styleguides/` и `repo/`, статистика |
+| `/app/backups` | `./backups` | снимки резервных копий |
+| `/app/styleguide/rules.yaml` | `./backend/styleguide/rules.yaml`, только чтение | встроенный базовый гайд |
+| `/app/vale`, `/app/app`, `/app/eval` | внутри образа | конфигурации Vale, код приложения, наборы оценки |
 
-## Дальше
+## Связанные разделы
 
-- [Переменные окружения](config-env.md).
-- [Хранилище данных](../arch/data-model.md): что внутри `/app/data`.
-- [Обновление](upgrade.md): как пересобирать/перетягивать образы.
+Страницы, продолжающие тему стека.
+
+- [Развертывание](deploy.md) практический запуск и команды Makefile.
+- [Переменные окружения](config-env.md) полный справочник настроек и ограничение
+  перекрытия значений блоком `environment`.
+- [Хранилище данных](../arch/data-model.md) что находится внутри `/app/data`.
+- [Обновление версии](upgrade.md) как пересобирать и перетягивать образы.
+- [Механизмы защиты](../arch/security.md) как работают заголовки CSP и
+  изоляция копии страницы.

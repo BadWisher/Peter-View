@@ -1,146 +1,258 @@
 # HTTP API
 
-Полный контракт эндпоинтов. Сервис описывает сам себя через OpenAPI: при `PROOFREADER_DOCS=true` доступны `/api/openapi.json`, Swagger `/api/docs` и ReDoc `/api/redoc` (в compose-файле флаг зашит false, см. [Переменные](../ops/config-env.md)). Здесь то же самое, но человеческим языком и с поведенческими деталями, которые схема не покажет.
+Эта страница полный контракт HTTP-эндпоинтов сервиса. Она нужна разработчику
+интеграций и автору тестов: здесь перечислены маршруты, методы, роли, форматы
+входов и ответов и поведенческие детали (лимиты, коды ошибок, асинхронные
+схемы), которые OpenAPI-схема не показывает. Сервис описывает и сам себя: при
+`PROOFREADER_DOCS=true` доступны `/api/openapi.json`, Swagger на `/api/docs` и
+ReDoc на `/api/redoc`. В compose-файле флаг зашит со значением false,
+подробности в **Implementation Guide** на странице **Переменные окружения**.
+
+Таблицы на этой странице справочные и обновляются вместе с кодом роутеров.
+Замена маршрута, поля ответа или формата XLSX требует правки этой страницы в
+том же pull request (правило закреплено на странице **Поддержка документации**).
 
 ## Соглашения
 
-- Префикс `/api/`, всё JSON, кроме multipart-входов и бинарных выходов (xlsx, PNG, YAML, HTML-копия).
-- Авторизация сессионная cookie `proofreader_session` (HttpOnly, SameSite=Lax). Нет cookie или сессия истекла 401. Роль `admin` на админ-ручках 403. Выключенный раздел 404 (`feature_gate`).
-- CSRF: токен не нужен, сервер сверяет Origin/Referer с хостом запроса для не-GET (403 «Перекрёстный запрос отклонён»).
-- Ошибки всегда `{"detail": "сообщение по-русски"}`; код несёт смысл (400 вход, 401 вход не авторизован, 403 роль, 404 нет раздела/сущности, 409 конфликт, 429 rate limit).
-- Тело запроса к `/api/` ограничено 50 МиБ на nginx; файлы репозитория отдельно 25 МиБ.
-- Долгие проверки асинхронные: POST создаёт job, статус и результат читаются отдельно.
+Поведение, общее для всех эндпоинтов, перечислено ниже.
 
-Разделы с флагом: `/api/repo*` (`FEATURE_DOCUMENTS`), `/api/watch*` (`FEATURE_WATCH`), `/api/api-spec*` и `/api/api-spec-documents` (`FEATURE_API`), `/api/screenshot-templates*` (`FEATURE_SCREENSHOTS`).
+- Префикс `/api/`, все тела JSON, кроме multipart-входов и бинарных выходов
+  (XLSX, PNG, YAML, HTML-копия).
+- Авторизация сессионная, cookie `proofreader_session` с атрибутами HttpOnly и
+  SameSite=Lax. Отсутствие cookie или истекшая сессия дают код 401. Роль ниже
+  требуемой на административной ручке дает код 403. Выключенный раздел дает
+  код 404 (middleware `feature_gate`).
+- CSRF-токен не нужен: сервер сверяет заголовки Origin и Referer с хостом
+  запроса для всех не-GET методов, несовпадение дает код 403 с сообщением
+  «Перекрёстный запрос отклонён».
+- Ошибки всегда оформляются как `{"detail": "сообщение по-русски"}`. Код несет
+  смысл: 400 некорректный вход, 401 нет аутентификации, 403 не та роль, 404
+  нет раздела или сущности, 409 конфликт состояний, 429 сработал ограничитель
+  частоты.
+- Тело запроса к `/api/` ограничено 50 МиБ на уровне nginx; файлы репозитория
+  документов ограничены отдельно, 25 МиБ.
+- Долгие проверки асинхронные: POST создает задачу, статус и результат
+  читаются отдельными запросами.
 
-## Служебное и авторизация
+Разделы под флагами и их префиксы маршрутов соответствуют: `/api/repo*` требует
+`FEATURE_DOCUMENTS`, `/api/watch*` требует `FEATURE_WATCH`, `/api/api-spec*` и
+`/api/api-spec-documents` требуют `FEATURE_API`,
+`/api/screenshot-templates*` требует `FEATURE_SCREENSHOTS`.
+
+## Служебные эндпоинты и авторизация
+
+Назначение маршрутов показывает таблица ниже; колонка роли использует
+значения публичный, пользователь и администратор.
 
 | Метод | Путь | Роль | Назначение |
 |---|---|---|---|
-| GET | `/api` | публ. | имя и версия сервиса, ссылки на доки если включены |
-| GET | `/api/health` | публ. | `{"status":"ok","version":"0.1.0"}` |
-| GET | `/api/health/full` | admin | диск, токены, LLM/эмбеддинги, репозиторий, бэкап, `audit[]` |
-| GET | `/api/config` | публ. | `version`, `features`, `oidc`, `docs` для старта SPA |
-| POST | `/api/auth/login` | публ. | `{username,password}` → профиль, ставит cookie |
+| GET | `/api` | публичный | имя и версия сервиса, ссылки на документацию если включены |
+| GET | `/api/health` | публичный | `{"status":"ok","version":"0.1.0"}` |
+| GET | `/api/health/full` | admin | диск, токены, состояние модели и эмбеддингов, репозиторий, резервная копия, `audit[]` |
+| GET | `/api/config` | публичный | `version`, `features`, `oidc`, `docs` для старта интерфейса |
+| POST | `/api/auth/login` | публичный | `{username,password}` возвращает профиль, ставит cookie |
 | GET | `/api/auth/me` | user | `{username,role,source,jira_base_url}` |
-| POST | `/api/auth/logout` | user | рвёт сессию, снимает cookie |
-| POST | `/api/auth/change-password` | user | `{current_password,new_password}` (мин. 8); для OIDC-учёток 400 |
-| GET | `/api/auth/oidc/start` | публ. | 302 на провайдера; 404 если OIDC не настроен |
-| GET | `/api/auth/oidc/callback` | публ. | `?code&state`, 302 на `/#/check` с cookie |
+| POST | `/api/auth/logout` | user | завершает сессию, снимает cookie |
+| POST | `/api/auth/change-password` | user | `{current_password,new_password}` (минимум 8 символов); для учетных записей OIDC код 400 |
+| GET | `/api/auth/oidc/start` | публичный | редирект 302 на провайдера; код 404 если OIDC не настроен |
+| GET | `/api/auth/oidc/callback` | публичный | принимает `?code&state`, редирект 302 на `/#/check` с cookie |
 
-Логин: 5 попыток на `ip:username` и на `ip` за 300 с, превышение 429. Локальный вход для пользователя `source:"oidc"` отвергается.
+Поведение входа имеет три особенности, перечисленные ниже. Ограничитель
+проверяет 5 попыток на окно 300 секунд по ключам `ip:username` и отдельно по
+`ip`, превышение дает код 429. Локальный вход для пользователя с
+`source:"oidc"` отвергается. Смена пароля завершает прочие сессии аккаунта.
 
-## Пользователи (admin)
+## Пользователи (доступ администратору)
 
-| Метод | Путь | Что делает |
+Методы управления учетными записями показывает таблица ниже.
+
+| Метод | Путь | Действие |
 |---|---|---|
 | GET | `/api/users` | `{users:[{username,role,source}]}` |
-| POST | `/api/users` | `{username,password,role}`; пустой пароль генерируется `secrets.token_urlsafe(9)` и возвращается один раз; 409 дубликат |
-| PATCH | `/api/users/{username}` | только смена роли; нельзя понизить последнего админа |
-| DELETE | `/api/users/{username}` | нельзя удалить себя и последнего админа; рвёт сессии |
+| POST | `/api/users` | принимает `{username,password,role}`; пустой пароль заменяется сгенерированным `secrets.token_urlsafe(9)` и возвращается один раз; дубликат дает код 409 |
+| PATCH | `/api/users/{username}` | только смена роли; понизить последнего администратора нельзя |
+| DELETE | `/api/users/{username}` | нельзя удалить себя и последнего администратора; завершает сессии цели |
 
-## Вычитка: синхронный движок
+## Синхронная проверка детерминированными движками
 
-Быстрые проверки без модели, все `require_user`. Ответ содержит `issues[]`, `summary`, `source`.
+Эндпоинты этой группы выполняют быстрые проверки без обращения к модели, все
+требуют входа. Ответ содержит `issues[]`, `summary` и `source`. Состав группы
+показывает таблица ниже.
 
 | Метод | Путь | Вход | Примечание |
 |---|---|---|---|
-| POST | `/api/check` | multipart `file` (.docx/.txt/.html/.md, ≤50 МиБ), опц. `user_rules` (JSON-строка) | чанки по 500 строк; `{source,text_length,pages_checked,issues,summary}` |
-| POST | `/api/check-text` | form `text` | тот же ответ |
-| POST | `/api/check-url` | form `url` | **SSE**: `progress` на каждую страницу краулинга, финальный `done`, `error` если ничего не сняли; 3 страницы одновременно, 300 с на страницу |
-| POST | `/api/report` | file **или** text | сразу xlsx-байты (со своим `rules.json`, без `user_rules`) |
-| POST | `/api/report-issues` | `{issues:[...],source}` | xlsx из готовых замечаний без перепроверки |
+| POST | `/api/check` | multipart `file` (docx, txt, html, md; до 50 МиБ), опционально `user_rules` (JSON-строка) | обработка чанками по 500 строк; ответ `{source,text_length,pages_checked,issues,summary}` |
+| POST | `/api/check-text` | form `text` | тот же формат ответа |
+| POST | `/api/check-url` | form `url` | ответ SSE: событие `progress` на каждую страницу обхода, финальное `done`, событие `error` если ничего не загружено; до 3 страниц одновременно, 300 секунд на страницу |
+| POST | `/api/report` | file или text | сразу возвращает байты XLSX (с пользовательскими `rules.json`, без `user_rules`) |
+| POST | `/api/report-issues` | `{issues:[...],source}` | XLSX из готовых замечаний без перепроверки |
 
-## Вычитка: LLM-задачи
+## Асинхронные задачи проверки моделью
 
-Долгий конвейер с моделью. `POST /api/jobs` multipart: `text` **или** `file` **или** `url`, `styleguide_id`, флаги `check_language`/`check_styleguide`/`check_consistency` (≥1 обязателен), `prompt` (≤4000 симв.). Ответ мгновенно `{"job_id"}`.
+Долгий конвейер оформляется задачей. Запрос `POST /api/jobs` принимает
+multipart с полями: `text` или `file` или `url` (один вход), `styleguide_id`,
+флаги `check_language`, `check_styleguide`, `check_consistency` (хотя бы один
+обязателен) и `prompt` до 4000 символов. Ответ мгновенный, содержит
+`{"job_id"}`. Дальнейшая работа идет через маршруты из таблицы ниже.
 
 | Метод | Путь | Ответ |
 |---|---|---|
-| GET | `/api/jobs/{id}` | `{job_id,status,stage,error}` (status: pending/running/done/error; только свой job) |
-| GET | `/api/jobs/{id}/stream` | **SSE**, события `start/delta/end/finished`, ping 15 с |
-| GET | `/api/jobs/{id}/report` | полный отчёт; 409 если не готов, 500 при ошибке |
+| GET | `/api/jobs/{id}` | `{job_id,status,stage,error}`; статус принимает значения pending, running, done, error; доступен только свой job |
+| GET | `/api/jobs/{id}/stream` | SSE с событиями `start`, `delta`, `end`, `finished`; ping каждые 15 секунд |
+| GET | `/api/jobs/{id}/report` | полный отчет; код 409 если задача не готова, код 500 при ее ошибке |
 
-Таймаут задачи 900 с, TTL результата в памяти и базе 1 час.
+Тайм-аут задачи составляет 900 секунд, срок хранения результата в памяти и
+базе один час.
 
-### Форма issues и summary
+### Формы замечаний и сводки
 
-`summary` из синхронного `/api/check*`: `{total, errors, warnings, suggestions}`. Отчёт `/api/jobs/{id}/report` несёт `issues[]`, `blocks[]`, `document`, `styleguide`, `pages_checked`, `partial`, `meta` (`pipeline_version`, `passes_total`, `token_usage`, при теневом режиме `shadow_comparison`), плюс счётчики `blocker/suggestion/minor` в `summary`.
+Поля сводки `summary` синхронных эндпоинтов `/api/check*`: `{total, errors,
+warnings, suggestions}`. Отчет задачи по адресу `/api/jobs/{id}/report` несет
+поля `issues[]`, `blocks[]`, `document`, `styleguide`, `pages_checked`,
+`partial` и `meta`; внутри `meta` находятся `pipeline_version`, `passes_total`,
+`token_usage`, а в теневом режиме `shadow_comparison`. Счетчики домена модели
+`blocker`, `suggestion`, `minor` добавлены в `summary`.
 
-Замечание LLM после приведения к UI (`to_ui_issue`): `{line, text, severity, message, replacement, rule, source:"llm", rule_group, page_url}`; в `message` к описанию через пустую строку дописано «Обоснование: ...». `severity` для клиента всегда одна из `error|warning|suggestion` (внутренние модели `blocker|suggestion|minor` отображаются). Замечание детерминированного движка: `{line, column, text, message, severity, rule|registry_id, source ("style-guide"|"spelling"|"custom"), guide_section, rule_name, automation, rule_group}`, у части есть `replacement`.
+Форма замечания модели после приведения к интерфейсу (`to_ui_issue`) такова:
+`{line, text, severity, message, replacement, rule, source:"llm", rule_group,
+page_url}`. В поле `message` к описанию через пустую строку дописано
+обоснование. Значение `severity` для клиента всегда одно из `error`,
+`warning`, `suggestion`: внутренние значения модели отображаются в эту шкалу.
+Форма замечания детерминированного движка богаче: `{line, column, text,
+message, severity, rule или registry_id, source (style-guide, spelling или
+custom), guide_section, rule_name, automation, rule_group}`, у части находок
+есть `replacement`.
 
-Frontend `normalizedIssues()` намеренно терпит алиасы (`line|line_number|block_index`, `fragment|match|span_text`, `recommendation|replacement|suggestion`), чтобы старые интеграции не падали.
+Клиентская функция `normalizedIssues()` намеренно допускает алиасы полей
+(`line` или `line_number` или `block_index`, `fragment` или `match` или
+`span_text`, `recommendation` или `replacement` или `suggestion`), чтобы старые
+интеграции не ломались.
 
-Формат xlsx (`report.py`), лист «Отчет»: строка заголовка `# | [Страница] | Строка | Фрагмент | Тип | Серьезность | Описание | Рекомендация` (колонка «Страница» появляется, если у замечаний есть `page_url`), строки подцвечены по severity, значения-формулы экранированы ведущим `'`. Лист «Информация» с метаданными источника.
+Формат XLSX формирует `report.py`. Лист **Отчет** начинается строкой заголовка
+`# | [Страница] | Строка | Фрагмент | Тип | Серьезность | Описание |
+Рекомендация`; колонка «Страница» появляется, если у замечаний есть `page_url`.
+Строки подцвечены по строгости, значения, похожие на формулы, экранированы
+ведущей апострофом. Второй лист **Информация** содержит метаданные источника.
 
-## История и аналитика (user)
+## История и аналитика (доступ пользователю)
+
+Маршруты раздела истории показывает таблица ниже.
 
 | Метод | Путь | Что возвращает |
 |---|---|---|
-| GET | `/api/checks/history?limit&offset` | страницы истории (`limit` 1..50, по умолчанию 10; хранится 50 последних на пользователя) |
-| GET | `/api/checks/history/{id}` | полный сохранённый отчёт (только свой) |
+| GET | `/api/checks/history?limit&offset` | страницы истории (`limit` от 1 до 50, по умолчанию 10; хранится 50 последних записей на пользователя) |
+| GET | `/api/checks/history/{id}` | полный сохраненный отчет (только свой) |
 | GET | `/api/checks/top-rules` | топ-15 нарушенных правил текущего пользователя с названиями из всех гайдов |
-| GET | `/api/checks/insights` | сводка токенов (всего/сегодня) + правила по пользователям |
+| GET | `/api/checks/insights` | сводка токенов (всего и за сегодня) и правила по пользователям |
 
 ## Гайды и правила
 
+Маршруты гайдов перечислены в таблице ниже.
+
 | Метод | Путь | Роль | Действие |
 |---|---|---|---|
-| GET | `/api/styleguides` | user | список мета + выбранный |
+| GET | `/api/styleguides` | user | список метаданных плюс выбранный гайд |
 | GET | `/api/styleguides/current` | user | активный гайд пользователя |
-| GET | `/api/styleguides/{id}` | user | полные rules + lexicon |
+| GET | `/api/styleguides/{id}` | user | полные rules и lexicon |
 | POST | `/api/styleguides/{id}/select` | user | запомнить выбор в `user_prefs.json` |
 | POST | `/api/styleguides` | admin | создать из `{name, rules, lexicon}` |
 | PUT | `/api/styleguides/{id}` | admin | обновить |
-| DELETE | `/api/styleguides/{id}` | admin | удалить (встроенный 403) |
-| GET | `/api/styleguides/{id}/index-status` | user | режим RAG: hybrid / lexical_only / fallback |
-| POST | `/api/styleguides/extract` | admin | multipart DOCX → `{job_id}` извлечение правил |
-| GET | `/api/styleguides/extract/{job_id}` | admin | прогресс/результат извлечения |
+| DELETE | `/api/styleguides/{id}` | admin | удалить (встроенный гайд дает код 403) |
+| GET | `/api/styleguides/{id}/index-status` | user | режим подбора правил: hybrid, lexical_only или fallback |
+| POST | `/api/styleguides/extract` | admin | multipart DOCX возвращает `{job_id}` задачи извлечения правил |
+| GET | `/api/styleguides/extract/{job_id}` | admin | прогресс и результат извлечения |
+
+Маршруты пользовательских правил-регулярных выражений показывает таблица ниже.
 
 | Метод | Путь | Роль | Действие |
 |---|---|---|---|
 | GET | `/api/rules` | user | свои regex-правила из `rules.json` |
 | GET | `/api/rules/builtin` | user | весь реестр встроенных правил (57 записей) |
-| POST | `/api/rules` | admin | regex-правило (проверка компиляции, severity ∈ error/warning/suggestion) |
-| DELETE | `/api/rules/{rule_id}` | admin | удалить своё правило |
+| POST | `/api/rules` | admin | создать regex-правило; проверяется компиляция паттерна, строгость одна из error, warning, suggestion |
+| DELETE | `/api/rules/{rule_id}` | admin | удалить свое правило |
 
-## Настройки (admin)
+## Настройки (доступ администратору)
 
-GET `PUT /api/settings` 11 полей модели и эмбеддингов; секреты в GET не отдаются, вместо них `llm_api_key_set`/`embedding_api_key_set`; пустой секрет при PUT не затирает прежний. POST `/api/settings/test` healthcheck LLM и эмбеддингов, по 30 с на каждый.
+Эндпоинты `GET` и `PUT /api/settings` читают и изменяют 11 полей модели и
+эмбеддингов. Секреты в ответе GET не отдаются, вместо них присутствуют флаги
+`llm_api_key_set` и `embedding_api_key_set`. Пустое значение секрета при PUT
+не затирает прежнее. Эндпоинт `POST /api/settings/test` выполняет проверку
+доступности модели и эмбеддингов, по 30 секунд на каждый сервис.
 
-## Документы (`FEATURE_DOCUMENTS`)
+## Документы (раздел под флагом FEATURE_DOCUMENTS)
 
-Репозиторий файлов, `require_user`, загрузка multipart.
+Группа обслуживает репозиторий файлов, все маршруты требуют входа, загрузка
+идет multipart. Состав маршрутов перечислен ниже.
 
-- `GET /api/repo/folders?parent=`, `/api/repo/tree`, `/api/repo/archived`, `/api/repo/search?q=`, `/api/repo/usage`.
-- `POST /api/repo/folders`, `PATCH|DELETE /api/repo/folders/{id}` (нельзя удалить непустую, перемещение без циклов).
-- `POST /api/repo/documents` (multipart `file,folder_id,name,jira,note`, ≤25 МиБ), `GET /api/repo/documents/{id}` (таймлайн версий), `PATCH` (переименование/перемещение), `DELETE`.
-- `POST /api/repo/documents/{id}/versions` (`kind` upload|review), `GET .../versions/{n}` (скачивание, имя файла в RFC 5987), `POST .../archive|unarchive`.
+- Чтение: `GET /api/repo/folders?parent=`, `GET /api/repo/tree`,
+  `GET /api/repo/archived`, `GET /api/repo/search?q=`,
+  `GET /api/repo/usage`.
+- Папки: `POST /api/repo/folders`, `PATCH` и `DELETE` на
+  `/api/repo/folders/{id}`. Непустую папку удалить нельзя, перемещение
+  проверяется на циклы.
+- Документы: `POST /api/repo/documents` (multipart с полями `file`,
+  `folder_id`, `name`, `jira`, `note`; файл до 25 МиБ),
+  `GET /api/repo/documents/{id}` возвращает таймлайн версий, `PATCH`
+  переименовывает и перемещает, `DELETE` удаляет безвозвратно.
+- Версии: `POST /api/repo/documents/{id}/versions` с полем `kind`
+  (upload или review), `GET .../versions/{n}` скачивает версию (имя файла
+  отдается по RFC 5987), `POST .../archive` и `POST .../unarchive` переводят
+  документ в архив и обратно.
 
-## Спецификации API (`FEATURE_API`)
+## Спецификации API (раздел под флагом FEATURE_API)
 
-Парные RU/EN OpenAPI из документов репозитория.
+Группа работает с парными спецификациями RU и EN из документов репозитория.
+Состав маршрутов перечислен ниже.
 
-- CRUD `GET|POST /api/api-specs`, `GET /api/api-spec-documents`, `PATCH|DELETE /api/api-specs/{id}`.
-- `GET .../segments?page&size(1..250, по умолч. 25)&q` пары RU/EN по `path_str`; `GET .../consistency?lang=ru|en`; `GET .../diff`.
-- `POST .../translate`, `POST .../ai-review` → `{job_id}` (отчёт через `/api/jobs/{id}`); `POST .../download` `{target:"ru"|"en",edits:{path_str:text}}` → пропатченный YAML.
+- CRUD связок: `GET` и `POST /api/api-specs`, `GET /api/api-spec-documents`,
+  `PATCH` и `DELETE /api/api-specs/{id}`.
+- Данные связки: `GET .../segments?page&size&q` (размер страницы от 1 до 250,
+  по умолчанию 25) выдает пары RU и EN по ключу `path_str`;
+  `GET .../consistency?lang=ru|en` считает единообразие; `GET .../diff`
+  возвращает изменения против предыдущей версии.
+- Обработка: `POST .../translate` и `POST .../ai-review` создают задачу и
+  возвращают `{job_id}` (результат читается через `/api/jobs/{id}`);
+  `POST .../download` с телом `{target:"ru"|"en",edits:{path_str:text}}`
+  возвращает пропатченный YAML.
 
-## Мониторинг (`FEATURE_WATCH`)
+## Наблюдение (раздел под флагом FEATURE_WATCH)
 
-- Группы: `GET|POST /api/watch/groups`, `GET|PATCH|DELETE /api/watch/groups/{id}` (GET включает `pages[]`).
-- Страницы: `POST /api/watch/groups/{id}/pages`, `PATCH|DELETE /api/watch/pages/{id}`.
-- Запуск: `POST /api/watch/groups/{id}/run`, `POST /api/watch/pages/{id}/run` → `{status:"started"|"running"}`.
-- Данные: `GET /api/watch/pages/{id}/diff` (хунки + UI-события + метки), `/history`, `POST /{id}/seen` (снять бейдж).
-- Артефакты: `GET /api/watch/pages/{id}/copy?v=new|old` (самодостаточный HTML, `text/html`, отдельный CSP), `GET .../shot?v=` (PNG через chromium, 503 если недоступен).
+Маршруты подсистемы наблюдения перечислены ниже.
 
-Пароли порталов в группах write-only (`has_password`), шифруются под `PROOFREADER_SECRET`.
+- Группы: `GET` и `POST /api/watch/groups`, `GET`, `PATCH` и
+  `DELETE /api/watch/groups/{id}` (ответ GET включает `pages[]`).
+- Страницы: `POST /api/watch/groups/{id}/pages` добавляет, `PATCH` и
+  `DELETE /api/watch/pages/{id}` изменяют и удаляют.
+- Запуск: `POST /api/watch/groups/{id}/run` и `POST /api/watch/pages/{id}/run`
+  возвращают `{status:"started"|"running"}`.
+- Данные: `GET /api/watch/pages/{id}/diff` отдает хунки, UI-события и метки;
+  `GET .../history` список снимков; `POST .../seen` снимает бейдж
+  непрочитанного.
+- Артефакты: `GET /api/watch/pages/{id}/copy?v=new|old` отдает
+  самодостаточный HTML (`text/html`, собственный CSP);
+  `GET .../shot?v=` отдает PNG через Chromium и возвращает код 503, если
+  браузер недоступен.
 
-## Скриншоты (`FEATURE_SCREENSHOTS`)
+Пароли порталов в группах доступны только на запись (в GET присутствует
+признак `has_password`) и скрываются потоком XOR под ключом
+`PROOFREADER_SECRET`.
 
-`GET|POST /api/screenshot-templates`, `DELETE /api/screenshot-templates/{id}`. Запись `{id,name,width}`, ширина 50..4000, список общий. Генерации картинок на сервере здесь нет, это пресеты ширины для клиентского редактора.
+## Скриншоты (раздел под флагом FEATURE_SCREENSHOTS)
 
-## Дальше
+Группа состоит из маршрутов `GET` и `POST /api/screenshot-templates` и
+`DELETE /api/screenshot-templates/{id}`. Запись хранит поля `{id,name,width}`,
+ширина допускается от 50 до 4000 пикселей, список общий для всех
+пользователей. Генерации изображений на сервере в этой группе нет: маршруты
+обслуживают пресеты ширины для клиентского редактора.
 
-- [Бэкенд](backend.md) какие модули за какими роутами стоят.
-- [Модель данных](../arch/data-model.md) где что хранится.
-- [Конвейер](../arch/pipeline.md) как устроен ответ `/report`.
+## Связанные разделы
+
+Страницы, описывающие код за этими контрактами.
+
+- [Бэкенд на FastAPI](backend.md) какие модули стоят за какими маршрутами.
+- [Модель данных](../arch/data-model.md) где физически хранятся объекты
+  ответов.
+- [Конвейер проверки моделью](../arch/pipeline.md) как устроен отчет, который
+  отдает маршрут `/report`.
+- [Переменные окружения](../ops/config-env.md) флаги, от которых зависят
+  доступность разделов и документация API.

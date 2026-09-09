@@ -70,7 +70,7 @@ plugins:
         reference/http.md: dev/api.md
 nav:
   - Документация: index.md
-  - Пользователям:
+  - User Guide:
       - users/quickstart.md
       - users/check.md
       - users/review.md
@@ -95,7 +95,7 @@ nav:
       - arch/data-model.md
       - arch/security.md
       - arch/frontend-map.md
-  - Разработчикам:
+  - Developer Guide:
       - dev/setup.md
       - dev/code-map.md
       - dev/backend.md
@@ -104,7 +104,7 @@ nav:
       - dev/tests.md
       - dev/api.md
       - dev/docs-site.md
-  - DevOps:
+  - Implementation Guide:
       - ops/deploy.md
       - ops/config-env.md
       - ops/stack.md

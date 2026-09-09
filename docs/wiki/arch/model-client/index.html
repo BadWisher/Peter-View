@@ -25,7 +25,7 @@
     
     
       
-        <title>Клиент модели и эмбеддингов - Peter View</title>
+        <title>Клиент модели и кэширование - Peter View</title>
       
     
     
@@ -70,7 +70,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#клиент-модели-и-эмбеддингов" class="md-skip">
+        <a href="#клиент-модели-и-кэширование" class="md-skip">
           Перейти к содержанию
         </a>
       
@@ -106,7 +106,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Клиент модели и эмбеддингов
+              Клиент модели и кэширование
             
           </span>
         </div>
@@ -276,7 +276,7 @@
   <span class="md-ellipsis">
     
   
-    Пользователям
+    User Guide
   
 
     
@@ -292,7 +292,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    Пользователям
+    User Guide
   
 
           </label>
@@ -312,7 +312,7 @@
   <span class="md-ellipsis">
     
   
-    Быстрый старт: первая проверка за пять минут
+    Первые шаги
   
 
     
@@ -340,7 +340,7 @@
   <span class="md-ellipsis">
     
   
-    Проверка текста
+    Проверка текста, файла и веб-страницы
   
 
     
@@ -396,7 +396,7 @@
   <span class="md-ellipsis">
     
   
-    Свой стилевой гайд
+    Style Guide
   
 
     
@@ -452,7 +452,7 @@
   <span class="md-ellipsis">
     
   
-    Аккаунты и роли
+    Учетные записи и роли
   
 
     
@@ -480,7 +480,7 @@
   <span class="md-ellipsis">
     
   
-    Настройки модели
+    Языковая модель
   
 
     
@@ -508,7 +508,7 @@
   <span class="md-ellipsis">
     
   
-    Статус системы
+    Состояние системы
   
 
     
@@ -536,7 +536,7 @@
   <span class="md-ellipsis">
     
   
-    Разделы по флагам: что включено и зачем
+    Дополнительные разделы интерфейса
   
 
     
@@ -564,7 +564,7 @@
   <span class="md-ellipsis">
     
   
-    Документы (раздел «Документы»)
+    Документы
   
 
     
@@ -592,7 +592,7 @@
   <span class="md-ellipsis">
     
   
-    Проверка OpenAPI-спецификаций (раздел «API»)
+    Спецификации API
   
 
     
@@ -620,7 +620,7 @@
   <span class="md-ellipsis">
     
   
-    Мониторинг страниц (раздел «Мониторинг»)
+    Наблюдение за страницами
   
 
     
@@ -648,7 +648,7 @@
   <span class="md-ellipsis">
     
   
-    Редактор скриншотов (раздел «Скриншоты»)
+    Скриншоты
   
 
     
@@ -676,7 +676,7 @@
   <span class="md-ellipsis">
     
   
-    Неприятности и их лечение
+    Устранение неполадок на стороне интерфейса
   
 
     
@@ -765,7 +765,7 @@
   <span class="md-ellipsis">
     
   
-    Архитектура: обзор
+    Общая архитектура
   
 
     
@@ -821,7 +821,7 @@
   <span class="md-ellipsis">
     
   
-    Движки детерминированной проверки
+    Детерминированные движки проверки
   
 
     
@@ -849,7 +849,7 @@
   <span class="md-ellipsis">
     
   
-    Конвейер LLM-вычитки (v2)
+    Конвейер проверки моделью
   
 
     
@@ -886,7 +886,7 @@
   <span class="md-ellipsis">
     
   
-    Клиент модели и эмбеддингов
+    Клиент модели и кэширование
   
 
     
@@ -904,7 +904,7 @@
   <span class="md-ellipsis">
     
   
-    Клиент модели и эмбеддингов
+    Клиент модели и кэширование
   
 
     
@@ -930,22 +930,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#модель" class="md-nav__link">
+  <a href="#обращения-к-модели" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Модель
+        Обращения к модели
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Модель">
+    <nav class="md-nav" aria-label="Обращения к модели">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#вызов" class="md-nav__link">
+  <a href="#основной-вызов" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Вызов
+        Основной вызов
       
     </span>
   </a>
@@ -964,10 +964,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#параллельность-ретраи-кэш" class="md-nav__link">
+  <a href="#параллельность-и-ретраи" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Параллельность, ретраи, кэш
+        Параллельность и ретраи
       
     </span>
   </a>
@@ -975,10 +975,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#учёт-токенов" class="md-nav__link">
+  <a href="#двухуровневый-кэш" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Учёт токенов
+        Двухуровневый кэш
       
     </span>
   </a>
@@ -986,10 +986,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#healthcheck" class="md-nav__link">
+  <a href="#учет-токенов" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Healthcheck
+        Учет токенов
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#проверка-доступности" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Проверка доступности
       
     </span>
   </a>
@@ -1002,38 +1013,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#эмбеддинги-и-rag" class="md-nav__link">
+  <a href="#эмбеддинги-и-подбор-правил" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Эмбеддинги и RAG
+        Эмбеддинги и подбор правил
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Эмбеддинги и RAG">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#что-делает-rag-для-конвейера" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Что делает RAG для конвейера
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#дальше" class="md-nav__link">
+  <a href="#роль-подбора-в-конвейере" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Дальше
+        Роль подбора в конвейере
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#связанные-разделы" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Связанные разделы
       
     </span>
   </a>
@@ -1063,7 +1068,7 @@
   <span class="md-ellipsis">
     
   
-    Подсистемы: документы, спецификации, мониторинг, скриншоты
+    Прикладные подсистемы
   
 
     
@@ -1091,7 +1096,7 @@
   <span class="md-ellipsis">
     
   
-    Модель данных
+    Хранилище данных
   
 
     
@@ -1119,7 +1124,7 @@
   <span class="md-ellipsis">
     
   
-    Безопасность: как устроено
+    Механизмы защиты
   
 
     
@@ -1198,7 +1203,7 @@
   <span class="md-ellipsis">
     
   
-    Разработчикам
+    Developer Guide
   
 
     
@@ -1214,7 +1219,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    Разработчикам
+    Developer Guide
   
 
           </label>
@@ -1234,7 +1239,7 @@
   <span class="md-ellipsis">
     
   
-    Окружение разработчика
+    Рабочее окружение
   
 
     
@@ -1290,7 +1295,7 @@
   <span class="md-ellipsis">
     
   
-    Бэкенд: код FastAPI
+    Бэкенд на FastAPI
   
 
     
@@ -1318,7 +1323,7 @@
   <span class="md-ellipsis">
     
   
-    Фронтенд: SPA без сборки
+    Фронтенд на vanilla JS
   
 
     
@@ -1346,7 +1351,7 @@
   <span class="md-ellipsis">
     
   
-    Правила гайда в коде
+    Правила Style Guide в коде
   
 
     
@@ -1430,7 +1435,7 @@
   <span class="md-ellipsis">
     
   
-    Сборка этой вики
+    Поддержка документации
   
 
     
@@ -1481,7 +1486,7 @@
   <span class="md-ellipsis">
     
   
-    DevOps
+    Implementation Guide
   
 
     
@@ -1497,7 +1502,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    DevOps
+    Implementation Guide
   
 
           </label>
@@ -1517,7 +1522,7 @@
   <span class="md-ellipsis">
     
   
-    Установка и запуск
+    Развертывание
   
 
     
@@ -1573,7 +1578,7 @@
   <span class="md-ellipsis">
     
   
-    Стек: compose-файлы, образы, nginx
+    Стек контейнеров
   
 
     
@@ -1629,7 +1634,7 @@
   <span class="md-ellipsis">
     
   
-    Резервные копии и восстановление
+    Резервное копирование и восстановление
   
 
     
@@ -1685,7 +1690,7 @@
   <span class="md-ellipsis">
     
   
-    Мониторинг работы сервиса
+    Наблюдение за работой сервиса
   
 
     
@@ -1713,7 +1718,7 @@
   <span class="md-ellipsis">
     
   
-    Усиление защиты
+    Жесткая настройка для публичного хоста
   
 
     
@@ -1741,7 +1746,7 @@
   <span class="md-ellipsis">
     
   
-    Вход через OIDC (Keycloak, Entra, Okta)
+    Вход через OIDC
   
 
     
@@ -1769,7 +1774,7 @@
   <span class="md-ellipsis">
     
   
-    Дежурство по авариям
+    Дежурство и разбор инцидентов
   
 
     
@@ -1817,22 +1822,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#модель" class="md-nav__link">
+  <a href="#обращения-к-модели" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Модель
+        Обращения к модели
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Модель">
+    <nav class="md-nav" aria-label="Обращения к модели">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#вызов" class="md-nav__link">
+  <a href="#основной-вызов" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Вызов
+        Основной вызов
       
     </span>
   </a>
@@ -1851,10 +1856,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#параллельность-ретраи-кэш" class="md-nav__link">
+  <a href="#параллельность-и-ретраи" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Параллельность, ретраи, кэш
+        Параллельность и ретраи
       
     </span>
   </a>
@@ -1862,10 +1867,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#учёт-токенов" class="md-nav__link">
+  <a href="#двухуровневый-кэш" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Учёт токенов
+        Двухуровневый кэш
       
     </span>
   </a>
@@ -1873,10 +1878,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#healthcheck" class="md-nav__link">
+  <a href="#учет-токенов" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Healthcheck
+        Учет токенов
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#проверка-доступности" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Проверка доступности
       
     </span>
   </a>
@@ -1889,38 +1905,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#эмбеддинги-и-rag" class="md-nav__link">
+  <a href="#эмбеддинги-и-подбор-правил" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Эмбеддинги и RAG
+        Эмбеддинги и подбор правил
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Эмбеддинги и RAG">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#что-делает-rag-для-конвейера" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Что делает RAG для конвейера
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#дальше" class="md-nav__link">
+  <a href="#роль-подбора-в-конвейере" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Дальше
+        Роль подбора в конвейере
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#связанные-разделы" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Связанные разделы
       
     </span>
   </a>
@@ -1947,46 +1957,133 @@
   
 
 
-<h1 id="клиент-модели-и-эмбеддингов">Клиент модели и эмбеддингов<a class="headerlink" href="#клиент-модели-и-эмбеддингов" title="Permanent link">&para;</a></h1>
-<p><code>backend/app/llm/client.py</code> одна точка выхода в языковую модель. <code>backend/app/llm/rag.py</code> клиент эмбеддингов для подбора правил. Оба работают через OpenAI-совместимые HTTP-API, адреса и ключи задаёт админ (<a href="../../users/model-settings/">настройки</a>, <a href="../../ops/config-env/">переменные</a>).</p>
-<h2 id="модель">Модель<a class="headerlink" href="#модель" title="Permanent link">&para;</a></h2>
-<p>Транспорт пакет <code>openai</code>, <code>AsyncOpenAI</code> с <code>base_url = llm_base_url</code>, <code>api_key = llm_api_key</code>. Любой провайдер с OpenAI-совместимым <code>/chat/completions</code> подходит.</p>
-<h3 id="вызов">Вызов<a class="headerlink" href="#вызов" title="Permanent link">&para;</a></h3>
-<p><code>complete_json(system, user, on_delta=None)</code> основной метод, которым пользуются все воркеры:</p>
+<h1 id="клиент-модели-и-кэширование">Клиент модели и кэширование<a class="headerlink" href="#клиент-модели-и-кэширование" title="Permanent link">&para;</a></h1>
+<p>Эта страница описывает модуль <code>backend/app/llm/client.py</code>, единственную точку
+выхода сервиса в языковую модель, и модуль <code>backend/app/llm/rag.py</code>, клиент
+эмбеддингов для подбора правил. Страница нужна тем, кто читает код обращения к
+модели, настраивает параллельность и тайм-ауты или разбирается в расходе
+токенов.</p>
+<p>Страница отвечает на вопросы: как формируется запрос к модели, что происходит
+при отказе провайдера, как устроен кэш и почему одинаковый промпт не уходит в
+модель повторно. Пользовательская часть настроек описана в разделе <strong>User
+Guide</strong> на странице <strong>Языковая модель</strong>, переменные окружения в
+<strong>Implementation Guide</strong> на странице <strong>Переменные окружения</strong>.</p>
+<p>Оба модуля работают через совместимые с OpenAI HTTP-API. Адреса и ключи задает
+администратор.</p>
+<h2 id="обращения-к-модели">Обращения к модели<a class="headerlink" href="#обращения-к-модели" title="Permanent link">&para;</a></h2>
+<p>Транспорт реализован пакетом <code>openai</code>: клиент <code>AsyncOpenAI</code> создается со
+значениями <code>base_url = llm_base_url</code> и <code>api_key = llm_api_key</code>. Подходит любой
+провайдер, у которого есть совместимый с OpenAI метод <code>/chat/completions</code>.</p>
+<h3 id="основной-вызов">Основной вызов<a class="headerlink" href="#основной-вызов" title="Permanent link">&para;</a></h3>
+<p>Метод <code>complete_json(system, user, on_delta=None)</code> используется всеми воркерами
+конвейера. Его поведение описано пунктами ниже.</p>
 <ul>
-<li>ответ разбирается как JSON (<code>_extract_json</code> вытаскивает объект из текста, терпит markdown-обёртки);</li>
-<li>при <code>llm_json_mode</code> добавляется <code>response_format={"type":"json_object"}</code>; если провайдер отклоняет json_mode или reasoning-параметр, идёт деградация попыток: сначала как есть, потом без json, потом без reasoning;</li>
-<li>при непустом <code>llm_reasoning_effort</code> (low/medium/high) параметр передаётся, у моделей без reasoning провайдер его игнорирует или отклоняет, и вызов повторяется без него.</li>
+<li>Ответ разбирается как JSON. Функция <code>_extract_json</code> вытаскивает объект из
+  произвольного текста ответа и допускает markdown-обертки.</li>
+<li>При включенном <code>llm_json_mode</code> к запросу добавляется
+  <code>response_format={"type":"json_object"}</code>.</li>
+<li>Если провайдер отклоняет режим JSON или параметр рассуждения, включается
+  деградация попыток: сначала запрос идет как есть, затем без json_mode, затем
+  без параметра рассуждения.</li>
+<li>При непустом <code>llm_reasoning_effort</code> (low, medium или high) параметр
+  передается. Модели без рассуждений игнорируют его, а провайдер может
+  отклонить запрос; тогда вызов повторяется без параметра.</li>
 </ul>
 <h3 id="стриминг">Стриминг<a class="headerlink" href="#стриминг" title="Permanent link">&para;</a></h3>
-<p>Если передан <code>on_delta</code>, запрос идёт <code>stream=True</code>, и в колбэк летят токены «живой речи» (рассуждения) воркера, не финальный JSON. Так у пользователя в карточке воркера печатается текст в реальном времени. Если провайдер не умеет стриминг (<code>BadRequestError</code>), деградация до обычного <code>create</code>.</p>
-<h3 id="параллельность-ретраи-кэш">Параллельность, ретраи, кэш<a class="headerlink" href="#параллельность-ретраи-кэш" title="Permanent link">&para;</a></h3>
+<p>Если вызывающий передал колбэк <code>on_delta</code>, запрос выполняется с <code>stream=True</code>,
+и в колбэк передаются токены живого текста рассуждений воркера, а не финальный
+JSON. Так в карточке воркера у пользователя печатается текст в реальном
+времени. Если провайдер не поддерживает стриминг и отвечает <code>BadRequestError</code>,
+клиент деградирует до обычного вызова <code>create</code>.</p>
+<h3 id="параллельность-и-ретраи">Параллельность и ретраи<a class="headerlink" href="#параллельность-и-ретраи" title="Permanent link">&para;</a></h3>
+<p>Параллельность ограничивает семафор <code>_semaphore = Semaphore(llm_concurrency)</code>.
+Он пересоздается при изменении настроек через подписку на них.</p>
+<p>Число попыток задает <code>MAX_RETRIES</code>. Формулы пауз между попытками различаются по
+классу ошибки и приведены ниже.</p>
 <ul>
-<li><code>_semaphore = Semaphore(llm_concurrency)</code> ограничивает одновременные обращения к модели (создаётся заново при смене настроек через listener).</li>
-<li><code>MAX_RETRIES</code> попыток; паузы: <code>RateLimitError</code>/<code>APITimeoutError</code> <code>min(30, 3·2ⁿ)</code>; ошибки, которые пахнут лимитом токенов (в т.ч. HTTP 402) <code>min(45, 5·2ⁿ)</code>; временные <code>APIError</code> <code>min(30, 3·2ⁿ)</code>; битый JSON пауза 1 с и повтор. Прочие ошибки фатальны, бросается <code>LLMRequestError</code> с обезличенным сообщением.</li>
-<li>Кэш двухуровневый по хэгу <code>(system, user, temperature)</code>: in-process <code>_cache</code> (FIFO на <code>CACHE_MAX=1024</code>) и персистентный (<code>stats.cache_set</code>, живёт в базе). Перезапуск не обнуляет кэш: одинаковый промпт не гоняется в модель повторно. Это и экономия токенов, и источник артефакта: если поменялась только версия промпта, хэш другой, кэш сам инвалидируется.</li>
+<li><code>RateLimitError</code> и <code>APITimeoutError</code>: пауза <code>min(30, 3 * 2^n)</code> секунд.</li>
+<li>Ошибки, похожие на исчерпание лимита токенов, в том числе HTTP 402: пауза
+  <code>min(45, 5 * 2^n)</code> секунд.</li>
+<li>Временные <code>APIError</code>: пауза <code>min(30, 3 * 2^n)</code> секунд.</li>
+<li>Разобранный с ошибкой JSON: пауза 1 секунда и повтор.</li>
 </ul>
-<h3 id="учёт-токенов">Учёт токенов<a class="headerlink" href="#учёт-токенов" title="Permanent link">&para;</a></h3>
-<p><code>stats.record_tokens(prompt, completion, cached)</code> на каждый ответ (у части провайдеров <code>cached_tokens</code> лежит в <code>prompt_tokens_details</code>). Агрегаты идут в «Аналитику» и «Систему», пометка воркера через <code>usage_stats.set_worker</code> (кто сколько сжёг).</p>
-<h3 id="healthcheck">Healthcheck<a class="headerlink" href="#healthcheck" title="Permanent link">&para;</a></h3>
-<p><code>healthcheck()</code> короткий <code>create</code> без JSON-режима (<code>max_tokens=16</code>, потому что reasoning-модели тратят бюджет на рассуждение), таймаут 20 с в <code>/api/health/full</code> и 30 с в <code>/api/settings/test</code>. Пустой <code>llm_base_url</code> явная ошибка «LLM не настроен».</p>
-<h2 id="эмбеддинги-и-rag">Эмбеддинги и RAG<a class="headerlink" href="#эмбеддинги-и-rag" title="Permanent link">&para;</a></h2>
-<p><code>rag.py</code> подбор правил гайда под конкретный фрагмент текста. Нужен, когда гайд большой и все правила в промпт не влезают.</p>
+<p>Прочие ошибки считаются фатальными: клиент бросает <code>LLMRequestError</code> с
+обезличенным сообщением, чтобы текст провайдера не попадал в интерфейс.</p>
+<h3 id="двухуровневый-кэш">Двухуровневый кэш<a class="headerlink" href="#двухуровневый-кэш" title="Permanent link">&para;</a></h3>
+<p>Кэш устроен по хешу тройки <code>(system, user, temperature)</code> и имеет два уровня.
+Их свойства перечислены ниже.</p>
 <ul>
-<li>Отдельный OpenAI-совместимый endpoint (<code>embedding_base_url/_api_key/_model</code>), пакет <code>openai</code>, синхронный <code>OpenAI</code>. <code>EMBED_BATCH_SIZE</code> (90) за раз, <code>EMBED_TIMEOUT</code> (20 с).</li>
-<li>Индекс в памяти по каждому гайду (ключ id гайда), перестройка по <code>content_hash</code>. Правила превращаются в «документы» (title + формулировка + generalize + примеры), косинусная близость на numpy (правил десятки, внешнее векторное хранилище не нужно).</li>
-<li><code>ensure_index(guide)</code> вызывается в начале конвейера, прогревает индекс; <code>healthcheck()</code> есть отдельный, светится в <code>/api/health/full</code> строкой «Эмбеддинги».</li>
-<li><code>retrieve(query, guide, task, k)</code>: семантические скоры (<code>_semantic_scores</code>) складываются с лексическими (<code>_lexical_scores</code>, по токенам) и бустом по метаданным (<code>_metadata_boost</code>: категория, область применения правила). Гибрид это то, что UI показывает как «гибридный» индекс в статусе гайда.</li>
-<li>Деградация без эмбеддингов: если endpoint недоступен, <code>retrieve</code> отдаёт все правила гайда (лексический/полный режим, «lexical_only» в <code>index-status</code>). На маленьких гайдах это безвредно, на больших хуже точность подбора, но работает.</li>
+<li>Первый уровень это словарь <code>_cache</code> в памяти процесса, вытеснение FIFO,
+  вместимость <code>CACHE_MAX</code>, равная 1024 записям.</li>
+<li>Второй уровень персистентный: он пишется в базу функцией <code>stats.cache_set</code> и
+  переживает перезапуск.</li>
 </ul>
-<p><code>RAG_CONFIG_VERSION</code> (env) версионзирует схему кэша индексов, чтобы смена формата не подмешивала устаревшие векторы.</p>
-<h3 id="что-делает-rag-для-конвейера">Что делает RAG для конвейера<a class="headerlink" href="#что-делает-rag-для-конвейера" title="Permanent link">&para;</a></h3>
-<p>Пайплайн v2 вызывает <code>_retrieve_batch</code> для чанков и <code>_retrieve_one</code> для терминологии/согласованности. Подобранные правила (top-k) подставляются в промпт воркера, поэтому модель проверяет не «вообще всё», а релевантные этому фрагменту нормы. Диагностика подбора (<code>meta.retrieval.rule_hit_counts</code>, <code>rules_never_offered</code>) показывает, какие правила не предложил ни один запрос плохой признак: правило сформулировано так, что эмбеддинг его не находит, и проверка его фактически не делает.</p>
-<h2 id="дальше">Дальше<a class="headerlink" href="#дальше" title="Permanent link">&para;</a></h2>
+<p>Одинаковый промпт не уходит в модель повторно. Это экономит токены и
+одновременно служит источником согласованности: если изменилась только версия
+промпта, хеш становится другим и запись кэшируется заново, то есть устаревшие
+ответы не подмешиваются.</p>
+<h3 id="учет-токенов">Учет токенов<a class="headerlink" href="#учет-токенов" title="Permanent link">&para;</a></h3>
+<p>На каждый ответ вызывается <code>stats.record_tokens(prompt, completion, cached)</code>. У
+части провайдеров значение <code>cached_tokens</code> лежит в поле
+<code>prompt_tokens_details</code>. Агрегаты попадают в разделы <strong>Аналитика</strong> и
+<strong>Система</strong>. Отдельно ведется разрез по воркерам: функция
+<code>usage_stats.set_worker</code> помечает, кто из воркеров сколько израсходовал.</p>
+<h3 id="проверка-доступности">Проверка доступности<a class="headerlink" href="#проверка-доступности" title="Permanent link">&para;</a></h3>
+<p>Функция <code>healthcheck()</code> выполняет короткий вызов <code>create</code> без режима JSON.
+Параметр <code>max_tokens</code> равен 16, потому что рассуждающие модели тратят бюджет
+ответа на цепочку рассуждений. Тайм-аут составляет 20 секунд в эндпоинте
+<code>/api/health/full</code> и 30 секунд в <code>/api/settings/test</code>. Пустой <code>llm_base_url</code>
+дает явную ошибку «LLM не настроен».</p>
+<h2 id="эмбеддинги-и-подбор-правил">Эмбеддинги и подбор правил<a class="headerlink" href="#эмбеддинги-и-подбор-правил" title="Permanent link">&para;</a></h2>
+<p>Модуль <code>rag.py</code> подбирает правила гайда под конкретный фрагмент текста. Он нужен,
+когда гайд большой и все правила не помещаются в промпт.</p>
+<p>Механика работы описана пунктами ниже.</p>
 <ul>
-<li><a href="../pipeline/">Конвейер</a> кто и с какими параметрами зовёт <code>complete_json</code>.</li>
-<li><a href="../data-model/">Модель данных</a> где лежит персистентный кэш и счётчики токенов.</li>
-<li><a href="../../users/model-settings/">Настройки модели</a> пользовательская часть.</li>
+<li>Используется отдельный совместимый с OpenAI endpoint эмбеддингов
+  (<code>embedding_base_url</code>, <code>embedding_api_key</code>, <code>embedding_model</code>) и пакет
+  <code>openai</code> в синхронном варианте клиента <code>OpenAI</code>. Запросы идут батчами по
+  <code>EMBED_BATCH_SIZE</code>, равному 90, с тайм-аутом <code>EMBED_TIMEOUT</code> в 20 секунд.</li>
+<li>Индекс хранится в памяти по каждому гайду, ключом служит идентификатор
+  гайда, а перестройка выполняется по <code>content_hash</code>. Правила превращаются в
+  документы-подложки: заголовок, формулировка, обобщение и примеры. Близость
+  считается косинусным расстоянием на numpy; внешних векторных хранилищ нет,
+  потому что правил в гайде десятки.</li>
+<li>Функция <code>ensure_index(guide)</code> вызывается в начале конвейера и прогревает
+  индекс. Отдельный <code>healthcheck()</code> для эмбеддингов светится строкой
+  «Эмбеддинги» в <code>/api/health/full</code>.</li>
+<li>Метод <code>retrieve(query, guide, task, k)</code> складывает семантические скоры
+  (<code>_semantic_scores</code>) с лексическими (<code>_lexical_scores</code>, по токенам) и
+  надбавкой по метаданным (<code>_metadata_boost</code>: категория и область применения
+  правила). Гибридная схема и есть то, что интерфейс показывает как статус
+  «гибридный» в карточке гайда.</li>
+<li>Без доступного endpoint эмбеддингов <code>retrieve</code> отдает все правила гайда. Это
+  лексический или полный режим, в статусе он обозначен как <code>lexical_only</code>. На
+  маленьких гайдах деградация безвредна, на больших точность подбора падает, но
+  работа продолжается.</li>
+</ul>
+<p>Переменная <code>RAG_CONFIG_VERSION</code> версионирует схему кэша индексов, чтобы смена
+формата не подмешивала устаревшие векторы.</p>
+<h2 id="роль-подбора-в-конвейере">Роль подбора в конвейере<a class="headerlink" href="#роль-подбора-в-конвейере" title="Permanent link">&para;</a></h2>
+<p>Конвейер v2 вызывает <code>_retrieve_batch</code> для фрагментов и <code>_retrieve_one</code> для
+стадий терминологии и согласованности. Подобранное множество правил (top-k)
+подставляется в промпт воркера, поэтому модель проверяет не «вообще все
+нормы», а релевантные этому фрагменту.</p>
+<p>Диагностику подбора дают поля <code>meta.retrieval.rule_hit_counts</code> и
+<code>rules_never_offered</code>. Правило, которое не предложил ни один запрос, это плохой
+признак: сформулировано оно так, что эмбеддинг его не находит, и фактически
+проверка его не выполняет. Порядок формулировок правил описан на странице
+<strong>Правила Style Guide в коде</strong>.</p>
+<h2 id="связанные-разделы">Связанные разделы<a class="headerlink" href="#связанные-разделы" title="Permanent link">&para;</a></h2>
+<p>Страницы, продолжающие тему обращений к модели.</p>
+<ul>
+<li><a href="../pipeline/">Конвейер проверки моделью</a> кто и с какими параметрами вызывает
+  <code>complete_json</code>.</li>
+<li><a href="../data-model/">Хранилище данных</a> где физически лежат персистентный кэш и
+  счетчики токенов.</li>
+<li><a href="../../users/model-settings/">Языковая модель</a> настройка адресов и ключей в
+  интерфейсе.</li>
+<li><a href="../engines/">Детерминированные движки проверки</a> сигналы, которые идут в
+  отчет без обращения к модели.</li>
 </ul>
 
 
@@ -2017,7 +2114,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Нижний колонтитул" >
         
           
-          <a href="../pipeline/" class="md-footer__link md-footer__link--prev" aria-label="Назад: Конвейер LLM-вычитки (v2)">
+          <a href="../pipeline/" class="md-footer__link md-footer__link--prev" aria-label="Назад: Конвейер проверки моделью">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -2027,20 +2124,20 @@
                 Назад
               </span>
               <div class="md-ellipsis">
-                Конвейер LLM-вычитки (v2)
+                Конвейер проверки моделью
               </div>
             </div>
           </a>
         
         
           
-          <a href="../subsystems/" class="md-footer__link md-footer__link--next" aria-label="Вперед: Подсистемы: документы, спецификации, мониторинг, скриншоты">
+          <a href="../subsystems/" class="md-footer__link md-footer__link--next" aria-label="Вперед: Прикладные подсистемы">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Вперед
               </span>
               <div class="md-ellipsis">
-                Подсистемы: документы, спецификации, мониторинг, скриншоты
+                Прикладные подсистемы
               </div>
             </div>
             <div class="md-footer__button md-icon">

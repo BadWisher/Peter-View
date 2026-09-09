@@ -1,12 +1,33 @@
 # Карта фронтенда
 
-Структурный справочник SPA: маршруты, модули, зависимости и точки расширения. Как писать код по конвенциям [Фронтенд: код](../dev/frontend.md); что отдаёт сервер [HTTP API](../dev/api.md).
+Эта страница структурный справочник одностраничного приложения: маршруты,
+модули, зависимости между ними, соответствие экранов и эндпоинтов и точки
+расширения. Она нужна разработчику, который открывает фронтенд впервые и хочет
+понять, где что лежит, прежде чем править.
+
+Страница отвечает на вопросы: как устроен каркас страницы, какие модули за что
+отвечают, как добавить новый экран и где разбираются ответы сервера. Конвенции
+записи кода описаны в **Developer Guide** на странице **Фронтенд на
+vanilla JS**, контракты сервера на странице **HTTP API**.
 
 ## Каркас страницы
 
-`index.html` статический скелет на 58 строк. Порядок загрузки: `theme-boot.js` (classic script, до отрисовки ставит `data-theme` из localStorage) → `tokens.css` и `style.css` (версии `?v=48`/`?v=52` руками) → `js/app.js` как `type="module"`, остальные модули доезжают по import-графу. Внутри HTML три контейнера (`#app`, `#overlay-root`, `#toast-root`) и SVG-спрайт 32 иконок; шаблонов во HTML нет, вся разметка собирается из JS.
+Файл `index.html` это статический скелет на 58 строк. Порядок загрузки ресурсов
+зафиксирован и приведен ниже.
 
-## Модули и зависимости
+1. `theme-boot.js` обычный classic script, который до отрисовки ставит атрибут
+   `data-theme` из localStorage.
+2. `tokens.css` и `style.css`, версии которых задаются параметрами `?v=48` и
+   `?v=52` вручную.
+3. `js/app.js` как модуль `type="module"`; остальные модули доезжают по графу
+   импортов.
+
+Внутри HTML размечены три контейнера (`#app`, `#overlay-root`, `#toast-root`) и
+SVG-спрайт на 32 иконки. Шаблонов в HTML нет, вся разметка собирается из JS.
+
+## Модули и граф зависимостей
+
+Схема взаимных вызовов модулей приведена ниже.
 
 ```text
 app.js ──→ router.js ──→ каждый renderX()
@@ -20,70 +41,105 @@ auth.js, check.js, documents.js, guides.js, health.js, history.js,
 insights.js, settings.js, users.js, watch.js, screenshots.js, api-specs.js
 ```
 
+Ответственность каждого модуля и его объем в строках показывает таблица ниже.
+
 | Модуль | Строк | Ответственность |
 |---|---|---|
-| `shared.js` | 956 | `state`, `api()`, shell (сайдбар+топбар), модалка, тосты, тема, health-бейдж; ~480 из них мок `previewApi` для демо-режима |
-| `watch.js` | 865 | мониторинг: список групп, композер, страница, дифф, копия в iframe, слияние хунков и UI-событий в фразы |
-| `check.js` | 815 | форма проверки, SSE-стрим воркеров, экран разбора, подсветка, экспорт |
-| `guides.js` | 452 | гайды: список, табы правил/лексикона, CRUD, извлечение из DOCX, merge-движок слияния гайда |
-| `api-specs.js` | 286 | раздел API: пары RU/EN, сегменты с правками, consistency, diff, translate/review |
-| `documents.js` | 217 | библиотека папок и версий, загрузка drag&drop, архив |
-| `screenshots.js` | 216 | canvas-редактор: crop/redact/picker, undo на 6 шагов, экспорт с шириной из шаблона |
-| `auth.js` | 115 | логин, logout, смена пароля, `loadInitialData` |
-| `app.js` | 77 | bootstrap, горячие клавиши `j/k/h`, `hashchange` |
-| остальные: `settings` 60, `shell` 51, `users` 46, `router` 44, `insights` 42, `i18n` 37, `health` 35, `history` 27 | | админ-формы, связка shell-событий, таблицы |
+| `shared.js` | 956 | `state`, функция `api()`, оболочка (сайдбар и топбар), модальные окна, тосты, тема, бейдж здоровья; около 480 строк занимает мок `previewApi` для демо-режима |
+| `watch.js` | 865 | раздел **Наблюдение**: список групп, композер, страница, сравнение, копия в iframe, слияние хунков и UI-событий в фразы |
+| `check.js` | 815 | форма проверки, стрим воркеров по SSE, экран разбора, подсветка, экспорт |
+| `guides.js` | 452 | гайды: список, вкладки правил и лексикона, CRUD, извлечение из DOCX, механизм слияния гайда |
+| `api-specs.js` | 286 | раздел **Спецификации API**: пары RU и EN, сегменты с правками, единообразие, изменения, перевод и обзор моделью |
+| `documents.js` | 217 | библиотека папок и версий, загрузка перетаскиванием, архив |
+| `screenshots.js` | 216 | canvas-редактор: crop, redact, picker, отмена на 6 шагов, экспорт с шириной из шаблона |
+| `auth.js` | 115 | вход, выход, смена пароля, `loadInitialData` |
+| `app.js` | 77 | загрузка приложения, горячие клавиши `j`, `k`, `h`, обработчик `hashchange` |
+| остальные | 42-60 | `settings` 60, `shell` 51, `users` 46, `router` 44, `insights` 42, `i18n` 37, `health` 35, `history` 27: админ-формы, связка событий оболочки, таблицы |
 
-Замкнутые циклы импортов (`shared` ↔ `check`/`watch`/`auth`) разорваны объектом `hooks`: `shared.js` вызывает `hooks.bindShell`/`hooks.renderApp`, а назначает их `app.js` при старте.
+Замкнутые циклы импортов (модуль `shared` связан с `check`, `watch` и `auth`)
+разорваны объектом `hooks`: `shared.js` вызывает `hooks.bindShell` и
+`hooks.renderApp`, а назначает их `app.js` при старте.
 
 ## Таблица маршрутов
 
-Hash-роуты (`#/`), разбор в `currentRoute()`, диспетчеризация в `router.js`:
+Приложение использует хеш-маршруты. Разбирает адрес функция `currentRoute()`,
+диспетчеризация живет в `router.js`. Состав маршрутов и их guard'ы показывает
+таблица ниже.
 
-| Хеш | Рендер | Гвард |
+| Хеш | Функция отрисовки | Условие доступа |
 |---|---|---|
 | `#/check` | `check.renderCheck` | вход |
-| `#/review` | `check.renderReview` | вход (в навигации скрыт, активен как «Вычитка») |
+| `#/review` | `check.renderReview` | вход (в навигации скрыт, активен как пункт **Вычитка**) |
 | `#/guides` | `guides.renderGuides` | вход |
-| `#/history`, `#/insights` | `history`, `insights` | вход |
-| `#/documents` | `documents.renderDocuments` | вход + `FEATURE_DOCUMENTS` |
-| `#/watch[/gid[/pid]]` | `watch.renderWatch` | вход + `FEATURE_WATCH` |
-| `#/api` | `api-specs.renderApiSpecs` | вход + `FEATURE_API` |
-| `#/screenshots` | `screenshots.renderScreenshots` | вход + `FEATURE_SCREENSHOTS` |
-| `#/settings`, `#/users`, `#/health` | соответствующие | вход + роль admin |
+| `#/history`, `#/insights` | модули `history`, `insights` | вход |
+| `#/documents` | `documents.renderDocuments` | вход и флаг `FEATURE_DOCUMENTS` |
+| `#/watch[/gid[/pid]]` | `watch.renderWatch` | вход и флаг `FEATURE_WATCH` |
+| `#/api` | `api-specs.renderApiSpecs` | вход и флаг `FEATURE_API` |
+| `#/screenshots` | `screenshots.renderScreenshots` | вход и флаг `FEATURE_SCREENSHOTS` |
+| `#/settings`, `#/users`, `#/health` | соответствующие модули | вход и роль администратора |
 
-Непройденный гвард `history.replaceState` на `#/check`. Аргументы watch читаются из сегментов хеша. Неизвестный маршрут считается `check`.
+Непройденный guard дает `history.replaceState` на маршрут `#/check`. Аргументы
+раздела **Наблюдение** читаются из сегментов хеша. Неизвестный маршрут
+трактуется как `check`.
 
-## Экран ↔ эндпоинты
+## Соответствие экранов и эндпоинтов
 
-| Экран | Читает | Пишет |
+Таблица ниже показывает, какие эндпоинты читает каждый экран и какие вызывает
+для записи.
+
+| Экран | Читает | Вызывает для записи |
 |---|---|---|
-| логин | `GET /api/config` | `POST /api/auth/login`, `GET /api/auth/oidc/start` |
-| bootstrap | `GET /api/auth/me`, `/api/styleguides`, `/api/config` | |
-| вычитка | | `POST /api/jobs`, `GET /api/jobs/{id}[/stream|/report]` |
-| разбор | `report.blocks/issues` | `POST /api/report-issues` (xlsx) |
-| гайды | `GET /api/styleguides[/id][/index-status]` | select/PUT/POST/DELETE, extract + poll |
-| история | `GET /api/checks/history[/id]` | открывает сохранённый report в разборе |
-| аналитика | `GET /api/checks/insights` | |
-| пользователи | `GET /api/users` | POST/DELETE |
-| настройки | `GET /api/settings` | `PUT /api/settings`, `POST /api/settings/test` |
-| система | `GET /api/health/full` | только refresh (кэш бейджа 60 с) |
-| документы | `GET /api/repo/folders|search|archived|documents/{id}` | folders/documents CRUD, versions, archive |
-| API-раздел | `GET /api/api-specs.../segments|consistency|diff` | CRUD, translate/ai-review через jobs, download |
-| мониторинг | `GET /api/watch/groups.../pages.../diff|copy|history` | CRUD, run, seen |
-| скриншоты | `GET /api/screenshot-templates` | POST/DELETE (редактор целиком клиентский) |
+| Вход | `GET /api/config` | `POST /api/auth/login`, `GET /api/auth/oidc/start` |
+| Загрузка приложения | `GET /api/auth/me`, `/api/styleguides`, `/api/config` | нет |
+| **Вычитка** | нет | `POST /api/jobs`, `GET /api/jobs/{id}` и его суффиксы `stream`, `report` |
+| Разбор | поля `report.blocks` и `issues` | `POST /api/report-issues` (XLSX) |
+| Гайды | `GET /api/styleguides`, суффиксы id и `index-status` | выбор, PUT, POST, DELETE, извлечение с опросом |
+| История | `GET /api/checks/history` и путь с id | открывает сохраненный отчет в разборе |
+| Аналитика | `GET /api/checks/insights` | нет |
+| Пользователи | `GET /api/users` | POST, DELETE |
+| Настройки | `GET /api/settings` | `PUT /api/settings`, `POST /api/settings/test` |
+| Система | `GET /api/health/full` | только обновление (кэш бейджа 60 секунд) |
+| Документы | `GET /api/repo/folders`, `search`, `archived`, `documents/{id}` | CRUD папок и документов, версии, архив |
+| Спецификации API | `GET /api/api-specs` и суффиксы `segments`, `consistency`, `diff` | CRUD, перевод и обзор моделью через очередь задач, выгрузка |
+| Наблюдение | `GET /api/watch/groups` и суффиксы `pages`, `diff`, `copy`, `history` | CRUD, запуск обхода, отметка просмотра |
+| Скриншоты | `GET /api/screenshot-templates` | POST, DELETE (редактор целиком клиентский) |
 
 ## Точки расширения
 
-- Новый экран: три строки (модуль c `renderX`, импорт в `router.js`, пункт в `navItems`/`routeMeta`) плюс флаг в `FEATURE_ROUTES`, если отключаемый. Пошагово [Фронтенд](../dev/frontend.md#как-добавить-раздел).
-- Новый ответ сервера: алиасы полей разбирает `normalizedIssues()` в `check.js:555` новая форма замечания добавляется там, а не на месте использования.
-- Демо-режим: каждая новая ручка требует кейс в `previewApi` (`shared.js`), иначе `?preview=1` падает на этом экране.
+Ниже перечислены места, куда разработчик вмешивается чаще всего, и правило для
+каждого случая.
 
-## Известные дефекты карты
+- Новый экран требует трех строк: модуль с функцией `renderX`, импорт в
+  `router.js`, пункт в `navItems` и `routeMeta`. Если экран отключаемый,
+  добавляется флаг в `FEATURE_ROUTES`. Пошаговая процедура описана на
+  странице **Фронтенд на vanilla JS** в подразделе про добавление раздела.
+- Новая форма замечания настраивается в одном месте: алиасы полей ответов
+  сервера разбирает функция `normalizedIssues()` в `check.js` (строка около
+  555). Правки вносятся там, а не на месте использования.
+- Демо-режим требует внимания к каждой новой ручке: для нее нужен кейс в
+  `previewApi` внутри `shared.js`, иначе страница `?preview=1` падает на этом
+  экране.
 
-Небольшие расхождения, о которых знают и которые ловлятся глазами при правке: `guides.js` в обработчике ошибок использует `overlayRoot`/`app` без импорта (крэш на error-пути); `documents.js` в preview-ветке зовёт неимпортированный `previewApi`; в спрайте нет `icon-copy`, на который ссылается панель копии watch; `icon-filter`/`icon-more`/`icon-star` объявлены, но не используются.
+## Известные отклонения
 
-## Дальше
+Небольшие расхождения в коде обнаруживаются при ручном ревью правок. Список
+приведен ниже, чтобы читатель карты не считал их особенностями архитектуры.
 
+- В `guides.js` обработчик ошибок использует переменные `overlayRoot` и `app`
+  без импорта, что приводит к падению на пути ошибки.
+- В `documents.js` ветка предпросмотра вызывает неимпортированный `previewApi`.
+- В спрайте отсутствует иконка `icon-copy`, на которую ссылается панель копии
+  раздела **Наблюдение**.
+- Объявлены, но не используются иконки `icon-filter`, `icon-more` и
+  `icon-star`.
+
+## Связанные разделы
+
+Страницы, продолжение темы фронтенда.
+
+- [Фронтенд на vanilla JS](../dev/frontend.md) конвенции и стиль кода.
 - [Карта кода](../dev/code-map.md) где лежит весь остальной репозиторий.
-- [Безопасность](security.md) почему CSP и sandbox рамка копии.
-- [Проектные решения](decisions.md) почему SPA без фреймворка и полная перерисовка.
+- [Механизмы защиты](security.md) почему CSP запрещает инлайн-скрипты, а
+  копия страницы рендерится в изолированной рамке.
+- [Проектные решения](decisions.md) почему SPA без фреймворка и с полной
+  перерисовкой экрана.
