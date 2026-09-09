@@ -1,4 +1,8 @@
 import { state, api, icon, escapeHTML, initials, toast, showError, go, modal, confirmAction, setBusy, formatDate, formatBytes, renderShell, bindDropTarget, downloadBlob, emptyInline, prettyRuleId, isPreview, previewFixtures, waitPreview, copyText, t, hooks } from "./shared.js";
+
+// Три класса severity живут в стилях (badge/map-point/finding), всё остальное
+// бэкенда (blocker, minor) до фронта уже доходит замапленным.
+const KNOWN_SEVERITIES = new Set(["error", "warning", "suggestion"]);
 export function renderCheck() {
   if (state.currentJob) {
     renderProgress();
@@ -553,7 +557,8 @@ export function normalizedIssues() {
   const issues = state.currentReport?.issues || [];
   const rows = issues.map((issue, index) => ({
     id: issue.id ?? index,
-    severity: issue.severity || "warning",
+    // severity попадает прямо в class, поэтому берём только свои три значения.
+    severity: KNOWN_SEVERITIES.has(issue.severity) ? issue.severity : "warning",
     line: (issue.line ?? issue.line_number ?? issue.block_index ?? index) + (issue.block_index !== undefined ? 1 : 0),
     block: issue.block_index ?? issue.line ?? issue.line_number ?? index,
     at: (issue.context || issue.line_text || issue.text || issue.fragment || "").indexOf(issue.span_text || issue.fragment || issue.match || ""),

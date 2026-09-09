@@ -394,9 +394,9 @@ function watchUiSentence(event) {
   const text = event.new_text || event.old_text || "";
   if (event.kind === "added") {
     const href = (event.attrs && event.attrs.href) || "";
-    if (text && href && href !== text) return `Добавили ссылку «${text}» — ведёт на ${href}.`;
+    if (text && href && href !== text) return `Добавили ссылку «${text}», ведёт на ${href}.`;
     if (text) return `Добавили «${text}».`;
-    return href ? `Добавили ссылку — ведёт на ${href}.` : "Что-то добавили на страницу.";
+    return href ? `Добавили ссылку, ведёт на ${href}.` : "Что-то добавили на страницу.";
   }
   if (event.kind === "removed") return text ? `Убрали «${text}».` : "Что-то убрали со страницы.";
   if (event.kind === "moved") return text ? `«${text}» переставили в другое место страницы.` : "Что-то переставили в другое место.";
@@ -420,7 +420,7 @@ function watchUiSentence(event) {
       if (oldCls && newCls && oldCls !== newCls) return `${what} перекрасился: было «${oldCls}», стало «${newCls}».`;
       if (!oldCls && newCls) return `${what} получил оформление «${newCls}».`;
       if (oldCls && !newCls) return `${what} потерял оформление «${oldCls}».`;
-      return `${what} перекрасился — поменялись стили.`;
+      return `${what} перекрасился, поменялись стили.`;
     }
     return text ? `У «${text}» поменялись свойства.` : "У элемента поменялись свойства.";
   }
@@ -763,7 +763,7 @@ export async function renderWatch() {
         <div class="review-toolbar-title"><button class="text-link back-watch" type="button">${icon("icon-arrow")} ${escapeHTML(group.name)}</button><strong>${escapeHTML(diff.page?.title || page?.title || "Адрес")}</strong><small class="watch-stats">${watchStats(statBits)}</small></div>
         <div class="head-actions">
           <button class="button secondary run-watch-page" type="button" ${running ? "disabled" : ""}>${icon("icon-refresh")}${running ? "Проверяем…" : "Проверить"}</button>
-          <a class="button secondary watch-original" href="${escapeHTML(diff.page?.url || page?.url || "")}" target="_blank" rel="noopener" title="Живой сайт в новой вкладке — копия слева это сохранённый снимок">${icon("icon-link")}Оригинал</a>
+          <a class="button secondary watch-original" href="${escapeHTML(diff.page?.url || page?.url || "")}" target="_blank" rel="noopener" title="Живой сайт в новой вкладке. Копия слева это сохранённый снимок">${icon("icon-link")}Оригинал</a>
           <button class="icon-button delete-watch-page" type="button" aria-label="Удалить адрес" title="Удалить адрес">${icon("icon-trash")}</button>
         </div>
       </section>
@@ -824,7 +824,7 @@ export async function renderWatch() {
       </div>
       ${group.running ? `<div class="watch-progress" role="status" aria-live="polite"><span class="watch-progress-dot"></span>Снимаю свежие снимки…</div>` : ""}
       <section class="panel fill-panel" aria-label="Адреса">
-        <div class="panel-head"><div><h3>Адреса</h3><p>${listSummary ? escapeHTML(listSummary) : "Вставь ссылку — снимем первый снимок"}</p></div><div>${groupBadge}</div></div>
+        <div class="panel-head"><div><h3>Адреса</h3><p>${listSummary ? escapeHTML(listSummary) : "Вставь ссылку, снимем первый снимок"}</p></div><div>${groupBadge}</div></div>
         <div class="panel-body">
           <form class="watch-url-bar">
             <label class="field"><span>URL</span><input name="url" required type="url" inputmode="url" placeholder="https://" autocomplete="off"></label>

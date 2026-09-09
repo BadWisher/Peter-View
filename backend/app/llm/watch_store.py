@@ -11,6 +11,7 @@ import hashlib
 import hmac
 import logging
 import os
+import secrets
 import sqlite3
 import threading
 import time
@@ -31,7 +32,45 @@ DOM_CAP = int(os.getenv("WATCH_DOM_CAP", "1500000"))
 AUTH_KINDS = frozenset({"none", "basic", "form"})
 
 _lock = threading.Lock()
-_SECRET = os.getenv("PROOFREADER_SECRET", "proofreader-local-watch").encode("utf-8")
+
+# Ключ шифрования паролей порталов. Раньше здесь стоял захардкоженный дефолт
+# "proofreader-local-watch", и .env.example его не задавал: на типичном деплое
+# все пароли шифровались общим ключом, который лежит в открытом репозитории.
+# Теперь: взят из env или один раз сгенерирован и сохранён рядом с БД.
+_secret_key: bytes | None = None
+
+
+def _secret_file() -> Path:
+    # Путь не привязываем к DB_FILE на уровне модуля: тесты подменяют БД после
+    # импорта, и ключ должен следовать за ней, а не оставаться в боевом томе.
+    return DB_FILE.with_suffix(".key")
+
+
+def _secret() -> bytes:
+    global _secret_key
+    if _secret_key is not None:
+        return _secret_key
+    configured = os.getenv("PROOFREADER_SECRET", "").strip()
+    if configured:
+        _secret_key = configured.encode("utf-8")
+        return _secret_key
+    path = _secret_file()
+    key = secrets.token_hex(32).encode("utf-8")
+    try:
+        # umask до создания, чтобы файл с ключом не родился world-readable.
+        if not path.exists():
+            umask = os.umask(0o077)
+            try:
+                path.write_bytes(key)
+            finally:
+                os.umask(umask)
+        else:
+            key = path.read_bytes() or key
+    except OSError:
+        # Каталог только для чтения (тесты, временная БД): ключ живёт до рестарта.
+        logger.warning("Не удалось сохранить ключ мониторинга в %s", path)
+    _secret_key = key
+    return _secret_key
 
 
 def _connect() -> sqlite3.Connection:
@@ -131,10 +170,11 @@ def encrypt_secret(plain: str) -> str:
     if not raw:
         return ""
     nonce = os.urandom(16)
-    key = hashlib.sha256(_SECRET + nonce).digest()
+    secret = _secret()
+    key = hashlib.sha256(secret + nonce).digest()
     stream = (key * ((len(raw) // len(key)) + 1))[: len(raw)]
     xored = bytes(a ^ b for a, b in zip(raw, stream))
-    mac = hmac.new(_SECRET, nonce + xored, hashlib.sha256).digest()[:16]
+    mac = hmac.new(secret, nonce + xored, hashlib.sha256).digest()[:16]
     return base64.urlsafe_b64encode(nonce + mac + xored).decode("ascii")
 
 
@@ -144,10 +184,11 @@ def decrypt_secret(blob: str) -> str:
     try:
         data = base64.urlsafe_b64decode(blob.encode("ascii"))
         nonce, mac, xored = data[:16], data[16:32], data[32:]
-        expected = hmac.new(_SECRET, nonce + xored, hashlib.sha256).digest()[:16]
+        secret = _secret()
+        expected = hmac.new(secret, nonce + xored, hashlib.sha256).digest()[:16]
         if not hmac.compare_digest(mac, expected):
             return ""
-        key = hashlib.sha256(_SECRET + nonce).digest()
+        key = hashlib.sha256(secret + nonce).digest()
         stream = (key * ((len(xored) // len(key)) + 1))[: len(xored)]
         return bytes(a ^ b for a, b in zip(xored, stream)).decode("utf-8")
     except (ValueError, UnicodeDecodeError):

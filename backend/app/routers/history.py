@@ -12,7 +12,7 @@ router = APIRouter(tags=["История"])
 
 def _rule_titles() -> dict[str, str]:
     """rule_id → человекочитаемый заголовок правила из всех сохранённых гайдов."""
-    from .llm import styleguide as _sg
+    from ..llm import styleguide as _sg
     titles: dict[str, str] = {r["rule_id"]: r["title"] for r in _sg.BASE_RULES}
     for guide in styleguide_store.list_guides():
         for rule in guide.rules:

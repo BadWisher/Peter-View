@@ -68,6 +68,27 @@ jobs:
         run: |
           curl --fail --silent --show-error --output /dev/null http://127.0.0.1:3080/
           curl --fail --silent --show-error http://127.0.0.1:3080/api/health
+      - name: Authenticated endpoints smoke test
+        # Юнит-тесты приложение не поднимают, а часть роутеров падает только на
+        # первом же запросе (ленивый импорт, кривой путь). Гоняем админом по
+        # защищённым GET и падаем, если хоть один ответил 5xx.
+        run: |
+          jar="$(mktemp)"
+          curl --fail --silent --show-error --cookie-jar "$jar" \
+            -X POST http://127.0.0.1:3080/api/auth/login \
+            -H 'Content-Type: application/json' \
+            -d '{"username":"admin","password":"admin"}' >/dev/null
+          status=0
+          for path in /api/checks/top-rules /api/checks/insights /api/checks/history \
+                      /api/rules /api/styleguides /api/users; do
+            code="$(curl --silent --show-error --cookie "$jar" \
+              -o /dev/null -w '%{http_code}' "http://127.0.0.1:3080$path")"
+            if [ "$code" -ge 500 ]; then
+              echo "5xx на $path (код $code)"
+              status=1
+            fi
+          done
+          exit "$status"
       - name: Wait for LanguageTool
         run: |
           docker compose exec -T backend python - <<'PY'

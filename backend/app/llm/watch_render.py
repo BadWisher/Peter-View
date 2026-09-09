@@ -18,6 +18,9 @@ import asyncio
 import glob
 import logging
 import os
+import re
+
+from ..net_guard import is_blocked_navigation
 
 logger = logging.getLogger(__name__)
 
@@ -73,6 +76,11 @@ async def _browser_lazy():
                 "(pip install playwright && playwright install chromium)"
             ) from exc
         _playwright = await async_playwright().start()
+        # Песочница chromium в этом образе выключена: в контейнере нет ни CAPs,
+        # ни user namespaces, и с включённой песочницей браузер просто не
+        # поднимется. Это осознанный компромисс: падение выше по цене (если
+        # страницу взломают, злоумышленник получит root внутри контейнера),
+        # поэтому навигацию наружу режет гвард в render_html ниже.
         _browser = await _playwright.chromium.launch(args=[
             "--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu",
         ])
@@ -92,7 +100,18 @@ async def render_html(url: str, cookies: list[dict] | None = None) -> str:
             "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
         ),
     )
+    # Переход начального URL проверил net_guard, но браузер живёт дальше сам:
+    # редирект и JS-навигация могут увести на 169.254.169.254 или на внутренний
+    # хост. Режем навигационные запросы по тому же гварду; шрифты и картинки
+    # не трогаем, копия от этого честнее не станет, а ломаться будет чаще.
+    async def guard_navigation(route, request):
+        if request.resource_type == "document" and await is_blocked_navigation(request.url):
+            await route.abort("blockedbyclient")
+            return
+        await route.continue_()
+
     try:
+        await page.route(re.compile(r"^https?://"), guard_navigation)
         if cookies:
             await page.context.add_cookies(cookies)
         await page.goto(url, timeout=RENDER_TIMEOUT * 1000, wait_until="domcontentloaded")

@@ -297,8 +297,8 @@ const PREVIEW_WATCH_PAGES = {
     crumb: "Документация / API",
     body: [
       "<h1>REST API</h1>",
-      "<p>GET /policies — список политик.</p>",
-      "<p>POST /policies — создать политику.</p>",
+      "<p>GET /policies, список политик.</p>",
+      "<p>POST /policies, создать политику.</p>",
       "<p>Все ответы в формате JSON.</p>",
     ],
     hunks: [{ op: "eq", lines: ["REST API", "GET", "POST"] }],

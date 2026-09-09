@@ -5,7 +5,6 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
-import re
 import regex as _regex
 from dataclasses import asdict
 from typing import Any
@@ -139,7 +138,9 @@ def _apply_user_rules(text: str, rules: list[dict[str, str]]) -> list[dict[str, 
             continue
         try:
             regex = _safe_regex(pattern)
-        except re.error:
+        except _regex.error:
+            # Ошибку компиляции бросает regex, а не re: у них разные классы,
+            # и re.error эту ошибку не перехватит никогда.
             continue
 
         for line_num, line_text in enumerate(lines, 1):

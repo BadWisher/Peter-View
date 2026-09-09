@@ -130,11 +130,6 @@ def _extract_docx(content: bytes) -> str:
     for element in doc.element.body:
         tag = element.tag.split("}")[-1]
         if tag == "p":
-            text = element.text or ""
-            for run in element.iter():
-                if run.tag.endswith("}t"):
-                    text = ""
-                    break
             paragraph_text = ""
             for node in element.iter():
                 if node.tag.endswith("}t") and node.text:

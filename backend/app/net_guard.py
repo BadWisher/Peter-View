@@ -66,6 +66,25 @@ async def assert_public_url(url: str) -> None:
             raise BlockedURLError(f"Доступ к внутреннему адресу запрещён: {ip}")
 
 
+async def is_blocked_navigation(url: str) -> bool:
+    """True, только если хост гарантированно резолвится в служебный адрес.
+
+    Для браузера при съёме копий: навигацию режем по этому признаку, а хост,
+    который не разрешился, отпускаем дальше. Пусть chromium сам падает на
+    нём, и съём деградирует до голой страницы, а не выдаёт ошибку мониторинга.
+    """
+    parsed = urlparse(url)
+    if parsed.scheme not in ("http", "https") or not parsed.hostname:
+        return False
+    port = parsed.port or (443 if parsed.scheme == "https" else 80)
+    loop = asyncio.get_running_loop()
+    try:
+        infos = await loop.getaddrinfo(parsed.hostname, port, type=socket.SOCK_STREAM)
+    except (socket.gaierror, UnicodeError):
+        return False
+    return any(_ip_blocked(info[4][0]) for info in infos)
+
+
 async def safe_get(
     client: httpx.AsyncClient,
     url: str,
