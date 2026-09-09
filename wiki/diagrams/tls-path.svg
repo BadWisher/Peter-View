@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 120" width="100%" font-family="'Segoe UI', 'Liberation Sans', sans-serif" font-size="14" role="img" aria-label="Путь запроса от браузера к контейнеру frontend">
+
+<defs>
+<marker id="ar-3a5f59" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L7,3.2 L0,6.4 Z" fill="#3a5f59"/></marker>
+<marker id="ar-013b32" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L7,3.2 L0,6.4 Z" fill="#013b32"/></marker>
+</defs>
+<rect x="16" y="24" width="158" height="54" rx="8" fill="#ffffff" stroke="#013b32" stroke-width="1.4"/>
+<text x="30" y="48" fill="#013b32" font-size="14.5" font-weight="600">браузер</text>
+<text x="30" y="68.0" fill="#4d635e" font-size="11.5">адрес сервиса</text>
+<rect x="238" y="24" width="240" height="54" rx="8" fill="#ffffff" stroke="#013b32" stroke-width="1.4"/>
+<text x="252" y="48" fill="#013b32" font-size="14.5" font-weight="600">внешний nginx или Caddy</text>
+<text x="252" y="68.0" fill="#4d635e" font-size="11.5">расшифровка и прокси</text>
+<rect x="600" y="24" width="144" height="54" rx="8" fill="#ffffff" stroke="#013b32" stroke-width="1.4"/>
+<text x="614" y="48" fill="#013b32" font-size="14.5" font-weight="600">контейнер frontend</text>
+<text x="614" y="68.0" fill="#4d635e" font-size="11.5">nginx внутри docker</text>
+<line x1="174" y1="51" x2="236" y2="51" stroke="#013b32" stroke-width="1.4" marker-end="url(#ar-013b32)"/>
+<text x="176" y="40" fill="#4d635e" font-size="11.5">https</text>
+<text x="176" y="92" fill="#4d635e" font-size="11.5">порт 443, TLS</text>
+<line x1="478" y1="51" x2="598" y2="51" stroke="#013b32" stroke-width="1.4" marker-end="url(#ar-013b32)"/>
+<text x="482" y="40" fill="#4d635e" font-size="11.5">http, без шифрования</text>
+<text x="482" y="92" fill="#4d635e" font-size="11.5">localhost:3080</text>
+</svg>

@@ -1954,8 +1954,8 @@
 модулей пакета <code>llm/</code> и способы запуска диагностических команд.</p>
 <p>Страница отвечает на вопросы: куда добавить новый маршрут, где лежат
 константы лимитов, как устроено обогащение находок. Как части стыкуются
-между собой описано в разделе <strong>Архитектура</strong>, начать стоит со страницы
-<strong>Общая архитектура</strong>. Серверное приложение работает одним процессом uvicorn,
+между собой описано в разделе <a href="../../arch/overview/"><strong>Архитектура</strong></a>, начать стоит со страницы
+<a href="../../arch/overview/"><strong>Общая архитектура</strong></a>. Серверное приложение работает одним процессом uvicorn,
 весь асинхронный код построен на asyncio.</p>
 <h2 id="сборка-приложения">Сборка приложения<a class="headerlink" href="#сборка-приложения" title="Permanent link">&para;</a></h2>
 <p>Модуль <code>app/main.py</code> (164 строки) создает объект
@@ -1988,7 +1988,7 @@
 <p>HTTP-слой лежит в <code>app/routers/</code>, по файлу на домен. Строки в основных файлах:
 <code>auth.py</code> 146, <code>checks.py</code> 191, <code>jobs.py</code> 185, <code>repo.py</code> 278, <code>specs.py</code> 257,
 <code>styleguides.py</code> 192, <code>watch.py</code> 235, остальные меньше. Всего в приложении 89
-маршрутов, таблица контрактов находится на странице <strong>HTTP API</strong>.</p>
+маршрутов, таблица контрактов находится на странице <a href="../api/"><strong>HTTP API</strong></a>.</p>
 <p>В слое роутеров действуют конвенции, перечисленные ниже.</p>
 <ul>
 <li>Авторизация оформляется зависимостями FastAPI из <code>auth.py</code>:
@@ -2031,7 +2031,7 @@
 12 часов со скользящим продлением на каждом обращении к <code>current_user</code>.
 Переменная <code>PROOFREADER_COOKIE_SECURE=true</code> добавляет cookie атрибут <code>Secure</code>.
 Рестарт сервиса завершает все сессии; это осознанное решение, детали
-приведены на странице <strong>Проектные решения</strong>.</p>
+приведены на странице <a href="../../arch/decisions/"><strong>Проектные решения</strong></a>.</p>
 <p>Ограничитель перебора находится в <code>routers/session.py</code>: 5 попыток на окно в
 300 секунд по ключам <code>ip:username</code> и отдельно <code>ip:*</code>, смена пароля защищена
 тем же механизмом. Клиентский IP берется из заголовка <code>X-Real-IP</code>, при его
@@ -2119,8 +2119,8 @@ DOCX читается python-docx с обходом XML: сохраняются 
 навигационные. MD и TXT читаются как есть. Файл DOCX проходит защиту от
 zip-бомбы: до 300 МиБ разархивированного содержимого, степень сжатия до 200
 раз, до 2000 записей. Разбор в блоки для конвейера модели это отдельная
-логика (<code>llm/documents.py</code>, описана на странице <strong>Конвейер проверки
-моделью</strong>), здесь же текст становится плоскими строками для движков.</p>
+логика (<code>llm/documents.py</code>, описана на странице <a href="../../arch/pipeline/"><strong>Конвейер проверки
+моделью</strong></a>), здесь же текст становится плоскими строками для движков.</p>
 <p>Краулер <code>crawler.py</code> (191 строка) обслуживает маршрут <code>/api/check-url</code>. Его
 параметры перечислены ниже: обход в ширину по домену, <code>MAX_PAGES=200</code>,
 <code>MAX_CONCURRENT=5</code>, 20 секунд на страницу, robots.txt с User-Agent
@@ -2149,11 +2149,11 @@ suggestion 40), <code>machine_verifiable</code>, <code>relationships</code>, <co
 <p>Вспомогательные функции модуля: <code>get_rule</code>, <code>enabled_vale_rule_ids</code> (45 идентификаторов),
 <code>style_guide_rule_ids</code> (52), <code>get_registry(include_spelling)</code>. Согласованность
 реестра с файлом <code>styleguide/rules.yaml</code> поддерживает тест, подробности на
-странице <strong>Правила Style Guide в коде</strong>.</p>
+странице <a href="../guides-rules/"><strong>Правила Style Guide в коде</strong></a>.</p>
 <h2 id="модули-пакета-llm">Модули пакета llm<a class="headerlink" href="#модули-пакета-llm" title="Permanent link">&para;</a></h2>
 <p>Пакет <code>llm/</code> самая большая часть бэкенда (25 модулей). Его устройство изложена
-страницами <strong>Конвейер проверки моделью</strong>, <strong>Детерминированные движки
-проверки</strong>, <strong>Клиент модели и кэширование</strong> и <strong>Прикладные подсистемы</strong>. Здесь
+страницами <a href="../../arch/pipeline/"><strong>Конвейер проверки моделью</strong></a>, <strong>Детерминированные движки
+проверки</strong>, <a href="../../arch/model-client/"><strong>Клиент модели и кэширование</strong></a> и <a href="../../arch/subsystems/"><strong>Прикладные подсистемы</strong></a>. Здесь
 приведена ответственность каждого модуля, чтобы искать код по задаче.</p>
 <ul>
 <li><code>documents.py</code> (717 строк) превращает вход в объект <code>Document</code> со списком
@@ -2215,7 +2215,7 @@ suggestion 40), <code>machine_verifiable</code>, <code>relationships</code>, <co
   (folders.json, docs с JSON-метаданными, blob-файлы, zip-архив). Лимит файла
   25 МиБ, автоархивирование через 90 дней.</li>
 <li>Модули <code>api_specs.py</code>, <code>openapi_fields.py</code> и <code>api_review.py</code> (807 строк
-  суммарно) обслуживают раздел <strong>Спецификации API</strong>: парные YAML на русском и
+  суммарно) обслуживают раздел <a href="../../users/openapi/"><strong>Спецификации API</strong></a>: парные YAML на русском и
   английском через ruamel в round-trip режиме (ключ поля это <code>path_str</code>),
   сверка единообразия по именам и текстам, сравнение с учетом разбора, батчи
   перевода и обзора по 20 сегмента, точечная перезапись YAML с сохранением
@@ -2243,7 +2243,7 @@ suggestion 40), <code>machine_verifiable</code>, <code>relationships</code>, <co
 <code>audit.jsonl</code>, <code>screenshot_templates.json</code>, базы <code>jobs.db</code>, <code>stats.db</code>,
 <code>watch.db</code>, <code>extract_jobs.db</code>, каталоги <code>styleguides/</code>, <code>repo/</code>, <code>uploads/</code> и
 файл-ключ <code>watch.db.key</code> (или секрет <code>PROOFREADER_SECRET</code> из окружения).
-Схема, размеры и владение описаны на странице <strong>Хранилище данных</strong>.</p>
+Схема, размеры и владение описаны на странице <a href="../../arch/data-model/"><strong>Хранилище данных</strong></a>.</p>
 <h2 id="регрессионные-проверки-и-аудит-сайта-как-cli">Регрессионные проверки и аудит сайта как CLI<a class="headerlink" href="#регрессионные-проверки-и-аудит-сайта-как-cli" title="Permanent link">&para;</a></h2>
 <p>Две диагностические команды запускаются внутри контейнера backend. Блок ниже
 показывает их.</p>

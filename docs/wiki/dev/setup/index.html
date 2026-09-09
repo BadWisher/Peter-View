@@ -1886,8 +1886,8 @@
 <p>Страница отвечает на вопросы: что должно быть установлено, как поднять стек для
 разработки, как запускать проверки без пересборки образа и как включить
 горячую перезагрузку backend. Эксплуатационное развертывание на сервере
-описано в <strong>Implementation Guide</strong> на странице <strong>Развертывание</strong>. Для проверки
-текста без изменения кода достаточно раздела <strong>User Guide</strong>.</p>
+описано в <strong>Implementation Guide</strong> на странице <a href="../../ops/deploy/"><strong>Развертывание</strong></a>. Для проверки
+текста без изменения кода достаточно раздела <a href="../../users/quickstart/"><strong>User Guide</strong></a>.</p>
 <h2 id="требования-к-хосту">Требования к хосту<a class="headerlink" href="#требования-к-хосту" title="Permanent link">&para;</a></h2>
 <p>Для локальной работы нужны перечисленные ниже компоненты.</p>
 <ul>
@@ -1917,7 +1917,7 @@ cp .env.example .env          # deploy.sh сделает это сам, если
 <code>/api/docs</code>.</p>
 <p>Первый вход выполняется под учетной записью <code>admin</code> с паролем <code>admin</code>, после
 чего пароль следует сменить. Порядок работы с учетными записями описан в
-<strong>User Guide</strong> на странице <strong>Учетные записи и роли</strong>.</p>
+<a href="../../users/quickstart/"><strong>User Guide</strong></a> на странице <a href="../../users/accounts/"><strong>Учетные записи и роли</strong></a>.</p>
 <h2 id="ручной-запуск-compose-командами">Ручной запуск compose-командами<a class="headerlink" href="#ручной-запуск-compose-командами" title="Permanent link">&para;</a></h2>
 <p>Когда нужно подменить compose-файл или поднять только один сервис, удобнее
 работать напрямую командами compose. Набор типовых команд приведен ниже.</p>
@@ -1929,8 +1929,8 @@ docker compose logs -f backend
 <p>Переменные читаются из файла <code>.env</code>, лежащего рядом с <code>docker-compose.yml</code>;
 сервис backend подключает его через <code>env_file</code>. Часть значений переопределена
 прямо в блоке <code>environment:</code> compose-файла, и из <code>.env</code> они не переносятся.
-Это ограничение переопределения разобрано в <strong>Implementation Guide</strong> на странице
-<strong>Переменные окружения</strong>.</p>
+Это ограничение переопределения разобрано в <a href="../../ops/deploy/"><strong>Implementation Guide</strong></a> на странице
+<a href="../../ops/config-env/"><strong>Переменные окружения</strong></a>.</p>
 <h2 id="команды-makefile">Команды Makefile<a class="headerlink" href="#команды-makefile" title="Permanent link">&para;</a></h2>
 <p>В корне репозитория лежит <strong>Makefile</strong> с типовыми командами. Он работает с тем
 же <code>docker compose</code> и сам добавляет overlay корпоративного прокси, если в <code>.env</code>
@@ -2001,7 +2001,7 @@ make test
 <p>Конфигурация pytest находится в корневом <code>pyproject.toml</code>: значения
 <code>pythonpath=["backend"]</code> и <code>testpaths=["backend/tests"]</code>. Поэтому запуск
 выполняется из корня репозитория, а не из каталога <code>backend/</code>. Подробно о
-составе тестов и их покрытии написано на странице <strong>Тесты и регрессия</strong>.</p>
+составе тестов и их покрытии написано на странице <a href="../tests/"><strong>Тесты и регрессия</strong></a>.</p>
 <p>Команда <code>make regression</code> требует поднятого LanguageTool, потому что проверки
 обращаются к нему по HTTP. По этой же причине она выполняется внутри
 контейнера, а не на хосте.</p>

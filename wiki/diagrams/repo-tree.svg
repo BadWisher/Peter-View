@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 1512" width="100%" font-family="'Segoe UI', 'Liberation Sans', sans-serif" font-size="14" role="img" aria-label="Дерево файлов репозитория Peter View">
+
+<defs>
+<marker id="ar-3a5f59" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L7,3.2 L0,6.4 Z" fill="#3a5f59"/></marker>
+<marker id="ar-013b32" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L7,3.2 L0,6.4 Z" fill="#013b32"/></marker>
+</defs>
+<rect x="24" y="16" width="712" height="286" rx="10" fill="#eef5f3" stroke="#8fb3ac" stroke-width="1.4"/>
+<text x="40" y="42" fill="#013b32" font-size="14.5" font-weight="600" font-family="monospace">Peter-View/</text>
+<text x="68" y="66" fill="#25443f" font-size="12" font-family="monospace">docker-compose.yml</text>
+<text x="344" y="66" fill="#4d635e" font-size="11.5">три сервиса, тома, healthchecks</text>
+<text x="68" y="90" fill="#25443f" font-size="12" font-family="monospace">docker-compose.prod.yml</text>
+<text x="344" y="90" fill="#4d635e" font-size="11.5">override: образы из GHCR вместо сборки</text>
+<text x="68" y="114" fill="#25443f" font-size="12" font-family="monospace">docker-compose.corp-proxy.yml</text>
+<text x="344" y="114" fill="#4d635e" font-size="11.5">override: трафик через корп-прокси (socat-мост)</text>
+<text x="68" y="138" fill="#25443f" font-size="12" font-family="monospace">deploy.sh</text>
+<text x="344" y="138" fill="#4d635e" font-size="11.5">копия .env, сборка, up, ожидание фронта, адреса</text>
+<text x="68" y="162" fill="#25443f" font-size="12" font-family="monospace">Makefile</text>
+<text x="344" y="162" fill="#4d635e" font-size="11.5">deploy, test, lint, regression, ci-local, backup</text>
+<text x="68" y="186" fill="#25443f" font-size="12" font-family="monospace">.env.example</text>
+<text x="344" y="186" fill="#4d635e" font-size="11.5">все переменные с комментариями</text>
+<text x="68" y="210" fill="#25443f" font-size="12" font-family="monospace">pyproject.toml</text>
+<text x="344" y="210" fill="#4d635e" font-size="11.5">конфиг pytest: pythonpath=backend, testpaths</text>
+<text x="68" y="234" fill="#25443f" font-size="12" font-family="monospace">mkdocs.yml</text>
+<text x="344" y="234" fill="#4d635e" font-size="11.5">сборщик вики: docs_dir=wiki, site_dir=docs/wiki</text>
+<text x="68" y="258" fill="#25443f" font-size="12" font-family="monospace">CHANGELOG.md</text>
+<text x="344" y="258" fill="#4d635e" font-size="11.5">релизы в формате Keep a Changelog</text>
+<text x="68" y="282" fill="#25443f" font-size="12" font-family="monospace">README.md, SECURITY.md, LICENSE, NOTICE</text>
+<text x="344" y="282" fill="#4d635e" font-size="11.5">документы сообщества</text>
+<rect x="24" y="318" width="712" height="690" rx="10" fill="#eef5f3" stroke="#8fb3ac" stroke-width="1.4"/>
+<text x="40" y="344" fill="#013b32" font-size="14.5" font-weight="600" font-family="monospace">backend/</text>
+<text x="68" y="368" fill="#25443f" font-size="12" font-family="monospace">Dockerfile</text>
+<text x="344" y="368" fill="#4d635e" font-size="11.5">python:3.12-slim + vale 3.9.1 + playwright chromium</text>
+<text x="68" y="392" fill="#25443f" font-size="12" font-family="monospace">entrypoint.sh</text>
+<text x="344" y="392" fill="#4d635e" font-size="11.5">chmod томов, gosu appuser</text>
+<text x="68" y="416" fill="#25443f" font-size="12" font-family="monospace">requirements.txt</text>
+<text x="344" y="416" fill="#4d635e" font-size="11.5">21 пакет; -dev: pytest, pytest-asyncio, ruff</text>
+<text x="52" y="440" fill="#013b32" font-size="12.5" font-weight="600" font-family="monospace">app/</text>
+<text x="68" y="460" fill="#25443f" font-size="12" font-family="monospace">main.py</text>
+<text x="344" y="460" fill="#4d635e" font-size="11.5">сборка FastAPI: 15 роутеров, 3 middleware, startup-циклы</text>
+<text x="68" y="484" fill="#25443f" font-size="12" font-family="monospace">auth.py</text>
+<text x="344" y="484" fill="#4d635e" font-size="11.5">сессии, роли admin и editor, bcrypt, users.json</text>
+<text x="68" y="508" fill="#25443f" font-size="12" font-family="monospace">oidc.py</text>
+<text x="344" y="508" fill="#4d635e" font-size="11.5">Authorization Code: discovery, exchange, роль из групп</text>
+<text x="68" y="532" fill="#25443f" font-size="12" font-family="monospace">features.py</text>
+<text x="344" y="532" fill="#4d635e" font-size="11.5">4 флага разделов из env FEATURE_*</text>
+<text x="68" y="556" fill="#25443f" font-size="12" font-family="monospace">checker.py</text>
+<text x="344" y="556" fill="#4d635e" font-size="11.5">оркестратор 3 детерминированных движков + дедуп</text>
+<text x="68" y="580" fill="#25443f" font-size="12" font-family="monospace">lt_client.py</text>
+<text x="344" y="580" fill="#4d635e" font-size="11.5">клиент LanguageTool, ~8 параллельных, фильтры FP</text>
+<text x="68" y="604" fill="#25443f" font-size="12" font-family="monospace">vale_runner.py</text>
+<text x="344" y="604" fill="#4d635e" font-size="11.5">Vale подпроцессом с выводом JSON, постфильтры</text>
+<text x="68" y="628" fill="#25443f" font-size="12" font-family="monospace">custom_checks.py</text>
+<text x="344" y="628" fill="#4d635e" font-size="11.5">5 морфологических проверок (pymorphy3 + razdel)</text>
+<text x="68" y="652" fill="#25443f" font-size="12" font-family="monospace">extractors.py</text>
+<text x="344" y="652" fill="#4d635e" font-size="11.5">docx, html, md, txt в текст, защита от zip-бомб</text>
+<text x="68" y="676" fill="#25443f" font-size="12" font-family="monospace">crawler.py</text>
+<text x="344" y="676" fill="#4d635e" font-size="11.5">обход сайта в ширину, robots.txt, до 200 страниц</text>
+<text x="68" y="700" fill="#25443f" font-size="12" font-family="monospace">net_guard.py</text>
+<text x="344" y="700" fill="#4d635e" font-size="11.5">SSRF-защита: проверка IP, ручные редиректы, лимит тела</text>
+<text x="68" y="724" fill="#25443f" font-size="12" font-family="monospace">style_guide_registry.py</text>
+<text x="344" y="724" fill="#4d635e" font-size="11.5">56 встроенных правил + слой LanguageTool (817 строк)</text>
+<text x="68" y="748" fill="#25443f" font-size="12" font-family="monospace">report.py</text>
+<text x="344" y="748" fill="#4d635e" font-size="11.5">xlsx через openpyxl</text>
+<text x="68" y="772" fill="#25443f" font-size="12" font-family="monospace">backups.py</text>
+<text x="344" y="772" fill="#4d635e" font-size="11.5">tar.gz всего /app/data, ротация 7 снимков</text>
+<text x="68" y="796" fill="#25443f" font-size="12" font-family="monospace">audit.py</text>
+<text x="344" y="796" fill="#4d635e" font-size="11.5">JSONL-журнал действий (до 2000 записей)</text>
+<text x="68" y="820" fill="#25443f" font-size="12" font-family="monospace">regression_checks.py</text>
+<text x="344" y="820" fill="#4d635e" font-size="11.5">44 кейса на срабатывание и несрабатывание правил</text>
+<text x="68" y="844" fill="#25443f" font-size="12" font-family="monospace">site_audit.py</text>
+<text x="344" y="844" fill="#4d635e" font-size="11.5">CLI: аудит сайта целиком в JSON</text>
+<text x="68" y="868" fill="#25443f" font-size="12" font-family="monospace">routers/</text>
+<text x="344" y="868" fill="#4d635e" font-size="11.5">HTTP-слой, 89 маршрутов (обход по одному на домен)</text>
+<text x="68" y="892" fill="#25443f" font-size="12" font-family="monospace">llm/</text>
+<text x="344" y="892" fill="#4d635e" font-size="11.5">вычитка моделью: 25 модулей, промпты, RAG</text>
+<text x="68" y="916" fill="#25443f" font-size="12" font-family="monospace">vale/styles/RuStyleGuide/</text>
+<text x="344" y="916" fill="#4d635e" font-size="11.5">48 yml-стилей Vale</text>
+<text x="68" y="940" fill="#25443f" font-size="12" font-family="monospace">styleguide/rules.yaml</text>
+<text x="344" y="940" fill="#4d635e" font-size="11.5">56 правил гайда (v3), источник истины для LLM</text>
+<text x="68" y="964" fill="#25443f" font-size="12" font-family="monospace">eval/</text>
+<text x="344" y="964" fill="#4d635e" font-size="11.5">20 эталонных кейсов + run_eval.py против живой модели</text>
+<text x="68" y="988" fill="#25443f" font-size="12" font-family="monospace">tests/</text>
+<text x="344" y="988" fill="#4d635e" font-size="11.5">10 pytest-файлов, 103 теста</text>
+<rect x="24" y="1024" width="712" height="282" rx="10" fill="#eef5f3" stroke="#8fb3ac" stroke-width="1.4"/>
+<text x="40" y="1050" fill="#013b32" font-size="14.5" font-weight="600" font-family="monospace">frontend/</text>
+<text x="68" y="1074" fill="#25443f" font-size="12" font-family="monospace">Dockerfile</text>
+<text x="344" y="1074" fill="#4d635e" font-size="11.5">nginx:alpine (по digest), копия public/</text>
+<text x="68" y="1098" fill="#25443f" font-size="12" font-family="monospace">nginx.conf</text>
+<text x="344" y="1098" fill="#4d635e" font-size="11.5">159 строк: CSP, прокси /api/, SSE без буфера, копия страниц</text>
+<text x="52" y="1122" fill="#013b32" font-size="12.5" font-weight="600" font-family="monospace">public/</text>
+<text x="68" y="1142" fill="#25443f" font-size="12" font-family="monospace">index.html</text>
+<text x="344" y="1142" fill="#4d635e" font-size="11.5">58 строк, SVG-спрайт 32 иконок</text>
+<text x="68" y="1166" fill="#25443f" font-size="12" font-family="monospace">js/</text>
+<text x="344" y="1166" fill="#4d635e" font-size="11.5">17 ES-модулей, 4306 строк</text>
+<text x="68" y="1190" fill="#25443f" font-size="12" font-family="monospace">i18n/</text>
+<text x="344" y="1190" fill="#4d635e" font-size="11.5">ru.json, en.json (44 ключа на файл, покрытие частичное)</text>
+<text x="68" y="1214" fill="#25443f" font-size="12" font-family="monospace">tokens.css</text>
+<text x="344" y="1214" fill="#4d635e" font-size="11.5">12 @property-переменных, светлая и темная темы</text>
+<text x="68" y="1238" fill="#25443f" font-size="12" font-family="monospace">theme-boot.js</text>
+<text x="344" y="1238" fill="#4d635e" font-size="11.5">антиFOUC: читает pv-theme до первой отрисовки</text>
+<text x="68" y="1262" fill="#25443f" font-size="12" font-family="monospace">style.css</text>
+<text x="344" y="1262" fill="#4d635e" font-size="11.5">4513 строк всей верстки, одним файлом</text>
+<text x="68" y="1286" fill="#25443f" font-size="12" font-family="monospace">fonts/</text>
+<text x="344" y="1286" fill="#4d635e" font-size="11.5">Golos Text, JetBrains Mono (woff2, subsets)</text>
+<rect x="24" y="1322" width="712" height="190" rx="10" fill="#eef5f3" stroke="#8fb3ac" stroke-width="1.4"/>
+<text x="40" y="1348" fill="#013b32" font-size="14.5" font-weight="600" font-family="monospace">docs/ и прочее</text>
+<text x="68" y="1372" fill="#25443f" font-size="12" font-family="monospace">wiki/</text>
+<text x="344" y="1372" fill="#4d635e" font-size="11.5">собранная вики (mkdocs build, закоммичен)</text>
+<text x="68" y="1396" fill="#25443f" font-size="12" font-family="monospace">preview/</text>
+<text x="344" y="1396" fill="#4d635e" font-size="11.5">интерактивное демо UI (?preview=1, mock API в shared.js)</text>
+<text x="68" y="1420" fill="#25443f" font-size="12" font-family="monospace">landing/</text>
+<text x="344" y="1420" fill="#4d635e" font-size="11.5">index.html лендинга для корня Pages</text>
+<text x="68" y="1444" fill="#25443f" font-size="12" font-family="monospace">wiki/</text>
+<text x="344" y="1444" fill="#4d635e" font-size="11.5">исходники этой вики (mkdocs docs_dir)</text>
+<text x="68" y="1468" fill="#25443f" font-size="12" font-family="monospace">examples/openapi/</text>
+<text x="344" y="1468" fill="#4d635e" font-size="11.5">парная RU и EN спека для раздела Спецификации API</text>
+<text x="68" y="1492" fill="#25443f" font-size="12" font-family="monospace">.github/workflows/</text>
+<text x="344" y="1492" fill="#4d635e" font-size="11.5">ci.yml, pages.yml, publish.yml</text>
+</svg>

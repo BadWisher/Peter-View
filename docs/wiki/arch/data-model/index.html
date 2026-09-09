@@ -1953,8 +1953,8 @@
 и каждого JSON-файла, правила очистки и схема согласованности.</p>
 <p>Страница отвечает на вопросы: где лежат учетные записи и отчеты, сколько
 хранятся история и снимки, что произойдет с данными при перезапуске процесса.
-Резервное копирование и восстановление описаны в <strong>Implementation Guide</strong> на
-странице <strong>Резервное копирование и восстановление</strong>.</p>
+Резервное копирование и восстановление описаны в <a href="../../ops/deploy/"><strong>Implementation Guide</strong></a> на
+странице <a href="../../ops/backup/"><strong>Резервное копирование и восстановление</strong></a>.</p>
 <h2 id="общий-принцип">Общий принцип<a class="headerlink" href="#общий-принцип" title="Permanent link">&para;</a></h2>
 <p>Все персистентные данные лежат в каталоге <code>/app/data</code>, который примонтирован из
 тома <code>backend-data</code>. Хранилище составляют три базы SQLite, несколько JSON-файлов
@@ -1963,19 +1963,11 @@
 старых файлов обеспечивает код приложения.</p>
 <h2 id="каталог-данных">Каталог данных<a class="headerlink" href="#каталог-данных" title="Permanent link">&para;</a></h2>
 <p>Полное содержимое каталога <code>/app/data</code> показано на схеме ниже.</p>
-<pre><code class="language-text">/app/data
-├── users.json                  аккаунты
-├── llm_settings.json           настройки модели (0600, содержит ключи)
-├── rules.json                  глобальные пользовательские регулярки
-├── user_prefs.json             выбор активного гайда по пользователям
-├── screenshot_templates.json   шаблоны ширины скриншотов
-├── audit.jsonl                 журнал аудита (последние 2000 строк)
-├── jobs.db                     задачи проверки моделью
-├── stats.db                    токены, срабатывания правил, история, кэш модели
-├── watch.db                    мониторинг (+ watch.db.key ключ маскирования)
-├── styleguides/                гайды: &lt;id&gt;/guide.json (+ &lt;id&gt;/index/)
-└── repo/                       документный репозиторий
-</code></pre>
+<figure>
+  <img src="../diagrams/data-dir.svg" alt="Содержимое каталога /app/data: users.json, llm_settings.json, rules.json, user_prefs.json, screenshot_templates.json, audit.jsonl, jobs.db, stats.db, watch.db, styleguides, repo" loading="lazy">
+  <figcaption>Файлы каталога /app/data. JSON-файлы слева, базы SQLite и каталоги справа. Права на llm_settings.json ограничены 0600, потому что файл содержит ключи API.</figcaption>
+</figure>
+
 <h2 id="json-файлы">JSON-файлы<a class="headerlink" href="#json-файлы" title="Permanent link">&para;</a></h2>
 <p>Назначение и форма каждого JSON-файла приведены в таблице ниже.</p>
 <table>
@@ -2046,7 +2038,7 @@ TEXT. Такой выбор дает готовым отчетам пережи�
 </tr>
 <tr>
 <td><code>rule_hits</code></td>
-<td>первичный ключ (user, rule_id), description, count, last_ts; база раздела «Аналитика»</td>
+<td>первичный ключ (user, rule_id), description, count, last_ts; база раздела <strong>Аналитика</strong></td>
 </tr>
 <tr>
 <td><code>check_history</code></td>
@@ -2087,8 +2079,8 @@ lexicon (запрещенные и предпочтительные термин
 SQLite работают в режиме отката журнала по умолчанию. Снимок всего каталога
 <code>data/</code> командой tar достаточен для восстановления, потому что журнал SQLite
 откатывается сам при следующем открытии после сбоя. Порядок резервного
-копирования и проверки восстановления описан в <strong>Implementation Guide</strong> на
-странице <strong>Резервное копирование и восстановление</strong>.</p>
+копирования и проверки восстановления описан в <a href="../../ops/deploy/"><strong>Implementation Guide</strong></a> на
+странице <a href="../../ops/backup/"><strong>Резервное копирование и восстановление</strong></a>.</p>
 <h2 id="связанные-разделы">Связанные разделы<a class="headerlink" href="#связанные-разделы" title="Permanent link">&para;</a></h2>
 <p>Страницы, продолжающие тему данных.</p>
 <ul>

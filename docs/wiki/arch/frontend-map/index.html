@@ -1886,8 +1886,8 @@
 понять, где что лежит, прежде чем править.</p>
 <p>Страница отвечает на вопросы: как устроен каркас страницы, какие модули за что
 отвечают, как добавить новый экран и где разбираются ответы сервера. Конвенции
-записи кода описаны в <strong>Developer Guide</strong> на странице <strong>Фронтенд на
-vanilla JS</strong>, контракты сервера на странице <strong>HTTP API</strong>.</p>
+записи кода описаны в <a href="../../dev/setup/"><strong>Developer Guide</strong></a> на странице <a href="../../dev/frontend/"><strong>Фронтенд на
+vanilla JS</strong></a>, контракты сервера на странице <a href="../../dev/api/"><strong>HTTP API</strong></a>.</p>
 <h2 id="каркас-страницы">Каркас страницы<a class="headerlink" href="#каркас-страницы" title="Permanent link">&para;</a></h2>
 <p>Файл <code>index.html</code> это статический скелет на 58 строк. Порядок загрузки ресурсов
 зафиксирован и приведен ниже.</p>
@@ -1903,16 +1903,11 @@ vanilla JS</strong>, контракты сервера на странице <st
 SVG-спрайт на 32 иконки. Шаблонов в HTML нет, вся разметка собирается из JS.</p>
 <h2 id="модули-и-граф-зависимостей">Модули и граф зависимостей<a class="headerlink" href="#модули-и-граф-зависимостей" title="Permanent link">&para;</a></h2>
 <p>Схема взаимных вызовов модулей приведена ниже.</p>
-<pre><code class="language-text">app.js ──→ router.js ──→ каждый renderX()
-   │            │              │
-   │            │              ▼
-   │            └──────→ shared.js ──→ i18n.js
-   │                        ▲   ▲
-   │        hooks (bindShell, renderApp)
-   └──── назначает hooks ←───┘
-auth.js, check.js, documents.js, guides.js, health.js, history.js,
-insights.js, settings.js, users.js, watch.js, screenshots.js, api-specs.js
-</code></pre>
+<figure>
+  <img src="../diagrams/frontend-graph.svg" alt="Граф зависимостей ES-модулей фронтенда: index.html загружает app.js, app.js маршрутизирует через router.js к рендерам разделов, router.js обращается к shared.js, shared.js к i18n.js, модули разделов используют shared.js" loading="lazy">
+  <figcaption>Модули фронтенда и направления вызовов. app.js назначает shared.js хуки bindShell и renderApp, поэтому связь с хуками идет вверх по схеме.</figcaption>
+</figure>
+
 <p>Ответственность каждого модуля и его объем в строках показывает таблица ниже.</p>
 <table>
 <thead>
@@ -1946,7 +1941,7 @@ insights.js, settings.js, users.js, watch.js, screenshots.js, api-specs.js
 <tr>
 <td><code>api-specs.js</code></td>
 <td>286</td>
-<td>раздел <strong>Спецификации API</strong>: пары RU и EN, сегменты с правками, единообразие, изменения, перевод и обзор моделью</td>
+<td>раздел <a href="../../users/openapi/"><strong>Спецификации API</strong></a>: пары RU и EN, сегменты с правками, единообразие, изменения, перевод и обзор моделью</td>
 </tr>
 <tr>
 <td><code>documents.js</code></td>
@@ -2132,7 +2127,7 @@ insights.js, settings.js, users.js, watch.js, screenshots.js, api-specs.js
 <li>Новый экран требует трех строк: модуль с функцией <code>renderX</code>, импорт в
   <code>router.js</code>, пункт в <code>navItems</code> и <code>routeMeta</code>. Если экран отключаемый,
   добавляется флаг в <code>FEATURE_ROUTES</code>. Пошаговая процедура описана на
-  странице <strong>Фронтенд на vanilla JS</strong> в подразделе про добавление раздела.</li>
+  странице <a href="../../dev/frontend/"><strong>Фронтенд на vanilla JS</strong></a> в подразделе про добавление раздела.</li>
 <li>Новая форма замечания настраивается в одном месте: алиасы полей ответов
   сервера разбирает функция <code>normalizedIssues()</code> в <code>check.js</code> (строка около
   555). Правки вносятся там, а не на месте использования.</li>
