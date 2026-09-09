@@ -25,7 +25,7 @@ jobs:
           python-version: "3.12"
       - name: MkDocs
         run: |
-          pip install mkdocs-material
+          pip install mkdocs-material mkdocs-redirects
           mkdocs build --site-dir site/wiki
       - name: Landing
         run: |
