@@ -1,0 +1,2152 @@
+
+<!doctype html>
+<html lang="ru" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://badwisher.github.io/Peter-View/wiki/dev/backend/">
+      
+      
+        <link rel="prev" href="../code-map/">
+      
+      
+        <link rel="next" href="../frontend/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Бэкенд: код FastAPI - Peter View</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="teal">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#бэкенд-код-fastapi" class="md-skip">
+          Перейти к содержанию
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Верхний колонтитул">
+    <a href="../.." title="Peter View" class="md-header__button md-logo" aria-label="Peter View" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Peter View
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Бэкенд: код FastAPI
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Поиск" placeholder="Поиск" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Поиск">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Очистить" aria-label="Очистить" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Инициализация поиска
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/BadWisher/Peter-View" title="Перейти к репозиторию" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    BadWisher/Peter-View
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Навигация" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Peter View" class="md-nav__button md-logo" aria-label="Peter View" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Peter View
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/BadWisher/Peter-View" title="Перейти к репозиторию" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    BadWisher/Peter-View
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Документация
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Пользователям
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Пользователям
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../users/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Быстрый старт: первая проверка за пять минут
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../users/check/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Проверка текста
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../users/review/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Разбор замечаний
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../users/styleguide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Свой стилевой гайд
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../users/history/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    История проверок и аналитика
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../users/accounts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Аккаунты и роли
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../users/model-settings/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Настройки модели
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../users/system-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Статус системы
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../users/sections/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Разделы по флагам: что включено и зачем
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../users/documents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Документы (раздел «Документы»)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../users/openapi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Проверка OpenAPI-спецификаций (раздел «API»)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../users/watch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Мониторинг страниц (раздел «Мониторинг»)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../users/screenshots/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Редактор скриншотов (раздел «Скриншоты»)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../users/troubleshoot/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Неприятности и их лечение
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Архитектура
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Архитектура
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../arch/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Архитектура: обзор
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../arch/decisions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Проектные решения
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../arch/engines/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Движки детерминированной проверки
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../arch/pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Конвейер LLM-вычитки (v2)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../arch/model-client/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Клиент модели и эмбеддингов
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../arch/subsystems/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Подсистемы: документы, спецификации, мониторинг, скриншоты
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../arch/data-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Модель данных
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../arch/security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Безопасность: как устроено
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../arch/frontend-map/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Карта фронтенда
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Разработчикам
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Разработчикам
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Окружение разработчика
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../code-map/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Карта кода
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Бэкенд: код FastAPI
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Бэкенд: код FastAPI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Содержание">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Содержание
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#сборка-приложения" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Сборка приложения
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#роутеры" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Роутеры
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#аутентификация-и-роли" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Аутентификация и роли
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#флаги-разделов" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Флаги разделов
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#детерминированный-checker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Детерминированный checker
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#реестр-правил" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Реестр правил
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#пакет-llm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Пакет llm/
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#данные" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Данные
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#регрессия-и-аудит-как-cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Регрессия и аудит как CLI
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#дальше" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Дальше
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../frontend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Фронтенд: SPA без сборки
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides-rules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Правила гайда в коде
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Тесты и регрессия
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs-site/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Сборка этой вики
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DevOps
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    DevOps
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ops/deploy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Установка и запуск
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ops/config-env/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Переменные окружения
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ops/stack/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Стек: compose-файлы, образы, nginx
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ops/tls-proxy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TLS и обратный прокси
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ops/backup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Резервные копии и восстановление
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ops/upgrade/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Обновление версии
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ops/monitor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Мониторинг работы сервиса
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ops/hardening/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Усиление защиты
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ops/oidc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Вход через OIDC (Keycloak, Entra, Okta)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ops/runbook/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Дежурство по авариям
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Содержание">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Содержание
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#сборка-приложения" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Сборка приложения
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#роутеры" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Роутеры
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#аутентификация-и-роли" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Аутентификация и роли
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#флаги-разделов" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Флаги разделов
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#детерминированный-checker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Детерминированный checker
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#реестр-правил" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Реестр правил
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#пакет-llm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Пакет llm/
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#данные" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Данные
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#регрессия-и-аудит-как-cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Регрессия и аудит как CLI
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#дальше" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Дальше
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="бэкенд-код-fastapi">Бэкенд: код FastAPI<a class="headerlink" href="#бэкенд-код-fastapi" title="Permanent link">&para;</a></h1>
+<p>Серверное приложение живёт в <code>backend/app</code>, один процесс uvicorn, весь асинхронный код на asyncio. Здесь конвенции кода и типовые задачи разработчика: добавить маршрут, добавить проверку, добавить воркер. За тем, как части стыкуются между собой, <a href="../../arch/overview/">Архитектура</a>.</p>
+<h2 id="сборка-приложения">Сборка приложения<a class="headerlink" href="#сборка-приложения" title="Permanent link">&para;</a></h2>
+<p><code>app/main.py</code> (164 строки) создаёт <code>FastAPI(title="Peter View API", version="0.1.0")</code> и навешивает по порядку три middleware:</p>
+<ol>
+<li><strong>CORSMiddleware</strong> origins из <code>PROOFREADER_CORS_ORIGINS</code> (пусто = только same-origin), <code>allow_credentials=True</code>.</li>
+<li><strong>csrf_origin_guard</strong> для всех не-GET сверяет хост из Origin/Referer с хостом запроса; чужой 403 «Перекрёстный запрос отклонён». Отдельных CSRF-токенов нет, фронт ходит same-origin через nginx.</li>
+<li><strong>feature_gate</strong> пути <code>/api/watch*</code>, <code>/api/repo*</code>, <code>/api/api-spec*</code>, <code>/api/screenshot-templates*</code> отдают 404, когда соответствующий раздел выключен флагом <code>FEATURE_*</code>.</li>
+</ol>
+<p>Дальше <code>include_router</code> для 15 роутеров, и два import-time побочника: <code>auth.seed_default_admin()</code> и <code>styleguide_store.seed_default()</code> (заводят <code>admin/admin</code> при пустой базе и встроенный гайд при пустом хранилище). Startup-хендлеры (<code>on_event("startup")</code>) запускают три фоновых цикла из <code>routers/background.py</code>: авто-архив репозитория, ежедневный бэкап, ежедневный обход мониторинга. Shutdown-хендлеров нет, при рестарте незавершённые задачи помечаются ошибкой «Прервано рестартом сервера» на следующем старте.</p>
+<p>Swagger (<code>/api/docs</code>, <code>/api/redoc</code>, <code>/api/openapi.json</code>) открыт только при <code>PROOFREADER_DOCS=true</code>. В <code>docker-compose.yml</code> этот флаг зашит в <code>environment:</code> как false и перекрывает <code>.env</code>.</p>
+<h2 id="роутеры">Роутеры<a class="headerlink" href="#роутеры" title="Permanent link">&para;</a></h2>
+<p>HTTP-слой в <code>app/routers/</code>, по файлу на домен (строки: <code>auth.py</code> 146, <code>checks.py</code> 191, <code>jobs.py</code> 185, <code>repo.py</code> 278, <code>specs.py</code> 257, <code>styleguides.py</code> 192, <code>watch.py</code> 235, остальные меньше). Всего 89 маршрутов, таблица контрактов <a href="../api/">HTTP API</a>.</p>
+<p>Конвенции слоя:</p>
+<ul>
+<li>Авторизация через FastAPI-зависимости из <code>auth.py</code>: <code>Depends(require_user)</code> для «нужен вход», <code>Depends(require_admin)</code> для админских ручек, фабрика <code>require_feature("watch")</code> для разделов с флагом.</li>
+<li>Лимиты входа задаются локально: <code>infra.py</code> константа <code>MAX_UPLOAD_BYTES</code> (50 МиБ), файл больше 400 с текстом про максимум; текст и поле <code>prompt</code> тоже режутся на роутере, до тяжёлой работы.</li>
+<li>Формы multipart/<code>Form(...)</code> там, где отправляет браузер, JSON-тело там, где программируемый клиент.</li>
+<li>Долгие задачи роутер не ждёт: <code>POST /api/jobs</code> возвращает <code>{"job_id"}</code> и уходит, работа идёт в <code>asyncio.create_task</code> через очередь <code>llm/jobs.py</code>. Стрим прогресса отдельным SSE-маршрутом.</li>
+<li>Ошибки всегда <code>HTTPException(status, "человеческое сообщение по-русски")</code> фронт показывает <code>detail</code> как есть.</li>
+<li>Теги OpenAPI проставляет <code>custom_openapi()</code> из <code>main.py</code>: префикс пути → тег из <code>_PATH_TAGS</code> (<code>openapi_meta.py</code>), плюс схема <code>CookieAuth</code> на <code>proofreader_session</code>. Публичные маршруты (<code>/api</code>, <code>/api/health</code>, логин, доки) помечены без security.</li>
+</ul>
+<p>Чтобы добавить маршрут: создаёте функцию в нужном роутере (или новый <code>APIRouter</code> и регистрируете в <code>main.py</code>), вешаете зависимости, возвращаете dict. Больше никуда вписывать не нужно, автотегирование и security подхватят путь по префиксу.</p>
+<h2 id="аутентификация-и-роли">Аутентификация и роли<a class="headerlink" href="#аутентификация-и-роли" title="Permanent link">&para;</a></h2>
+<p><code>auth.py</code> (157 строк). Роли ровно две, <code>ROLES = ("admin", "editor")</code>, роль даёт: у админа пользователи, настройки, создание гайдов и правил; у редактора всё остальное. Пароли bcrypt в <code>users.json</code>, <code>MIN_PASSWORD = 8</code>, сложность не проверяется. Учётки из OIDC помечаются <code>source:"oidc"</code>, смена пароля для них запрещена на уровне роутера.</p>
+<p>Сессии живут в процессной памяти (<code>SESSIONS: dict</code>), cookie <code>proofreader_session</code>, токен <code>secrets.token_urlsafe(32)</code>, TTL 12 часов со скользящим продлением на каждом <code>current_user</code>. <code>PROOFREADER_COOKIE_SECURE=true</code> добавляет флагу <code>Secure</code>. Рестарт сервиса разлогинивает всех, это осознанное решение, детали <a href="../../arch/decisions/">Проектные решения</a>.</p>
+<p>Rate limit логина (<code>routers/session.py</code>): 5 попыток на окно 300 секунд по ключам <code>ip:username</code> и отдельно <code>ip:*</code>, смена пароля так же. Клиентский IP берётся из <code>X-Real-IP</code>, иначе первый адрес <code>X-Forwarded-For</code>.</p>
+<p><code>oidc.py</code> (110 строк) классический Authorization Code: discovery по <code>OIDC_ISSUER/.well-known/openid-configuration</code> (кэш), state+nonce в модульном словаре <code>_pending</code> на 600 секунд, обмен кода на токены (<code>client_secret_post</code>), username из <code>preferred_username|email|sub</code>, роль <code>admin</code> если группы пользователя пересекаются с <code>OIDC_ADMIN_GROUPS</code>. Обратный вызов мигрирует локальную учётку на OIDC по <code>oidc_sub</code> и очищает пароль.</p>
+<h2 id="флаги-разделов">Флаги разделов<a class="headerlink" href="#флаги-разделов" title="Permanent link">&para;</a></h2>
+<p><code>features.py</code> (35 строк): <code>OPTIONAL = ("documents", "api", "watch", "screenshots")</code>, каждый читается из <code>FEATURE_*</code>; считаются истиной <code>1|true|yes|on|да</code>. Разделы «Вычитка», «Гайды», «История», «Аналитика» всегда включены, флагов нет. Состояние наружу отдаёт <code>GET /api/config</code> через <code>features.snapshot()</code>, фронт по нему скрывает навигацию, middleware и зависимости держат серверную часть. Фоновые циклы (<code>repo auto-archive</code>, ежедневный обход watch) при выключенном флаге себя не поднимают.</p>
+<h2 id="детерминированный-checker">Детерминированный checker<a class="headerlink" href="#детерминированный-checker" title="Permanent link">&para;</a></h2>
+<p><code>checker.py</code> (166 строк) фасад <code>check_text(text, user_rules, include_spelling=True)</code>:</p>
+<ul>
+<li>Vale, LanguageTool и custom-проверки стартуют параллельно (<code>asyncio.gather(return_exceptions=True)</code>; vale и lt как задачи event loop, python-движок в потоке через default executor). Упавший движок не роняет проверку, его результат пустой.</li>
+<li>Каждый issue обогащается полями реестра (<code>registry_id, guide_section, rule_name, automation, rule_group</code>) и источником: vale+python <code>"style-guide"</code>, LT <code>"spelling"</code> с <code>registry_id="LanguageTool.ru"</code>, пользовательские regex <code>"custom"</code>.</li>
+<li>Дедуп в два хода: сначала орфографическое замечание с тем же <code>(line, column, fragment.lower())</code>, что у стилистического, выбрасывается (грамматист не должен плодить дубли к термину), затем точный <code>(line, column, text, rule)</code> по всем движкам.</li>
+<li>Пользовательские regex исполняются модулем <code>regex</code> (не stdlib <code>re</code>) с таймаутом <code>USER_REGEX_TIMEOUT_MS</code> по умолчанию 200 мс на <code>finditer</code> и длиной паттерна не больше 500; зависший паттерн пропускается, а не вешает проверку.</li>
+</ul>
+<p>Движки под фасадом:</p>
+<table>
+<thead>
+<tr>
+<th>Модуль</th>
+<th>Строк</th>
+<th>Как работает</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>vale_runner.py</code></td>
+<td>161</td>
+<td>subprocess <code>vale --output JSON</code> с конфигом <code>backend/vale/.vale.ini</code>, включены 45 id из реестра (engine=vale, automation != manual); постфильтры: единицы вида Мбит/с у <code>Slash_Words</code>, «отклик» у <code>UITerms_Click</code>, исключения её/ею/всё/все у <code>LetterYo</code>, латинские аббревиатуры в кавычках; <code>Dash_EmDash</code> переписывается на уровень предложения с заменой на en-dash</td>
+</tr>
+<tr>
+<td><code>lt_client.py</code></td>
+<td>221</td>
+<td>по одному запросу к LanguageTool на строку, <code>asyncio.Semaphore(8)</code>, httpx 30 с; если хост лежит целиком, предупреждение в лог и пустой список; категория → severity: опечатки/орфография error, грамматика/пунктуация warning, стиль/типографика suggestion</td>
+</tr>
+<tr>
+<td><code>custom_checks.py</code></td>
+<td>394</td>
+<td>pymorphy3 + razdel, пять запусковых функций: <code>check_anthropomorphism</code>, <code>check_sentence_length</code> (&gt;25 слов), <code>check_formal_you</code>, <code>check_adj_noun_agreement</code>, <code>check_subject_verb_agreement</code>; <code>check_passive_voice</code> в файле есть, но не вызывается (правило manual в реестре)</td>
+</tr>
+</tbody>
+</table>
+<p>Извлечение текста <code>extractors.py</code> (278 строк) знает docx (python-docx с обходом XML: таблицы, вложенные списки), html (BeautifulSoup+lxml, вырезает <code>nav/footer/header/aside</code>, скрытые узлы, class/id с nav-паттернами), md и txt. DOCX проходит zip-bomb guard: до 300 МиБ разархивированного, ratio до 200, до 2000 записей. Разбор в блоки для LLM-конвейера отдельный (<code>llm/documents.py</code>, см. <a href="../../arch/pipeline/">Конвейер</a>), здесь плоский разбор в строки для движков.</p>
+<p>Краулер <code>crawler.py</code> (191 строка) для <code>/api/check-url</code>: BFS по домену, <code>MAX_PAGES=200</code>, <code>MAX_CONCURRENT=5</code>, страница 20 с, robots.txt с UA <code>Proofreader/1.0</code>, ~40 бинарных расширений пропускаются, URL нормализуются (срезается query/fragment), стоп после 10 пустых батчей подряд. Каждый fetch идёт через <code>net_guard.safe_get</code>.</p>
+<p><code>net_guard.py</code> (157 строк) обход SSRF: только http/https, резолвит хост и проверяет каждый адрес (loopback, link-local включая metadata 169.254/fe80::, multicast, reserved отсекаются; приватные сети по умолчанию разрешены <code>PROOFREADER_SSRF_ALLOW_PRIVATE=true</code> для интранета). Редиректы шагаются вручную (<code>follow_redirects=False</code>) с перепроверкой каждого хопа, POST на 301/302/303 понижается до GET, тело читается потоково с лимитом <code>PROOFREADER_MAX_FETCH_BYTES</code> (10 МиБ).</p>
+<h2 id="реестр-правил">Реестр правил<a class="headerlink" href="#реестр-правил" title="Permanent link">&para;</a></h2>
+<p><code>style_guide_registry.py</code> (817 строк) 56 встроенных правил <code>RULES</code> + запись слоя орфографии <code>LanguageTool.ru</code> (итого 57), сгруппированные по полям: <code>id, section, group, name, rule, engine (vale|python|manual), automation (automatic|partial|manual), severity, generalization, good_examples, bad_examples</code> плюс служебные <code>categories, tasks, scope, priority (error→90, warning→60, suggestion→40), machine_verifiable, relationships, conflict_family</code>, у некоторых <code>constraints</code> (например forbidden_chars <code>—</code>, required <code>–</code>, forbidden_introduced <code>ё</code>). Хелперы: <code>get_rule</code>, <code>enabled_vale_rule_ids</code> (45), <code>style_guide_rule_ids</code> (52), <code>get_registry(include_spelling)</code>. Держать реестр в ладу с <code>styleguide/rules.yaml</code> заставляет тест, см. <a href="../guides-rules/">Правила гайда</a>.</p>
+<h2 id="пакет-llm">Пакет llm/<a class="headerlink" href="#пакет-llm" title="Permanent link">&para;</a></h2>
+<p>Самая большая часть (25 модулей), её устройство по страницам <a href="../../arch/pipeline/">Конвейер</a>, <a href="../../arch/engines/">Движки</a>, <a href="../../arch/model-client/">Клиент модели</a>, <a href="../../arch/subsystems/">Подсистемы</a>. Здесь ownership по модулям, чтобы искать код по задаче:</p>
+<ul>
+<li><code>documents.py</code> (717) вход → <code>Document</code> со списком <code>Block {index, raw, plain, metadata}</code>; типы блоков, форматирование, лимиты (16000 символов структурированной выдержки, 2000 на блок).</li>
+<li><code>chunking.py</code> (167) 8 блоков в чанке, overlap 2, атомарные «введение + список»; <code>compress()</code> каркас из первых 12 слов блока.</li>
+<li><code>pipeline.py</code> (471) планировщик версий: читает <code>PIPELINE_VERSION</code> (default v2) и <code>PIPELINE_SHADOW</code>, здесь же v1 (8 воркеров + критик) ради откатов и теневого сравнения <code>(block_index, rule_id, replacement)</code>.</li>
+<li><code>pipeline_v2.py</code> (698) стадии v2 из <code>PIPELINE_V2_STAGES</code>: evidence → retrieval → finders (language/structure/guide_local по чанкам, terminology/consistency по документу) → verifier батчами по 12 (<code>VERIFY_BATCH</code>) → разрешение конфликтов (<code>relationships.supersedes/specializes</code>, <code>conflict_family</code>, <code>rule_precedence_key</code>) → сборка отчёта. Каждый проход с retry: <code>PASS_TIMEOUT=360</code>, <code>PASS_RETRIES=2</code>, backoff <code>min(10, 2^n)</code>.</li>
+<li><code>workers.py</code> (457) вызовы модели по Jinja2: <code>prompts/v1/</code> (system_base, worker_1..worker_8, extractor) и <code>prompts/v2/</code> (system_base, language, guide_local, structure, consistency, terminology, verifier). Смена <code>PROMPT_VERSION</code> переключает шаблонный каталог.</li>
+<li><code>client.py</code> (461) OpenAI-совместимый клиент: семафор <code>llm_concurrency</code>, <code>MAX_RETRIES=5</code>, backoff на rate limit <code>min(30, 3*2^n)</code>, на лимит токенов <code>min(45, 5*2^n)</code>; кэш ответов: память 1024 + SQLite <code>stats.db:llm_cache</code>, ключ sha256(model, namespace, system, user), namespace склеен из версий пайплайна/промптов/RAG, поэтому смена <code>RAG_CONFIG_VERSION</code> инвалидирует кэш; фолбэк json_mode и reasoning_effort при отказе сервера запоминается в <code>_unsupported</code>; стриминг дельт до первой <code>{</code>.</li>
+<li><code>evidence.py</code> (105) мост детерминированных движков в схему кандидатов LLM: <code>collect_engine_evidence</code> (checker на блоках, фильтр по <code>guide.effective_ids</code>), <code>collect_lexicon_evidence</code> (запрещённые термины по границе слова).</li>
+<li><code>jobs.py</code> (278) очередь и стрим: SQLite <code>jobs.db</code> (таблица <code>jobs</code>: id, source, status, stage, report, error, created_at), TTL час, <code>JOB_TIMEOUT_SECONDS=900</code>, потолок блока стрима 20 000 символов с подрезкой начала; события SSE <code>start/delta/end/finished</code>.</li>
+<li><code>schemas.py</code> (191) нормализация кандидата и анти-галлюцинационные дропы (<code>span_text</code> не подстрока блока, неизвестный <code>rule_id</code>, suggestion == оригинал, нарушение <code>constraints</code> правила); severity модели <code>blocker|suggestion|minor</code> → UI <code>error|warning|suggestion</code>.</li>
+<li><code>rag.py</code> (451) гибрид-поиск правил по гайду: 3 эмбеддинга на правило (identity/policy/examples), скор <code>0.55*lexical + 0.45*semantic</code>, бусты по метаданным, три яруса отката hybrid → lexical_only → all_rules; индекс в памяти, пересборка по content hash.</li>
+<li><code>settings.py</code> (153) 11 настраиваемых полей (LLM/эмбеддинги/тайминги), JSON <code>llm_settings.json</code> поверх env, секреты маскируются флагами <code>*_set</code>, слушатели (<code>client</code>, <code>rag</code>) сбрасывают кэш на изменение.</li>
+<li><code>stats.py</code> (403) SQLite <code>stats.db</code>: <code>token_usage</code> (атрибуция через contextvars по user/job/worker), <code>rule_hits</code>, <code>check_history</code> (50 записей на пользователя), <code>doc_views</code>, <code>llm_cache</code>.</li>
+<li><code>repo_store.py</code> (532) файловая библиотека документов <code>repo/</code> (folders.json, docs/*.json, blobs, zip-архив), лимит 25 МиБ, авто-архив через 90 дней.</li>
+<li><code>api_specs.py</code> + <code>openapi_fields.py</code> + <code>api_review.py</code> (807 суммарно) раздел «Вычитка API»: парные RU/EN YAML (ruamel round-trip, <code>path_str</code> как ключ поля), consistency по names/texts, review-aware diff, батчи translate/review по 20, точечная перезапись YAML с сохранением CRLF/блок-скаляров.</li>
+<li><code>watch_store.py</code> (585) SQLite <code>watch.db</code> (groups, pages, snapshots, meta, fonts), пароли порталов XOR+HMAC под <code>PROOFREADER_SECRET</code>, 14 снимков на страницу; <code>watch_run.py</code> (563) httpx + всегда chromium-перерендер, дубли-детект по content/struct hash; <code>watch_dom.py</code> (669) structural diff и деперсонализация (телефоны, почты, карты, СНИЛС, ИНН), генерация HTML-копии; <code>watch_render.py</code> (154) ленивый общий chromium, навигационный guard поверх <code>net_guard</code>.</li>
+<li><code>extractor.py</code> (260) + <code>extract_jobs.py</code> (270) извлечение гайда из DOCX: куски по 3500 символов, промпт-экстрактор, merge по (title, rule), job-таблица <code>extract_jobs.db</code>.</li>
+<li><code>styleguide_store.py</code> (447) хранит гайды админа и пользователя в <code>data/styleguides/</code>, считает <code>effective_ids</code> и разрешает конфликты поверх встроенного реестра.</li>
+<li><code>shot_templates.py</code> (105) пресеты ширины скриншотов <code>screenshot_templates.json</code>.</li>
+</ul>
+<h2 id="данные">Данные<a class="headerlink" href="#данные" title="Permanent link">&para;</a></h2>
+<p>Всё состояние в томе <code>backend-data:/app/data</code>: <code>users.json</code>, <code>rules.json</code>, <code>user_prefs.json</code>, <code>llm_settings.json</code>, <code>audit.jsonl</code>, <code>screenshot_templates.json</code>, <code>jobs.db</code>, <code>stats.db</code>, <code>watch.db</code>, <code>extract_jobs.db</code>, <code>styleguides/</code>, <code>repo/</code>, <code>uploads/</code>, файл-ключ <code>watch.db.key</code> (или <code>PROOFREADER_SECRET</code> из env). Схема, размеры и владение <a href="../../arch/data-model/">Модель данных</a>.</p>
+<h2 id="регрессия-и-аудит-как-cli">Регрессия и аудит как CLI<a class="headerlink" href="#регрессия-и-аудит-как-cli" title="Permanent link">&para;</a></h2>
+<pre><code class="language-bash">docker compose exec backend python -m app.regression_checks   # 44 кейса, exit 1 при провале
+docker compose exec backend python -m app.site_audit https://example.com --max-pages 40
+</code></pre>
+<p>Первая команда часть CI (<code>make regression</code>), вторая разовый прогон по живому сайту с JSON-сводкой по правилам.</p>
+<h2 id="дальше">Дальше<a class="headerlink" href="#дальше" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../frontend/">Фронтенд</a> как этот API потребляет SPA.</li>
+<li><a href="../guides-rules/">Правила гайда</a> где править тексты правил и промптов.</li>
+<li><a href="../tests/">Тесты</a> защитная сетка для всего перечисленного.</li>
+<li><a href="../../arch/engines/">Движки</a> и <a href="../../arch/pipeline/">Конвейер</a> глубже про то же.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Нижний колонтитул" >
+        
+          
+          <a href="../code-map/" class="md-footer__link md-footer__link--prev" aria-label="Назад: Карта кода">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Назад
+              </span>
+              <div class="md-ellipsis">
+                Карта кода
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../frontend/" class="md-footer__link md-footer__link--next" aria-label="Вперед: Фронтенд: SPA без сборки">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Вперед
+              </span>
+              <div class="md-ellipsis">
+                Фронтенд: SPA без сборки
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.footer", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u0421\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u043d\u043e \u0432 \u0431\u0443\u0444\u0435\u0440", "clipboard.copy": "\u041a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0432 \u0431\u0443\u0444\u0435\u0440", "search.result.more.one": "\u0415\u0449\u0451 1 \u043d\u0430 \u044d\u0442\u043e\u0439 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0435", "search.result.more.other": "\u0415\u0449\u0451 # \u043d\u0430 \u044d\u0442\u043e\u0439 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0435", "search.result.none": "\u0421\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0439 \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d\u043e", "search.result.one": "\u041d\u0430\u0439\u0434\u0435\u043d\u043e 1 \u0441\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0435", "search.result.other": "\u041d\u0430\u0439\u0434\u0435\u043d\u043e \u0441\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0439: #", "search.result.placeholder": "\u041d\u0430\u0447\u043d\u0438\u0442\u0435 \u043f\u0435\u0447\u0430\u0442\u0430\u0442\u044c \u0434\u043b\u044f \u043f\u043e\u0438\u0441\u043a\u0430", "search.result.term.missing": "\u041e\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u0435\u0442", "select.version": "\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0432\u0435\u0440\u0441\u0438\u044e"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../../javascripts/nav.js"></script>
+      
+    
+  </body>
+</html>

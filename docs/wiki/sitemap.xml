@@ -2,162 +2,170 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://badwisher.github.io/Peter-View/wiki/</loc>
-         <lastmod>2026-08-27</lastmod>
+         <lastmod>2026-09-09</lastmod>
     </url>
     <url>
-         <loc>https://badwisher.github.io/Peter-View/wiki/about/</loc>
-         <lastmod>2026-08-27</lastmod>
+         <loc>https://badwisher.github.io/Peter-View/wiki/arch/data-model/</loc>
+         <lastmod>2026-09-09</lastmod>
     </url>
     <url>
-         <loc>https://badwisher.github.io/Peter-View/wiki/architecture/</loc>
-         <lastmod>2026-08-27</lastmod>
+         <loc>https://badwisher.github.io/Peter-View/wiki/arch/decisions/</loc>
+         <lastmod>2026-09-09</lastmod>
     </url>
     <url>
-         <loc>https://badwisher.github.io/Peter-View/wiki/config/</loc>
-         <lastmod>2026-08-27</lastmod>
+         <loc>https://badwisher.github.io/Peter-View/wiki/arch/engines/</loc>
+         <lastmod>2026-09-09</lastmod>
     </url>
     <url>
-         <loc>https://badwisher.github.io/Peter-View/wiki/develop/</loc>
-         <lastmod>2026-08-27</lastmod>
+         <loc>https://badwisher.github.io/Peter-View/wiki/arch/frontend-map/</loc>
+         <lastmod>2026-09-09</lastmod>
     </url>
     <url>
-         <loc>https://badwisher.github.io/Peter-View/wiki/faq/</loc>
-         <lastmod>2026-08-27</lastmod>
+         <loc>https://badwisher.github.io/Peter-View/wiki/arch/model-client/</loc>
+         <lastmod>2026-09-09</lastmod>
     </url>
     <url>
-         <loc>https://badwisher.github.io/Peter-View/wiki/features/</loc>
-         <lastmod>2026-08-27</lastmod>
+         <loc>https://badwisher.github.io/Peter-View/wiki/arch/overview/</loc>
+         <lastmod>2026-09-09</lastmod>
     </url>
     <url>
-         <loc>https://badwisher.github.io/Peter-View/wiki/install/</loc>
-         <lastmod>2026-08-27</lastmod>
+         <loc>https://badwisher.github.io/Peter-View/wiki/arch/pipeline/</loc>
+         <lastmod>2026-09-09</lastmod>
     </url>
     <url>
-         <loc>https://badwisher.github.io/Peter-View/wiki/it/</loc>
-         <lastmod>2026-08-27</lastmod>
+         <loc>https://badwisher.github.io/Peter-View/wiki/arch/security/</loc>
+         <lastmod>2026-09-09</lastmod>
     </url>
     <url>
-         <loc>https://badwisher.github.io/Peter-View/wiki/llm/</loc>
-         <lastmod>2026-08-27</lastmod>
+         <loc>https://badwisher.github.io/Peter-View/wiki/arch/subsystems/</loc>
+         <lastmod>2026-09-09</lastmod>
     </url>
     <url>
-         <loc>https://badwisher.github.io/Peter-View/wiki/quickstart/</loc>
-         <lastmod>2026-08-27</lastmod>
+         <loc>https://badwisher.github.io/Peter-View/wiki/dev/api/</loc>
+         <lastmod>2026-09-09</lastmod>
     </url>
     <url>
-         <loc>https://badwisher.github.io/Peter-View/wiki/roles/</loc>
-         <lastmod>2026-08-27</lastmod>
+         <loc>https://badwisher.github.io/Peter-View/wiki/dev/backend/</loc>
+         <lastmod>2026-09-09</lastmod>
     </url>
     <url>
-         <loc>https://badwisher.github.io/Peter-View/wiki/sections/</loc>
-         <lastmod>2026-08-27</lastmod>
+         <loc>https://badwisher.github.io/Peter-View/wiki/dev/code-map/</loc>
+         <lastmod>2026-09-09</lastmod>
     </url>
     <url>
-         <loc>https://badwisher.github.io/Peter-View/wiki/security/</loc>
-         <lastmod>2026-08-27</lastmod>
+         <loc>https://badwisher.github.io/Peter-View/wiki/dev/docs-site/</loc>
+         <lastmod>2026-09-09</lastmod>
     </url>
     <url>
-         <loc>https://badwisher.github.io/Peter-View/wiki/tutorial/</loc>
-         <lastmod>2026-08-27</lastmod>
+         <loc>https://badwisher.github.io/Peter-View/wiki/dev/frontend/</loc>
+         <lastmod>2026-09-09</lastmod>
     </url>
     <url>
-         <loc>https://badwisher.github.io/Peter-View/wiki/explanation/architecture/</loc>
-         <lastmod>2026-08-27</lastmod>
+         <loc>https://badwisher.github.io/Peter-View/wiki/dev/guides-rules/</loc>
+         <lastmod>2026-09-09</lastmod>
     </url>
     <url>
-         <loc>https://badwisher.github.io/Peter-View/wiki/explanation/engines/</loc>
-         <lastmod>2026-08-27</lastmod>
+         <loc>https://badwisher.github.io/Peter-View/wiki/dev/setup/</loc>
+         <lastmod>2026-09-09</lastmod>
     </url>
     <url>
-         <loc>https://badwisher.github.io/Peter-View/wiki/explanation/pipeline/</loc>
-         <lastmod>2026-08-27</lastmod>
+         <loc>https://badwisher.github.io/Peter-View/wiki/dev/tests/</loc>
+         <lastmod>2026-09-09</lastmod>
     </url>
     <url>
-         <loc>https://badwisher.github.io/Peter-View/wiki/explanation/what/</loc>
-         <lastmod>2026-08-27</lastmod>
+         <loc>https://badwisher.github.io/Peter-View/wiki/ops/backup/</loc>
+         <lastmod>2026-09-09</lastmod>
     </url>
     <url>
-         <loc>https://badwisher.github.io/Peter-View/wiki/how-to/api/</loc>
-         <lastmod>2026-08-27</lastmod>
+         <loc>https://badwisher.github.io/Peter-View/wiki/ops/config-env/</loc>
+         <lastmod>2026-09-09</lastmod>
     </url>
     <url>
-         <loc>https://badwisher.github.io/Peter-View/wiki/how-to/backup/</loc>
-         <lastmod>2026-08-27</lastmod>
+         <loc>https://badwisher.github.io/Peter-View/wiki/ops/deploy/</loc>
+         <lastmod>2026-09-09</lastmod>
     </url>
     <url>
-         <loc>https://badwisher.github.io/Peter-View/wiki/how-to/check/</loc>
-         <lastmod>2026-08-27</lastmod>
+         <loc>https://badwisher.github.io/Peter-View/wiki/ops/hardening/</loc>
+         <lastmod>2026-09-09</lastmod>
     </url>
     <url>
-         <loc>https://badwisher.github.io/Peter-View/wiki/how-to/documents/</loc>
-         <lastmod>2026-08-27</lastmod>
+         <loc>https://badwisher.github.io/Peter-View/wiki/ops/monitor/</loc>
+         <lastmod>2026-09-09</lastmod>
     </url>
     <url>
-         <loc>https://badwisher.github.io/Peter-View/wiki/how-to/features/</loc>
-         <lastmod>2026-08-27</lastmod>
+         <loc>https://badwisher.github.io/Peter-View/wiki/ops/oidc/</loc>
+         <lastmod>2026-09-09</lastmod>
     </url>
     <url>
-         <loc>https://badwisher.github.io/Peter-View/wiki/how-to/health/</loc>
-         <lastmod>2026-08-27</lastmod>
+         <loc>https://badwisher.github.io/Peter-View/wiki/ops/runbook/</loc>
+         <lastmod>2026-09-09</lastmod>
     </url>
     <url>
-         <loc>https://badwisher.github.io/Peter-View/wiki/how-to/history/</loc>
-         <lastmod>2026-08-27</lastmod>
+         <loc>https://badwisher.github.io/Peter-View/wiki/ops/stack/</loc>
+         <lastmod>2026-09-09</lastmod>
     </url>
     <url>
-         <loc>https://badwisher.github.io/Peter-View/wiki/how-to/llm/</loc>
-         <lastmod>2026-08-27</lastmod>
+         <loc>https://badwisher.github.io/Peter-View/wiki/ops/tls-proxy/</loc>
+         <lastmod>2026-09-09</lastmod>
     </url>
     <url>
-         <loc>https://badwisher.github.io/Peter-View/wiki/how-to/oidc/</loc>
-         <lastmod>2026-08-27</lastmod>
+         <loc>https://badwisher.github.io/Peter-View/wiki/ops/upgrade/</loc>
+         <lastmod>2026-09-09</lastmod>
     </url>
     <url>
-         <loc>https://badwisher.github.io/Peter-View/wiki/how-to/review/</loc>
-         <lastmod>2026-08-27</lastmod>
+         <loc>https://badwisher.github.io/Peter-View/wiki/users/accounts/</loc>
+         <lastmod>2026-09-09</lastmod>
     </url>
     <url>
-         <loc>https://badwisher.github.io/Peter-View/wiki/how-to/screenshots/</loc>
-         <lastmod>2026-08-27</lastmod>
+         <loc>https://badwisher.github.io/Peter-View/wiki/users/check/</loc>
+         <lastmod>2026-09-09</lastmod>
     </url>
     <url>
-         <loc>https://badwisher.github.io/Peter-View/wiki/how-to/styleguide/</loc>
-         <lastmod>2026-08-27</lastmod>
+         <loc>https://badwisher.github.io/Peter-View/wiki/users/documents/</loc>
+         <lastmod>2026-09-09</lastmod>
     </url>
     <url>
-         <loc>https://badwisher.github.io/Peter-View/wiki/how-to/troubleshoot/</loc>
-         <lastmod>2026-08-27</lastmod>
+         <loc>https://badwisher.github.io/Peter-View/wiki/users/history/</loc>
+         <lastmod>2026-09-09</lastmod>
     </url>
     <url>
-         <loc>https://badwisher.github.io/Peter-View/wiki/how-to/users/</loc>
-         <lastmod>2026-08-27</lastmod>
+         <loc>https://badwisher.github.io/Peter-View/wiki/users/model-settings/</loc>
+         <lastmod>2026-09-09</lastmod>
     </url>
     <url>
-         <loc>https://badwisher.github.io/Peter-View/wiki/how-to/watch/</loc>
-         <lastmod>2026-08-27</lastmod>
+         <loc>https://badwisher.github.io/Peter-View/wiki/users/openapi/</loc>
+         <lastmod>2026-09-09</lastmod>
     </url>
     <url>
-         <loc>https://badwisher.github.io/Peter-View/wiki/reference/compose/</loc>
-         <lastmod>2026-08-27</lastmod>
+         <loc>https://badwisher.github.io/Peter-View/wiki/users/quickstart/</loc>
+         <lastmod>2026-09-09</lastmod>
     </url>
     <url>
-         <loc>https://badwisher.github.io/Peter-View/wiki/reference/config/</loc>
-         <lastmod>2026-08-27</lastmod>
+         <loc>https://badwisher.github.io/Peter-View/wiki/users/review/</loc>
+         <lastmod>2026-09-09</lastmod>
     </url>
     <url>
-         <loc>https://badwisher.github.io/Peter-View/wiki/reference/data/</loc>
-         <lastmod>2026-08-27</lastmod>
+         <loc>https://badwisher.github.io/Peter-View/wiki/users/screenshots/</loc>
+         <lastmod>2026-09-09</lastmod>
     </url>
     <url>
-         <loc>https://badwisher.github.io/Peter-View/wiki/reference/http/</loc>
-         <lastmod>2026-08-27</lastmod>
+         <loc>https://badwisher.github.io/Peter-View/wiki/users/sections/</loc>
+         <lastmod>2026-09-09</lastmod>
     </url>
     <url>
-         <loc>https://badwisher.github.io/Peter-View/wiki/reference/roles/</loc>
-         <lastmod>2026-08-27</lastmod>
+         <loc>https://badwisher.github.io/Peter-View/wiki/users/styleguide/</loc>
+         <lastmod>2026-09-09</lastmod>
     </url>
     <url>
-         <loc>https://badwisher.github.io/Peter-View/wiki/reference/sections/</loc>
-         <lastmod>2026-08-27</lastmod>
+         <loc>https://badwisher.github.io/Peter-View/wiki/users/system-status/</loc>
+         <lastmod>2026-09-09</lastmod>
+    </url>
+    <url>
+         <loc>https://badwisher.github.io/Peter-View/wiki/users/troubleshoot/</loc>
+         <lastmod>2026-09-09</lastmod>
+    </url>
+    <url>
+         <loc>https://badwisher.github.io/Peter-View/wiki/users/watch/</loc>
+         <lastmod>2026-09-09</lastmod>
     </url>
 </urlset>

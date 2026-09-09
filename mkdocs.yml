@@ -13,6 +13,7 @@ theme:
     accent: teal
   features:
     - navigation.sections
+    - navigation.footer
     - content.code.copy
 extra_css:
   - stylesheets/extra.css
@@ -24,36 +25,93 @@ markdown_extensions:
   - toc:
       permalink: true
       slugify: !!python/name:pymdownx.slugs.uslugify
+plugins:
+  - search
+  - redirects:
+      redirect_maps:
+        tutorial.md: users/quickstart.md
+        quickstart.md: users/quickstart.md
+        install.md: users/quickstart.md
+        about.md: arch/overview.md
+        architecture.md: arch/overview.md
+        config.md: ops/config-env.md
+        develop.md: dev/setup.md
+        faq.md: users/troubleshoot.md
+        features.md: users/sections.md
+        it.md: ops/deploy.md
+        llm.md: users/model-settings.md
+        roles.md: users/accounts.md
+        sections.md: arch/frontend-map.md
+        security.md: arch/security.md
+        explanation/what.md: arch/overview.md
+        explanation/architecture.md: arch/overview.md
+        explanation/engines.md: arch/engines.md
+        explanation/pipeline.md: arch/pipeline.md
+        how-to/check.md: users/check.md
+        how-to/review.md: users/review.md
+        how-to/styleguide.md: users/styleguide.md
+        how-to/history.md: users/history.md
+        how-to/users.md: users/accounts.md
+        how-to/llm.md: users/model-settings.md
+        how-to/health.md: users/system-status.md
+        how-to/features.md: users/sections.md
+        how-to/documents.md: users/documents.md
+        how-to/api.md: users/openapi.md
+        how-to/watch.md: users/watch.md
+        how-to/screenshots.md: users/screenshots.md
+        how-to/oidc.md: ops/oidc.md
+        how-to/backup.md: ops/backup.md
+        how-to/troubleshoot.md: users/troubleshoot.md
+        reference/config.md: ops/config-env.md
+        reference/roles.md: users/accounts.md
+        reference/sections.md: arch/frontend-map.md
+        reference/compose.md: ops/stack.md
+        reference/data.md: arch/data-model.md
+        reference/http.md: dev/api.md
 nav:
   - Документация: index.md
-  - Начало работы:
-      - Установка и первый запуск: tutorial.md
-  - Устройство:
-      - Назначение системы: explanation/what.md
-      - Откуда замечания: explanation/engines.md
-      - Как проходит проверка: explanation/pipeline.md
-      - Архитектура: explanation/architecture.md
-  - Проверка документов:
-      - Текст, файл или страница: how-to/check.md
-      - Список замечаний: how-to/review.md
-      - Style Guide: how-to/styleguide.md
-      - История и аналитика: how-to/history.md
-  - Администрирование:
-      - Пользователи: how-to/users.md
-      - Языковая модель: how-to/llm.md
-      - Состояние сервисов: how-to/health.md
-      - Дополнительные разделы: how-to/features.md
-      - Документы: how-to/documents.md
-      - OpenAPI: how-to/api.md
-      - Наблюдение: how-to/watch.md
-      - Скриншоты: how-to/screenshots.md
-      - Вход через организацию: how-to/oidc.md
-      - Резервная копия: how-to/backup.md
-      - Не запускается: how-to/troubleshoot.md
-  - Справка:
-      - Переменные .env: reference/config.md
-      - Роли: reference/roles.md
-      - Разделы: reference/sections.md
-      - Compose и команды: reference/compose.md
-      - Хранилище: reference/data.md
-      - HTTP API: reference/http.md
+  - Пользователям:
+      - users/quickstart.md
+      - users/check.md
+      - users/review.md
+      - users/styleguide.md
+      - users/history.md
+      - users/accounts.md
+      - users/model-settings.md
+      - users/system-status.md
+      - users/sections.md
+      - users/documents.md
+      - users/openapi.md
+      - users/watch.md
+      - users/screenshots.md
+      - users/troubleshoot.md
+  - Архитектура:
+      - arch/overview.md
+      - arch/decisions.md
+      - arch/engines.md
+      - arch/pipeline.md
+      - arch/model-client.md
+      - arch/subsystems.md
+      - arch/data-model.md
+      - arch/security.md
+      - arch/frontend-map.md
+  - Разработчикам:
+      - dev/setup.md
+      - dev/code-map.md
+      - dev/backend.md
+      - dev/frontend.md
+      - dev/guides-rules.md
+      - dev/tests.md
+      - dev/api.md
+      - dev/docs-site.md
+  - DevOps:
+      - ops/deploy.md
+      - ops/config-env.md
+      - ops/stack.md
+      - ops/tls-proxy.md
+      - ops/backup.md
+      - ops/upgrade.md
+      - ops/monitor.md
+      - ops/hardening.md
+      - ops/oidc.md
+      - ops/runbook.md
