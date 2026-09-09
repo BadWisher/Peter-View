@@ -9,7 +9,6 @@ backend/data/
 .ruff_cache/
 .audit-screens/
 .impeccable/
-.cursor/
 site/
 .mkdocs-venv/
 .shots/
