@@ -30,7 +30,7 @@
 гайда.
 
 <figure>
-  <img src="../screenshots/08-history.png" alt="Раздел История: таблица записей с колонками счетчиков" loading="lazy">
+  <img src="../../screenshots/08-history.png" alt="Раздел История: таблица записей с колонками счетчиков" loading="lazy">
   <figcaption>Раздел **История**: список проверок с источниками, датами и счетчиками находок по уровням строгости.</figcaption>
 </figure>
 
@@ -75,7 +75,7 @@
 первых проверок.
 
 <figure>
-  <img src="../screenshots/05-insights.png" alt="Раздел Аналитика: полоса счетчиков с нулями и пустой топ правил" loading="lazy">
+  <img src="../../screenshots/05-insights.png" alt="Раздел Аналитика: полоса счетчиков с нулями и пустой топ правил" loading="lazy">
   <figcaption>Раздел **Аналитика** до первых проверок: счетчики и топ правил заполняются данными истории.</figcaption>
 </figure>
 

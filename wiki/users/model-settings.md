@@ -26,7 +26,7 @@
 формы показан ниже.
 
 <figure>
-  <img src="../screenshots/07-settings.png" alt="Раздел Настройки: формы Модель, Эмбеддинги и Выполнение" loading="lazy">
+  <img src="../../screenshots/07-settings.png" alt="Раздел Настройки: формы Модель, Эмбеддинги и Выполнение" loading="lazy">
   <figcaption>Раздел **Настройки**: секции **Модель**, **Эмбеддинги** и **Выполнение** с заполненными адресами API.</figcaption>
 </figure>
 

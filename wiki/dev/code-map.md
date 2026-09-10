@@ -16,7 +16,7 @@
 прозе на них не распространяются.
 
 <figure>
-  <img src="../diagrams/repo-tree.svg" alt="Дерево репозитория Peter View: корневые файлы сборки и деплоя, backend с каталогом app, frontend с public, docs, wiki, examples и workflows" loading="lazy">
+  <img src="../../diagrams/repo-tree.svg" alt="Дерево репозитория Peter View: корневые файлы сборки и деплоя, backend с каталогом app, frontend с public, docs, wiki, examples и workflows" loading="lazy">
   <figcaption>Файлы репозитория по каталогам. Внутри backend показаны модули каталога app, отдельно перечислены подкаталоги vale, styleguide, eval и tests. Внутри frontend перечислено содержимое public.</figcaption>
 </figure>
 
@@ -29,7 +29,7 @@
 `routers/` к одному из двух исполнителей и далее в хранилище.
 
 <figure>
-  <img src="../diagrams/query-path.svg" alt="Путь запроса: браузер, nginx, routers, далее ветвление на checker.py или llm pipeline с очередью, обе ветки пишут в хранилище /app/data" loading="lazy">
+  <img src="../../diagrams/query-path.svg" alt="Путь запроса: браузер, nginx, routers, далее ветвление на checker.py или llm pipeline с очередью, обе ветки пишут в хранилище /app/data" loading="lazy">
   <figcaption>Запрос проходит валидацию в routers/ и раздваивается: синхронная
   проверка движками или долгая задача моделью с очередью и стримом по SSE. Оба
   пути пишут результат в хранилище /app/data.</figcaption>

@@ -30,7 +30,7 @@ SVG-спрайт на 32 иконки. Шаблонов в HTML нет, вся �
 Схема взаимных вызовов модулей приведена ниже.
 
 <figure>
-  <img src="../diagrams/frontend-graph.svg" alt="Граф зависимостей ES-модулей фронтенда: index.html загружает app.js, app.js маршрутизирует через router.js к рендерам разделов, router.js обращается к shared.js, shared.js к i18n.js, модули разделов используют shared.js" loading="lazy">
+  <img src="../../diagrams/frontend-graph.svg" alt="Граф зависимостей ES-модулей фронтенда: index.html загружает app.js, app.js маршрутизирует через router.js к рендерам разделов, router.js обращается к shared.js, shared.js к i18n.js, модули разделов используют shared.js" loading="lazy">
   <figcaption>Модули фронтенда и направления вызовов. app.js назначает shared.js хуки bindShell и renderApp, поэтому связь с хуками идет вверх по схеме.</figcaption>
 </figure>
 

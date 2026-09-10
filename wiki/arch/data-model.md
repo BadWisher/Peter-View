@@ -24,7 +24,7 @@
 Полное содержимое каталога `/app/data` показано на схеме ниже.
 
 <figure>
-  <img src="../diagrams/data-dir.svg" alt="Содержимое каталога /app/data: users.json, llm_settings.json, rules.json, user_prefs.json, screenshot_templates.json, audit.jsonl, jobs.db, stats.db, watch.db, styleguides, repo" loading="lazy">
+  <img src="../../diagrams/data-dir.svg" alt="Содержимое каталога /app/data: users.json, llm_settings.json, rules.json, user_prefs.json, screenshot_templates.json, audit.jsonl, jobs.db, stats.db, watch.db, styleguides, repo" loading="lazy">
   <figcaption>Файлы каталога /app/data. JSON-файлы слева, базы SQLite и каталоги справа. Права на llm_settings.json ограничены 0600, потому что файл содержит ключи API.</figcaption>
 </figure>
 

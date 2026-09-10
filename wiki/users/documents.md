@@ -15,7 +15,7 @@
 Полный перечень возможностей раздела [**Документы**](documents.md) приведен ниже.
 
 <figure>
-  <img src="../screenshots/10-documents.png" alt="Раздел Документы: дерево папок и зона загрузки" loading="lazy">
+  <img src="../../screenshots/10-documents.png" alt="Раздел Документы: дерево папок и зона загрузки" loading="lazy">
   <figcaption>Раздел **Документы**: дерево папок слева и зона загрузки файлов, доступная от роли editor.</figcaption>
 </figure>
 

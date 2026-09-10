@@ -40,7 +40,7 @@
 Пустой список с кнопкой добавления выглядит так.
 
 <figure>
-  <img src="../screenshots/06-users.png" alt="Раздел Пользователи: пустой список и кнопка Добавить" loading="lazy">
+  <img src="../../screenshots/06-users.png" alt="Раздел Пользователи: пустой список и кнопка Добавить" loading="lazy">
   <figcaption>Раздел **Пользователи** до создания первой учетной записи.</figcaption>
 </figure>
 
