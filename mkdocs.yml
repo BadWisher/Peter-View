@@ -65,6 +65,7 @@ plugins:
         how-to/api.md: users/openapi.md
         how-to/watch.md: users/watch.md
         how-to/screenshots.md: users/screenshots.md
+        ops/runbook.md: ops/monitor.md
         how-to/oidc.md: ops/oidc.md
         how-to/backup.md: ops/backup.md
         how-to/troubleshoot.md: users/troubleshoot.md
@@ -120,4 +121,3 @@ nav:
       - ops/monitor.md
       - ops/hardening.md
       - ops/oidc.md
-      - ops/runbook.md

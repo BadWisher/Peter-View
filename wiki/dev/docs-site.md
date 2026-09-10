@@ -22,7 +22,7 @@
 | `wiki/users/` | раздел [**User Guide**](../users/quickstart.md), 14 страниц |
 | `wiki/arch/` | раздел [**Архитектура**](../arch/overview.md), 9 страниц |
 | `wiki/dev/` | раздел [**Developer Guide**](setup.md), 8 страниц |
-| `wiki/ops/` | раздел [**Implementation Guide**](../ops/deploy.md), 10 страниц |
+| `wiki/ops/` | раздел [**Implementation Guide**](../ops/deploy.md), 9 страниц |
 | `wiki/screenshots/` | 23 изображения интерфейса в формате PNG |
 | `wiki/stylesheets/extra.css` | дополнительные стили темы |
 | `wiki/javascripts/nav.js` | правки поведения навигации |
