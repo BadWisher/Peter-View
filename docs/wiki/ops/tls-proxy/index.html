@@ -1887,12 +1887,13 @@
 TLS. Разделение сознательное: сертификат, получение сертификата по ACME и
 заголовок HSTS живут у администратора площадки, а не у приложения.</p>
 <h2 id="эталонная-схема">Эталонная схема<a class="headerlink" href="#эталонная-схема" title="Permanent link">&para;</a></h2>
-<p>На схеме показан путь запроса от браузера до контейнера.</p>
-<figure>
-  <img src="../../diagrams/tls-path.svg" alt="Путь запроса: браузер по порту 443, внешний nginx или Caddy на хосте, далее на адрес 127.0.0.1:3080 в контейнер frontend" loading="lazy">
-  <figcaption>Единственная точка, доступная снаружи это порт 443 внешнего прокси. Порт 3080 контейнера frontend опубликован только на localhost и наружу не смотрит.</figcaption>
-</figure>
+<pre class="pv-mermaid"><code>flowchart LR
+  browser["браузер&lt;br/&gt;&lt;small&gt;адрес сервиса&lt;/small&gt;"]
+  proxy["внешний nginx или Caddy&lt;br/&gt;&lt;small&gt;расшифровка и прокси&lt;/small&gt;"]
+  front["контейнер frontend&lt;br/&gt;&lt;small&gt;nginx внутри docker&lt;/small&gt;"]
 
+  browser --&gt;|https, порт 443, TLS| proxy
+  proxy --&gt;|http, localhost:3080| front</code></pre>
 <p>Внешний прокси принимает соединение по HTTPS на порту 443, расшифровывает его и
 передает запрос на порт 3080 localhost, где опубликован nginx контейнера
 frontend. Порт 3080 берут из переменной <code>PROOFREADER_PORT</code>, описанной на
@@ -1900,36 +1901,36 @@ frontend. Порт 3080 берут из переменной <code>PROOFREADER_P
 <h2 id="пример-конфигурации-для-внешнего-nginx">Пример конфигурации для внешнего nginx<a class="headerlink" href="#пример-конфигурации-для-внешнего-nginx" title="Permanent link">&para;</a></h2>
 <p>Ниже приведен рабочий файл для внешнего nginx. Разбор обязательных строк следует
 за листингом.</p>
-<pre><code class="language-nginx">server {
-    listen 443 ssl;
-    http2 on;
-    server_name peterview.example.ru;
+<div class="highlight"><pre><span></span><code><span class="k">server</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kn">listen</span><span class="w"> </span><span class="mi">443</span><span class="w"> </span><span class="s">ssl</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">http2</span><span class="w"> </span><span class="no">on</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">server_name</span><span class="w"> </span><span class="s">peterview.example.ru</span><span class="p">;</span>
 
-    ssl_certificate     /etc/letsencrypt/live/peterview.example.ru/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/peterview.example.ru/privkey.pem;
+<span class="w">    </span><span class="kn">ssl_certificate</span><span class="w">     </span><span class="s">/etc/letsencrypt/live/peterview.example.ru/fullchain.pem</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">ssl_certificate_key</span><span class="w"> </span><span class="s">/etc/letsencrypt/live/peterview.example.ru/privkey.pem</span><span class="p">;</span>
 
-    client_max_body_size 60m;   # запас над 50m у внутреннего nginx
+<span class="w">    </span><span class="kn">client_max_body_size</span><span class="w"> </span><span class="mi">60m</span><span class="p">;</span><span class="w">   </span><span class="c1"># запас над 50m у внутреннего nginx</span>
 
-    location / {
-        proxy_pass http://127.0.0.1:3080;
-        proxy_http_version 1.1;
-        proxy_set_header Host              $host;
-        proxy_set_header X-Real-IP         $remote_addr;
-        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+<span class="w">    </span><span class="kn">location</span><span class="w"> </span><span class="s">/</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kn">proxy_pass</span><span class="w"> </span><span class="s">http://127.0.0.1:3080</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">proxy_http_version</span><span class="w"> </span><span class="mi">1</span><span class="s">.1</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">Host</span><span class="w">              </span><span class="nv">$host</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Real-IP</span><span class="w">         </span><span class="nv">$remote_addr</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Forwarded-For</span><span class="w">   </span><span class="nv">$proxy_add_x_forwarded_for</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Forwarded-Proto</span><span class="w"> </span><span class="nv">$scheme</span><span class="p">;</span>
 
-        # SSE: стрим прогресса проверки не должен буферизоваться
-        proxy_buffering    off;
-        proxy_read_timeout 900s;
-    }
-}
+<span class="w">        </span><span class="c1"># SSE: стрим прогресса проверки не должен буферизоваться</span>
+<span class="w">        </span><span class="kn">proxy_buffering</span><span class="w">    </span><span class="no">off</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">proxy_read_timeout</span><span class="w"> </span><span class="s">900s</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
 
-server {
-    listen 80;
-    server_name peterview.example.ru;
-    return 301 https://$host$request_uri;
-}
-</code></pre>
+<span class="k">server</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kn">listen</span><span class="w"> </span><span class="mi">80</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">server_name</span><span class="w"> </span><span class="s">peterview.example.ru</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">return</span><span class="w"> </span><span class="mi">301</span><span class="w"> </span><span class="s">https://</span><span class="nv">$host$request_uri</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
 <p>Четыре настройки в этом файле нельзя пропустить.</p>
 <ol>
 <li>Отключение буферизации ответа (<code>proxy_buffering off</code>) обязательно. Иначе
@@ -1965,11 +1966,11 @@ server {
 </ol>
 <h2 id="пример-для-caddy">Пример для Caddy<a class="headerlink" href="#пример-для-caddy" title="Permanent link">&para;</a></h2>
 <p>Конфигурация Caddy короче, потому что часть настроек там включена по умолчанию.</p>
-<pre><code class="language-text">peterview.example.ru {
+<div class="highlight"><pre><span></span><code>peterview.example.ru {
     reverse_proxy 127.0.0.1:3080
     flush_interval -1
 }
-</code></pre>
+</code></pre></div>
 <p>Caddy самостоятельно получает сертификат Let's Encrypt, редиректит HTTP на HTTPS
 и пробрасывает <code>Host</code>. Значение <code>flush_interval -1</code> отключает буферизацию
 ответа и нужно для того же стрима прогресса.</p>
@@ -2106,6 +2107,8 @@ server {
       <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="../../javascripts/nav.js"></script>
+      
+        <script src="../../javascripts/mermaid.mjs" type="module"></script>
       
     
   </body>

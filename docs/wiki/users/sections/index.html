@@ -1870,11 +1870,11 @@
 <p>Раздел включается только переменной окружения на сервере. Переключателей в
 интерфейсе не предусмотрено. Список флагов для включения всех четырех разделов
 приведен ниже.</p>
-<pre><code class="language-text">FEATURE_DOCUMENTS=true
+<div class="highlight"><pre><span></span><code>FEATURE_DOCUMENTS=true
 FEATURE_API=true
 FEATURE_WATCH=true
 FEATURE_SCREENSHOTS=true
-</code></pre>
+</code></pre></div>
 <p>После правки файла <code>.env</code> перезапустите стек. Способ перезапуска описан в
 <strong>Implementation Guide</strong> на странице <a href="../../ops/deploy/"><strong>Развертывание</strong></a>.</p>
 <p>Выключенный раздел не отображается в меню, а его эндпоинты отвечают кодом 404
@@ -1994,6 +1994,8 @@ FEATURE_SCREENSHOTS=true
       <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="../../javascripts/nav.js"></script>
+      
+        <script src="../../javascripts/mermaid.mjs" type="module"></script>
       
     
   </body>

@@ -2020,8 +2020,8 @@ token, userinfo), к конечным точкам модели и эмбедд�
 это известное ограниченное решение.</p>
 <h2 id="csp-и-заголовки-nginx">CSP и заголовки nginx<a class="headerlink" href="#csp-и-заголовки-nginx" title="Permanent link">&para;</a></h2>
 <p>Базовая политика содержимой страницы приведена ниже.</p>
-<pre><code class="language-text">default-src 'self'; script-src 'self'
-</code></pre>
+<div class="highlight"><pre><span></span><code>default-src 'self'; script-src 'self'
+</code></pre></div>
 <p>Значение <code>unsafe-inline</code> и <code>unsafe-eval</code> для скриптов отсутствуют. Для стилей
 <code>style-src</code> с unsafe-inline исключение сделано, потому что генерируемый
 интерфейс использует inline-стили. Дополнительно заданы <code>object-src 'none'</code>,
@@ -2187,6 +2187,8 @@ token, userinfo), к конечным точкам модели и эмбедд�
       <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="../../javascripts/nav.js"></script>
+      
+        <script src="../../javascripts/mermaid.mjs" type="module"></script>
       
     
   </body>

@@ -1962,12 +1962,29 @@
 Приложение читает и пишет данные само, миграций схемы нет, а совместимость
 старых файлов обеспечивает код приложения.</p>
 <h2 id="каталог-данных">Каталог данных<a class="headerlink" href="#каталог-данных" title="Permanent link">&para;</a></h2>
-<p>Полное содержимое каталога <code>/app/data</code> показано на схеме ниже.</p>
-<figure>
-  <img src="../../diagrams/data-dir.svg" alt="Содержимое каталога /app/data: users.json, llm_settings.json, rules.json, user_prefs.json, screenshot_templates.json, audit.jsonl, jobs.db, stats.db, watch.db, styleguides, repo" loading="lazy">
-  <figcaption>Файлы каталога /app/data. JSON-файлы слева, базы SQLite и каталоги справа. Права на llm_settings.json ограничены 0600, потому что файл содержит ключи API.</figcaption>
-</figure>
-
+<pre class="pv-mermaid"><code>flowchart LR
+  root["/app/data&lt;br/&gt;&lt;small&gt;том backend-data&lt;/small&gt;"]
+  subgraph json["JSON-файлы"]
+    users["users.json&lt;br/&gt;&lt;small&gt;аккаунты&lt;/small&gt;"]
+    llmset["llm_settings.json&lt;br/&gt;&lt;small&gt;настройки модели, 0600&lt;/small&gt;"]
+    rules["rules.json&lt;br/&gt;&lt;small&gt;глобальные регулярки&lt;/small&gt;"]
+    prefs["user_prefs.json&lt;br/&gt;&lt;small&gt;выбор активного гайда&lt;/small&gt;"]
+    shots["screenshot_templates.json&lt;br/&gt;&lt;small&gt;шаблоны ширины&lt;/small&gt;"]
+    audit["audit.jsonl&lt;br/&gt;&lt;small&gt;журнал аудита, 2000 строк&lt;/small&gt;"]
+  end
+  subgraph db["SQLite"]
+    jobs["jobs.db&lt;br/&gt;&lt;small&gt;задачи проверки моделью&lt;/small&gt;"]
+    stats["stats.db&lt;br/&gt;&lt;small&gt;токены, история, кэш модели&lt;/small&gt;"]
+    watch["watch.db&lt;br/&gt;&lt;small&gt;мониторинг + watch.db.key&lt;/small&gt;"]
+  end
+  subgraph dirs["Каталоги"]
+    sg["styleguides/&lt;br/&gt;&lt;small&gt;гайды: id/guide.json, index/&lt;/small&gt;"]
+    repo["repo/&lt;br/&gt;&lt;small&gt;документный репозиторий&lt;/small&gt;"]
+  end
+  root --&gt; json
+  root --&gt; db
+  root --&gt; dirs
+</code></pre>
 <h2 id="json-файлы">JSON-файлы<a class="headerlink" href="#json-файлы" title="Permanent link">&para;</a></h2>
 <p>Назначение и форма каждого JSON-файла приведены в таблице ниже.</p>
 <table>
@@ -2188,6 +2205,8 @@ SQLite работают в режиме отката журнала по умо�
       <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="../../javascripts/nav.js"></script>
+      
+        <script src="../../javascripts/mermaid.mjs" type="module"></script>
       
     
   </body>

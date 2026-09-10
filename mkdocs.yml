@@ -19,9 +19,15 @@ extra_css:
   - stylesheets/extra.css
 extra_javascript:
   - javascripts/nav.js
+  - javascripts/mermaid.mjs
 markdown_extensions:
   - admonition
   - tables
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: pv-mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - toc:
       permalink: true
       slugify: !!python/name:pymdownx.slugs.uslugify

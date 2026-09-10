@@ -11,16 +11,55 @@
 
 ## Состав репозитория
 
-Дерево каталогов и файлов с краткими подписями показано на схеме ниже.
+Дерево каталогов и файлов с краткими подписями приведено ниже.
 Подписи к файлам это предметные пояснения, а не проза, поэтому правила к
 прозе на них не распространяются.
 
-<figure>
-  <img src="../../diagrams/repo-tree.svg" alt="Дерево репозитория Peter View: корневые файлы сборки и деплоя, backend с каталогом app, frontend с public, docs, wiki, examples и workflows" loading="lazy">
-  <figcaption>Файлы репозитория по каталогам. Внутри backend показаны модули каталога app, отдельно перечислены подкаталоги vale, styleguide, eval и tests. Внутри frontend перечислено содержимое public.</figcaption>
-</figure>
-
-
+```text
+Peter-View/
+├── docker-compose.yml            три сервиса, тома, healthchecks
+├── docker-compose.prod.yml       override: образы из GHCR вместо сборки
+├── docker-compose.corp-proxy.yml override: трафик через корп-прокси
+├── deploy.sh                     сборка, запуск, ожидание фронта
+├── Makefile                      deploy, test, lint, regression, backup
+├── .env.example                  все переменные с комментариями
+├── pyproject.toml                конфиг pytest
+├── mkdocs.yml                    сборщик вики: docs_dir=wiki
+├── backend/
+│   ├── Dockerfile                python:3.12-slim + vale + chromium
+│   ├── requirements.txt          21 пакет; -dev: pytest, ruff
+│   ├── app/
+│   │   ├── main.py               FastAPI-приложение, запуск
+│   │   ├── routers/              HTTP-слой: auth, checks, jobs,
+│   │   │                         history, infra, openapi_meta
+│   │   ├── checker.py            фасад детерминированных движков
+│   │   ├── lt_client.py          клиент LanguageTool
+│   │   ├── vale_runner.py        подпроцесс Vale
+│   │   ├── custom_checks.py      морфология на pymorphy3 и razdel
+│   │   ├── style_guide_registry.py  реестр правил
+│   │   ├── llm/                  конвейер модельной вычитки:
+│   │   │   ├── pipeline_v2.py    планировщик стадий
+│   │   │   ├── workers.py        воркеры модели
+│   │   │   ├── jobs.py           очередь задач
+│   │   │   ├── client.py         HTTP-клиент модели
+│   │   │   ├── documents.py      разбор входов в блоки
+│   │   │   ├── evidence.py       верификация находок
+│   │   │   └── repo_store.py, watch_*.py, shot_templates.py
+│   │   └── auth.py, oidc.py, net_guard.py, backups.py, report.py
+│   ├── styleguide/rules.yaml     правила для модели
+│   ├── vale/                     стили Vale
+│   └── tests/                    pytest-тесты и регрессия
+├── frontend/
+│   ├── Dockerfile, nginx.conf    статика + обратный прокси
+│   └── public/
+│       ├── index.html            каркас, SVG-спрайт
+│       └── js/                   app.js, router.js, shared.js,
+│                                 i18n.js, 12 модулей разделов
+├── wiki/                         исходники этой документации
+├── docs/                         собранная вики для Pages
+├── examples/openapi/             примеры спецификаций
+└── .github/workflows/            ci.yml, pages.yml, publish.yml
+```
 
 ## Путь запроса в бэкенде
 
@@ -28,12 +67,22 @@
 порядке. Схема ниже показывает этот путь: от браузера через nginx и
 `routers/` к одному из двух исполнителей и далее в хранилище.
 
-<figure>
-  <img src="../../diagrams/query-path.svg" alt="Путь запроса: браузер, nginx, routers, далее ветвление на checker.py или llm pipeline с очередью, обе ветки пишут в хранилище /app/data" loading="lazy">
-  <figcaption>Запрос проходит валидацию в routers/ и раздваивается: синхронная
-  проверка движками или долгая задача моделью с очередью и стримом по SSE. Оба
-  пути пишут результат в хранилище /app/data.</figcaption>
-</figure>
+```mermaid
+flowchart TB
+  browser["браузер<br/><small>отправка текста, получение отчета</small>"]
+  nginx["nginx<br/><small>статика и прокси /api/</small>"]
+  routers["routers/<br/><small>роль по cookie, флаг раздела, лимиты</small>"]
+  checker["checker.py<br/><small>синхронная проверка тремя<br/>детерминированными движками</small>"]
+  llm["llm/pipeline_v2.py, llm/jobs.py<br/><small>долгая задача с очередью,<br/>стрим прогресса по SSE</small>"]
+  store["Хранилище /app/data<br/><small>JSON и SQLite</small>"]
+
+  browser --> nginx --> routers
+  routers -->|короткий путь| checker
+  routers -->|долгий путь| llm
+  checker --> store
+  llm --> store
+  store -->|ответ: отчет, SSE| routers
+```
 
 Модули каталога `routers/` проверяют роль по cookie и флаг раздела, валидируют
 вход по лимитам и вызывают следующий слой. Дальше запрос идет либо в

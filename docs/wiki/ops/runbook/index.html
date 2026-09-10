@@ -1930,9 +1930,9 @@
 <p>Каждый раздел построен одинаково: сначала признаки, что делать, потом действие.</p>
 <h2 id="сервис-недоступен">Сервис недоступен<a class="headerlink" href="#сервис-недоступен" title="Permanent link">&para;</a></h2>
 <p>Признак: страница не открывается или отвечает ошибкой. Начните с двух команд.</p>
-<pre><code class="language-bash">docker compose ps           # что упало или перезапускается
-docker compose logs --tail=200 backend
-</code></pre>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>ps<span class="w">           </span><span class="c1"># что упало или перезапускается</span>
+docker<span class="w"> </span>compose<span class="w"> </span>logs<span class="w"> </span>--tail<span class="o">=</span><span class="m">200</span><span class="w"> </span>backend
+</code></pre></div>
 <p>Дальнейшие действия зависят от статуса контейнера.</p>
 <table>
 <thead>
@@ -2120,6 +2120,8 @@ backend и системный лог <code>dmesg | grep -i "killed process"</cod
       <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="../../javascripts/nav.js"></script>
+      
+        <script src="../../javascripts/mermaid.mjs" type="module"></script>
       
     
   </body>

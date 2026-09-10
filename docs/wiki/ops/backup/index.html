@@ -1916,14 +1916,14 @@
 <code>./backups</code>). Ротация оставляет последние <code>BACKUP_KEEP</code> файлов (по умолчанию 7)
 и удаляет более старые. Ротация видит только файлы вида <code>peterview-*</code>.</p>
 <p>Проверить работу цикла можно так:</p>
-<pre><code class="language-bash">ls -la ./backups
-</code></pre>
+<div class="highlight"><pre><span></span><code>ls<span class="w"> </span>-la<span class="w"> </span>./backups
+</code></pre></div>
 <p>Если снимков нет больше суток, фоновый цикл не запускался или падал. Смотрите
 логи командой <code>docker compose logs backend | grep -i backup</code>.</p>
 <h2 id="ручной-снимок">Ручной снимок<a class="headerlink" href="#ручной-снимок" title="Permanent link">&para;</a></h2>
 <p>Ручной снимок создается командой Makefile.</p>
-<pre><code class="language-bash">make backup
-</code></pre>
+<div class="highlight"><pre><span></span><code>make<span class="w"> </span>backup
+</code></pre></div>
 <p>Команда выполняет <code>docker compose exec backend tar czf ...</code> и пишет файл
 <code>./backups/manual-&lt;время&gt;.tgz</code>. Учтите две особенности ручной команды.</p>
 <ol>
@@ -1961,9 +1961,9 @@ JSON-файлов и журнала аудита это безопасно, но
    с ним напрямую неудобно. Проще поднять контейнер с подмененной точкой входа и
    разархивировать архив внутрь <code>/app/data</code>.</li>
 </ol>
-<p><code>bash
-   docker compose run --rm --entrypoint sh backend -c \
-     'rm -rf /app/data/* &amp;&amp; tar xzf /app/backups/peterview-XXXXXXXX-XXXXXX.tar.gz -C /app/data'</code></p>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>--entrypoint<span class="w"> </span>sh<span class="w"> </span>backend<span class="w"> </span>-c<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s1">'rm -rf /app/data/* &amp;&amp; tar xzf /app/backups/peterview-XXXXXXXX-XXXXXX.tar.gz -C /app/data'</span>
+</code></pre></div>
 <p>Файл снимка должен быть виден внутри контейнера: каталог <code>./backups</code>
    примонтирован как <code>/app/backups</code>.
 3. Поднимите стек командой <code>./deploy.sh</code>.
@@ -2088,6 +2088,8 @@ JSON-файлов и журнала аудита это безопасно, но
       <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="../../javascripts/nav.js"></script>
+      
+        <script src="../../javascripts/mermaid.mjs" type="module"></script>
       
     
   </body>

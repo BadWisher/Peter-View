@@ -1894,11 +1894,11 @@ backend и живого LanguageTool, а оценочный прогон обр�
 CI безусловно выполняет первые два слоя, третий запускается вручную.</p>
 <h2 id="команды-запуска">Команды запуска<a class="headerlink" href="#команды-запуска" title="Permanent link">&para;</a></h2>
 <p>Блок ниже показывает команды запуска всех слоев.</p>
-<pre><code class="language-bash">make test          # pytest -q из корня репозитория
-make lint          # ruff (в CI выборка жестче: E9,F63,F7,F82)
-make regression    # 44 кейса правил в контейнере backend (зависит от LanguageTool)
-make ci-local      # lint + test + валидация compose + docker compose build
-</code></pre>
+<div class="highlight"><pre><span></span><code>make<span class="w"> </span><span class="nb">test</span><span class="w">          </span><span class="c1"># pytest -q из корня репозитория</span>
+make<span class="w"> </span>lint<span class="w">          </span><span class="c1"># ruff (в CI выборка жестче: E9,F63,F7,F82)</span>
+make<span class="w"> </span>regression<span class="w">    </span><span class="c1"># 44 кейса правил в контейнере backend (зависит от LanguageTool)</span>
+make<span class="w"> </span>ci-local<span class="w">      </span><span class="c1"># lint + test + валидация compose + docker compose build</span>
+</code></pre></div>
 <p>Конфигурация pytest находится в корневом <code>pyproject.toml</code>:
 <code>pythonpath=["backend"]</code> и <code>testpaths=["backend/tests"]</code>. Поэтому запуск
 выполняется из корня репозитория, а файла <code>conftest.py</code> нет. На хосте нужны
@@ -1978,13 +1978,13 @@ make ci-local      # lint + test + валидация compose + docker compose b
 <p>Файл <code>backend/app/regression_checks.py</code> содержит 44 кейса вида «этот текст
 должен дать именно эти правила и не должен дать вот эти». Пример кейса показан
 ниже.</p>
-<pre><code class="language-python">RegressionCase(
-    name=&quot;dash: en dash alone is not reported&quot;,
-    text=&quot;Сервис – это компонент.&quot;,
-    forbid_rules={&quot;RuStyleGuide.Dash_EmDash&quot;},
-    forbid_texts={&quot;–&quot;, &quot;– (U+2013)&quot;},
-)
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="n">RegressionCase</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">"dash: en dash alone is not reported"</span><span class="p">,</span>
+    <span class="n">text</span><span class="o">=</span><span class="s2">"Сервис – это компонент."</span><span class="p">,</span>
+    <span class="n">forbid_rules</span><span class="o">=</span><span class="p">{</span><span class="s2">"RuStyleGuide.Dash_EmDash"</span><span class="p">},</span>
+    <span class="n">forbid_texts</span><span class="o">=</span><span class="p">{</span><span class="s2">"–"</span><span class="p">,</span> <span class="s2">"– (U+2013)"</span><span class="p">},</span>
+<span class="p">)</span>
+</code></pre></div>
 <p>Поля <code>expect_rules</code>, <code>forbid_rules</code> и <code>forbid_texts</code> это множества,
 заполняются по необходимости. Кейс говорит: на этом тексте правило должно
 сработать (<code>expect_rules</code>) или не должно (<code>forbid_rules</code>), а запрещенные
@@ -2172,6 +2172,8 @@ Vale и фильтры LanguageTool проверяются только скво
       <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="../../javascripts/nav.js"></script>
+      
+        <script src="../../javascripts/mermaid.mjs" type="module"></script>
       
     
   </body>

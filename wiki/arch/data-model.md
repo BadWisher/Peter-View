@@ -21,13 +21,31 @@
 
 ## Каталог данных
 
-Полное содержимое каталога `/app/data` показано на схеме ниже.
+```mermaid
+flowchart LR
+  root["/app/data<br/><small>том backend-data</small>"]
+  subgraph json["JSON-файлы"]
+    users["users.json<br/><small>аккаунты</small>"]
+    llmset["llm_settings.json<br/><small>настройки модели, 0600</small>"]
+    rules["rules.json<br/><small>глобальные регулярки</small>"]
+    prefs["user_prefs.json<br/><small>выбор активного гайда</small>"]
+    shots["screenshot_templates.json<br/><small>шаблоны ширины</small>"]
+    audit["audit.jsonl<br/><small>журнал аудита, 2000 строк</small>"]
+  end
+  subgraph db["SQLite"]
+    jobs["jobs.db<br/><small>задачи проверки моделью</small>"]
+    stats["stats.db<br/><small>токены, история, кэш модели</small>"]
+    watch["watch.db<br/><small>мониторинг + watch.db.key</small>"]
+  end
+  subgraph dirs["Каталоги"]
+    sg["styleguides/<br/><small>гайды: id/guide.json, index/</small>"]
+    repo["repo/<br/><small>документный репозиторий</small>"]
+  end
+  root --> json
+  root --> db
+  root --> dirs
 
-<figure>
-  <img src="../../diagrams/data-dir.svg" alt="Содержимое каталога /app/data: users.json, llm_settings.json, rules.json, user_prefs.json, screenshot_templates.json, audit.jsonl, jobs.db, stats.db, watch.db, styleguides, repo" loading="lazy">
-  <figcaption>Файлы каталога /app/data. JSON-файлы слева, базы SQLite и каталоги справа. Права на llm_settings.json ограничены 0600, потому что файл содержит ключи API.</figcaption>
-</figure>
-
+```
 ## JSON-файлы
 
 Назначение и форма каждого JSON-файла приведены в таблице ниже.

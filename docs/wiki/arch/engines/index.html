@@ -2060,19 +2060,19 @@ razdel дробит текст на предложения и токены. Ре
 <code>STYLEGUIDE_PATH</code>. Из него загружается встроенный модельный гайд <strong>Базовый</strong>
 (функция <code>styleguide_store.seed_default</code>), и он же служит базой подбора правил
 моделью. Схема записи показана фрагментом ниже.</p>
-<pre><code class="language-yaml">- rule_id: RuStyleGuide.Glossary
-  title: Глоссарий
-  section: Ключевые рекомендации / Глоссарий
-  rule: Использовать утвержденные термины из глоссария.
-  severity: error                # error, warning или suggestion
-  machine_verifiable: true       # находку движка можно не верифицировать
-  mandatory: false
-  priority: 90
-  scope: all                     # all, document, section, sentence, token
-  relationships: {}              # conflicts: [rule_id, ...]
-  good_examples: [...]
-  bad_examples: [...]
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">rule_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RuStyleGuide.Glossary</span>
+<span class="w">  </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Глоссарий</span>
+<span class="w">  </span><span class="nt">section</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Ключевые рекомендации / Глоссарий</span>
+<span class="w">  </span><span class="nt">rule</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Использовать утвержденные термины из глоссария.</span>
+<span class="w">  </span><span class="nt">severity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">error</span><span class="w">                </span><span class="c1"># error, warning или suggestion</span>
+<span class="w">  </span><span class="nt">machine_verifiable</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">       </span><span class="c1"># находку движка можно не верифицировать</span>
+<span class="w">  </span><span class="nt">mandatory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="nt">priority</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">90</span>
+<span class="w">  </span><span class="nt">scope</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">all</span><span class="w">                     </span><span class="c1"># all, document, section, sentence, token</span>
+<span class="w">  </span><span class="nt">relationships</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span><span class="w">              </span><span class="c1"># conflicts: [rule_id, ...]</span>
+<span class="w">  </span><span class="nt">good_examples</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">...</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">bad_examples</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">...</span><span class="p p-Indicator">]</span>
+</code></pre></div>
 <p>Комментарий в начале файла обещает перестройку индекса подбора при смене
 содержимого. Обещание выполняется: индекс ключуется хешем содержимого гайда.</p>
 <p><strong>Базовые правила</strong> <code>BASE_RULES</code> в модуле <code>llm/styleguide.py</code> это пять норм
@@ -2230,6 +2230,8 @@ razdel дробит текст на предложения и токены. Ре
       <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="../../javascripts/nav.js"></script>
+      
+        <script src="../../javascripts/mermaid.mjs" type="module"></script>
       
     
   </body>

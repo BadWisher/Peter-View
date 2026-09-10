@@ -2050,23 +2050,23 @@ block_index и rule_id, при этом provenance склеивается. Да�
 <p>Функция <code>_build_report</code> возвращает словарь. Он сохраняется в поле <code>jobs.report</code>
 и отдается эндпоинтом <code>GET /api/jobs/{id}/report</code>. Формат показан фрагментом
 ниже.</p>
-<pre><code class="language-json">{
-  &quot;document&quot;: &quot;источник&quot;,
-  &quot;styleguide&quot;: {&quot;id&quot;: &quot;...&quot;, &quot;name&quot;: &quot;...&quot;},
-  &quot;summary&quot;: {&quot;total&quot;: 0, &quot;errors&quot;: 0, &quot;warnings&quot;: 0, &quot;suggestions&quot;: 0,
-               &quot;blocker&quot;: 0, &quot;suggestion&quot;: 0, &quot;minor&quot;: 0},
-  &quot;issues&quot;: [ {&quot;block_index&quot;: 3, &quot;rule_id&quot;: &quot;...&quot;, &quot;severity&quot;: &quot;warning&quot;,
-               &quot;description&quot;: &quot;...&quot;, &quot;span_text&quot;: &quot;...&quot;, &quot;suggestion&quot;: &quot;...&quot;,
-               &quot;engine&quot;: &quot;Модель&quot;, &quot;line&quot;: 4, &quot;text&quot;: &quot;...&quot;, &quot;replacement&quot;: &quot;...&quot;} ],
-  &quot;blocks&quot;: [ {&quot;index&quot;: 0, &quot;type&quot;: &quot;heading&quot;, &quot;text&quot;: &quot;...&quot;, &quot;level&quot;: 2,
-               &quot;formatting&quot;: [...]} ],
-  &quot;pages_checked&quot;: 1,
-  &quot;partial&quot;: false,
-  &quot;meta&quot;: {&quot;token_usage&quot;: {...}, &quot;pipeline_version&quot;: &quot;v2&quot;,
-           &quot;retrieval&quot;: {...}, &quot;verifier_outcomes&quot;: [...],
-           &quot;conflicts&quot;: [...], &quot;validation_rejections&quot;: [...]}
-}
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">"document"</span><span class="p">:</span><span class="w"> </span><span class="s2">"источник"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"styleguide"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span><span class="w"> </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">},</span>
+<span class="w">  </span><span class="nt">"summary"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"total"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"errors"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"warnings"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"suggestions"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">               </span><span class="nt">"blocker"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"suggestion"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"minor"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">},</span>
+<span class="w">  </span><span class="nt">"issues"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="p">{</span><span class="nt">"block_index"</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="nt">"rule_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span><span class="w"> </span><span class="nt">"severity"</span><span class="p">:</span><span class="w"> </span><span class="s2">"warning"</span><span class="p">,</span>
+<span class="w">               </span><span class="nt">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span><span class="w"> </span><span class="nt">"span_text"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span><span class="w"> </span><span class="nt">"suggestion"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span>
+<span class="w">               </span><span class="nt">"engine"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Модель"</span><span class="p">,</span><span class="w"> </span><span class="nt">"line"</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="nt">"text"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span><span class="w"> </span><span class="nt">"replacement"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">}</span><span class="w"> </span><span class="p">],</span>
+<span class="w">  </span><span class="nt">"blocks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="p">{</span><span class="nt">"index"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"heading"</span><span class="p">,</span><span class="w"> </span><span class="nt">"text"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span><span class="w"> </span><span class="nt">"level"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<span class="w">               </span><span class="nt">"formatting"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">]}</span><span class="w"> </span><span class="p">],</span>
+<span class="w">  </span><span class="nt">"pages_checked"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"partial"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"meta"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"token_usage"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="err">...</span><span class="p">},</span><span class="w"> </span><span class="nt">"pipeline_version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"v2"</span><span class="p">,</span>
+<span class="w">           </span><span class="nt">"retrieval"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="err">...</span><span class="p">},</span><span class="w"> </span><span class="nt">"verifier_outcomes"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">],</span>
+<span class="w">           </span><span class="nt">"conflicts"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">],</span><span class="w"> </span><span class="nt">"validation_rejections"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">]}</span>
+<span class="p">}</span>
+</code></pre></div>
 <p>Фронтенд рисует левую панель по полю <code>blocks</code>, а находки из <code>issues</code> навешивает
 на первые совпадения <code>span_text</code> внутри блока. Уровень наследуется: у
 движковых находок через отображение severity в модуле <code>checker</code>, у модельных
@@ -2188,6 +2188,8 @@ block_index и rule_id, при этом provenance склеивается. Да�
       <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="../../javascripts/nav.js"></script>
+      
+        <script src="../../javascripts/mermaid.mjs" type="module"></script>
       
     
   </body>

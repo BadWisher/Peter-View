@@ -1903,11 +1903,11 @@
 не нужны: фронтенд это обычные файлы JS и CSS, а nginx раздает их как статику.</p>
 <h2 id="первый-запуск">Первый запуск<a class="headerlink" href="#первый-запуск" title="Permanent link">&para;</a></h2>
 <p>Клонирование и запуск выполняются командами из блока ниже.</p>
-<pre><code class="language-bash">git clone https://github.com/BadWisher/Peter-View
-cd Peter-View
-cp .env.example .env          # deploy.sh сделает это сам, если .env нет
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/BadWisher/Peter-View
+<span class="nb">cd</span><span class="w"> </span>Peter-View
+cp<span class="w"> </span>.env.example<span class="w"> </span>.env<span class="w">          </span><span class="c1"># deploy.sh сделает это сам, если .env нет</span>
 ./deploy.sh
-</code></pre>
+</code></pre></div>
 <p>Скрипт собирает три образа (<code>backend</code>, <code>frontend</code> и готовый <code>languagetool</code>),
 поднимает контейнеры и опрашивает адрес <code>http://localhost:3080/</code> до 30 раз с
 интервалом в 2 секунды, пока фронтенд не ответит. LanguageTool на JVM
@@ -1921,11 +1921,11 @@ cp .env.example .env          # deploy.sh сделает это сам, если
 <h2 id="ручной-запуск-compose-командами">Ручной запуск compose-командами<a class="headerlink" href="#ручной-запуск-compose-командами" title="Permanent link">&para;</a></h2>
 <p>Когда нужно подменить compose-файл или поднять только один сервис, удобнее
 работать напрямую командами compose. Набор типовых команд приведен ниже.</p>
-<pre><code class="language-bash">docker compose up -d languagetool          # движок орфографии
-docker compose build backend               # пересборка после правок Python
-docker compose up -d backend               # запуск одного сервиса
-docker compose logs -f backend
-</code></pre>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d<span class="w"> </span>languagetool<span class="w">          </span><span class="c1"># движок орфографии</span>
+docker<span class="w"> </span>compose<span class="w"> </span>build<span class="w"> </span>backend<span class="w">               </span><span class="c1"># пересборка после правок Python</span>
+docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d<span class="w"> </span>backend<span class="w">               </span><span class="c1"># запуск одного сервиса</span>
+docker<span class="w"> </span>compose<span class="w"> </span>logs<span class="w"> </span>-f<span class="w"> </span>backend
+</code></pre></div>
 <p>Переменные читаются из файла <code>.env</code>, лежащего рядом с <code>docker-compose.yml</code>;
 сервис backend подключает его через <code>env_file</code>. Часть значений переопределена
 прямо в блоке <code>environment:</code> compose-файла, и из <code>.env</code> они не переносятся.
@@ -1993,11 +1993,11 @@ docker compose logs -f backend
 <h2 id="тесты-и-линтер-вне-контейнера">Тесты и линтер вне контейнера<a class="headerlink" href="#тесты-и-линтер-вне-контейнера" title="Permanent link">&para;</a></h2>
 <p>Чтобы не пересобирать образ на каждую правку, зависимости ставятся в
 виртуальное окружение хоста, а проверки запускаются командами ниже.</p>
-<pre><code class="language-bash">python3 -m venv .venv &amp;&amp; source .venv/bin/activate
-pip install -r backend/requirements-dev.txt
-make lint
-make test
-</code></pre>
+<div class="highlight"><pre><span></span><code>python3<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>.venv<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">source</span><span class="w"> </span>.venv/bin/activate
+pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>backend/requirements-dev.txt
+make<span class="w"> </span>lint
+make<span class="w"> </span><span class="nb">test</span>
+</code></pre></div>
 <p>Конфигурация pytest находится в корневом <code>pyproject.toml</code>: значения
 <code>pythonpath=["backend"]</code> и <code>testpaths=["backend/tests"]</code>. Поэтому запуск
 выполняется из корня репозитория, а не из каталога <code>backend/</code>. Подробно о
@@ -2008,9 +2008,9 @@ make test
 <h2 id="горячая-перезагрузка-backend">Горячая перезагрузка backend<a class="headerlink" href="#горячая-перезагрузка-backend" title="Permanent link">&para;</a></h2>
 <p>В образе сервер uvicorn запускается без флага <code>--reload</code>. Для разработки с
 перезапуском на сохранение процесса поднимают вручную. Команды приведены ниже.</p>
-<pre><code class="language-bash">docker compose up backend   # без -d, остановка по Ctrl-C
-docker compose exec backend python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-</code></pre>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>backend<span class="w">   </span><span class="c1"># без -d, остановка по Ctrl-C</span>
+docker<span class="w"> </span>compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>backend<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>uvicorn<span class="w"> </span>app.main:app<span class="w"> </span>--reload<span class="w"> </span>--host<span class="w"> </span><span class="m">0</span>.0.0.0<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span>
+</code></pre></div>
 <p>Чтобы флаг <code>--reload</code> видел правки с хоста, каталог <code>./backend/app</code> на время
 разработки пробрасывается в контейнер томом. В штатном compose-файле исходники
 копируются в образ, и томов нет.</p>
@@ -2123,6 +2123,8 @@ docker compose exec backend python -m uvicorn app.main:app --reload --host 0.0.0
       <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="../../javascripts/nav.js"></script>
+      
+        <script src="../../javascripts/mermaid.mjs" type="module"></script>
       
     
   </body>

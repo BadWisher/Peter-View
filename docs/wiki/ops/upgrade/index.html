@@ -1903,8 +1903,8 @@
 <h2 id="обновление-из-исходников">Обновление из исходников<a class="headerlink" href="#обновление-из-исходников" title="Permanent link">&para;</a></h2>
 <p>Этот путь подходит для dev-окружений и для площадок, где сервер собирает образы
 сам.</p>
-<pre><code class="language-bash">make update
-</code></pre>
+<div class="highlight"><pre><span></span><code>make<span class="w"> </span>update
+</code></pre></div>
 <p>Команда выполняет <code>git pull --ff-only</code> с последующим <code>./deploy.sh</code>. Скрипт
 пересобирает измененные слои образов и перезапускает контейнеры. Если pull не
 fast-forward (есть локальные правки или история разошлась с upstream), git
@@ -1912,21 +1912,21 @@ fast-forward (есть локальные правки или история р�
 <code>reset --hard</code>, иначе потеряете локальные изменения.</p>
 <h2 id="обновление-из-образов">Обновление из образов<a class="headerlink" href="#обновление-из-образов" title="Permanent link">&para;</a></h2>
 <p>Этот путь предназначен для продакшена, где сборки на хосте нет.</p>
-<pre><code class="language-bash">export GHCR_REPOSITORY=&lt;владелец/имя&gt;
-export IMAGE_SHA=&lt;новый commit sha&gt;
-make prod-config   # проверка связки compose-файлов
-docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">GHCR_REPOSITORY</span><span class="o">=</span>&lt;владелец/имя&gt;
+<span class="nb">export</span><span class="w"> </span><span class="nv">IMAGE_SHA</span><span class="o">=</span>&lt;новый<span class="w"> </span>commit<span class="w"> </span>sha&gt;
+make<span class="w"> </span>prod-config<span class="w">   </span><span class="c1"># проверка связки compose-файлов</span>
+docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker-compose.yml<span class="w"> </span>-f<span class="w"> </span>docker-compose.prod.yml<span class="w"> </span>up<span class="w"> </span>-d
+</code></pre></div>
 <p>Compose пересоздает контейнеры backend и frontend из новых образов. Сервис
 languagetool не меняется: его образ закреплен по digest в базовом файле.
 Политика <code>pull_policy: always</code> гарантирует, что указанный тег действительно
 перетягивается, а не берется из локального кэша.</p>
 <h2 id="проверка-после-обновления">Проверка после обновления<a class="headerlink" href="#проверка-после-обновления" title="Permanent link">&para;</a></h2>
 <p>После перезапуска выполните четыре проверки в порядке от дешевых к дорогим.</p>
-<pre><code class="language-bash">docker compose ps                    # все три контейнера healthy
-curl -s localhost:3080/api/health    # {&quot;status&quot;:&quot;ok&quot;,&quot;version&quot;:&quot;0.1.0&quot;}
-make regression                      # самотесты правил внутри backend
-</code></pre>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>ps<span class="w">                    </span><span class="c1"># все три контейнера healthy</span>
+curl<span class="w"> </span>-s<span class="w"> </span>localhost:3080/api/health<span class="w">    </span><span class="c1"># {"status":"ok","version":"0.1.0"}</span>
+make<span class="w"> </span>regression<span class="w">                      </span><span class="c1"># самотесты правил внутри backend</span>
+</code></pre></div>
 <p>Затем прогоните одну короткую контрольную проверку на вкладке <strong>Текст</strong> и
 дождитесь завершения LLM-воркеров, если модель подключена. Этот набор ловит
 типичные регрессии обновления: LanguageTool не поднялся, ключ модели пропал,
@@ -2078,6 +2078,8 @@ make regression                      # самотесты правил внут�
       <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="../../javascripts/nav.js"></script>
+      
+        <script src="../../javascripts/mermaid.mjs" type="module"></script>
       
     
   </body>

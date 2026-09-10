@@ -2247,9 +2247,9 @@ suggestion 40), <code>machine_verifiable</code>, <code>relationships</code>, <co
 <h2 id="регрессионные-проверки-и-аудит-сайта-как-cli">Регрессионные проверки и аудит сайта как CLI<a class="headerlink" href="#регрессионные-проверки-и-аудит-сайта-как-cli" title="Permanent link">&para;</a></h2>
 <p>Две диагностические команды запускаются внутри контейнера backend. Блок ниже
 показывает их.</p>
-<pre><code class="language-bash">docker compose exec backend python -m app.regression_checks   # 44 кейса, код возврата 1 при провале
-docker compose exec backend python -m app.site_audit https://example.com --max-pages 40
-</code></pre>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>backend<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>app.regression_checks<span class="w">   </span><span class="c1"># 44 кейса, код возврата 1 при провале</span>
+docker<span class="w"> </span>compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>backend<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>app.site_audit<span class="w"> </span>https://example.com<span class="w"> </span>--max-pages<span class="w"> </span><span class="m">40</span>
+</code></pre></div>
 <p>Первая команда входит в состав CI (<code>make regression</code>), вторая это разовый
 обход живого сайта с JSON-сводкой по правилам.</p>
 <h2 id="связанные-разделы">Связанные разделы<a class="headerlink" href="#связанные-разделы" title="Permanent link">&para;</a></h2>
@@ -2359,6 +2359,8 @@ docker compose exec backend python -m app.site_audit https://example.com --max-p
       <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="../../javascripts/nav.js"></script>
+      
+        <script src="../../javascripts/mermaid.mjs" type="module"></script>
       
     
   </body>

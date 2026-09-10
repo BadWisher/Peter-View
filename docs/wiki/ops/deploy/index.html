@@ -1948,10 +1948,10 @@ compose на одном хосте. Схемы kubernetes, systemd и устан
 </table>
 <h2 id="первый-запуск">Первый запуск<a class="headerlink" href="#первый-запуск" title="Permanent link">&para;</a></h2>
 <p>Клонирование и запуск выполняются командами из блока ниже.</p>
-<pre><code class="language-bash">git clone https://github.com/BadWisher/Peter-View
-cd Peter-View
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/BadWisher/Peter-View
+<span class="nb">cd</span><span class="w"> </span>Peter-View
 ./deploy.sh
-</code></pre>
+</code></pre></div>
 <p>Скрипт <strong>deploy.sh</strong> идемпотентен: он служит и для первичного запуска, и для
 обновления. Его шаги перечислены ниже.</p>
 <ol>
@@ -2009,10 +2009,10 @@ cd Peter-View
 <code>ghcr.io/&lt;владелец&gt;/backend:&lt;sha&gt;</code> и тег <code>:main</code>, на релизах добавляется тег
 версии. Развертывание из реестра вместо локальной сборки выполняется командами
 из блока ниже.</p>
-<pre><code class="language-bash">export IMAGE_SHA=&lt;полный commit sha&gt;
-export GHCR_REPOSITORY=&lt;владелец/имя в нижнем регистре&gt;
-docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">IMAGE_SHA</span><span class="o">=</span>&lt;полный<span class="w"> </span>commit<span class="w"> </span>sha&gt;
+<span class="nb">export</span><span class="w"> </span><span class="nv">GHCR_REPOSITORY</span><span class="o">=</span>&lt;владелец/имя<span class="w"> </span>в<span class="w"> </span>нижнем<span class="w"> </span>регистре&gt;
+docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker-compose.yml<span class="w"> </span>-f<span class="w"> </span>docker-compose.prod.yml<span class="w"> </span>up<span class="w"> </span>-d
+</code></pre></div>
 <p>Overlay prod подменяет поле <code>image:</code> у сервисов backend и frontend
 (присутствует <code>pull_policy: always</code>) и требует обе переменные: без них compose
 останавливается и печатает подсказку из конструкции <code>:?</code>. Проверка связки
@@ -2214,6 +2214,8 @@ overlay корпоративного прокси при соответству�
       <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="../../javascripts/nav.js"></script>
+      
+        <script src="../../javascripts/mermaid.mjs" type="module"></script>
       
     
   </body>

@@ -1902,12 +1902,22 @@ vanilla JS</strong></a>, контракты сервера на странице
 <p>Внутри HTML размечены три контейнера (<code>#app</code>, <code>#overlay-root</code>, <code>#toast-root</code>) и
 SVG-спрайт на 32 иконки. Шаблонов в HTML нет, вся разметка собирается из JS.</p>
 <h2 id="модули-и-граф-зависимостей">Модули и граф зависимостей<a class="headerlink" href="#модули-и-граф-зависимостей" title="Permanent link">&para;</a></h2>
-<p>Схема взаимных вызовов модулей приведена ниже.</p>
-<figure>
-  <img src="../../diagrams/frontend-graph.svg" alt="Граф зависимостей ES-модулей фронтенда: index.html загружает app.js, app.js маршрутизирует через router.js к рендерам разделов, router.js обращается к shared.js, shared.js к i18n.js, модули разделов используют shared.js" loading="lazy">
-  <figcaption>Модули фронтенда и направления вызовов. app.js назначает shared.js хуки bindShell и renderApp, поэтому связь с хуками идет вверх по схеме.</figcaption>
-</figure>
+<pre class="pv-mermaid"><code>flowchart TB
+  index["index.html&lt;br/&gt;&lt;small&gt;каркас, SVG-спрайт&lt;/small&gt;"]
+  app["app.js&lt;br/&gt;&lt;small&gt;точка входа&lt;/small&gt;"]
+  router["router.js&lt;br/&gt;&lt;small&gt;хеш-роутер, назначает хуки&lt;br/&gt;bindShell, renderApp&lt;/small&gt;"]
+  render["renderX()&lt;br/&gt;&lt;small&gt;рендер разделов&lt;/small&gt;"]
+  shared["shared.js&lt;br/&gt;&lt;small&gt;state, api(), оболочка, тосты&lt;/small&gt;"]
+  i18n["i18n.js&lt;br/&gt;&lt;small&gt;словари ru и en&lt;/small&gt;"]
+  sections["12 модулей разделов&lt;br/&gt;&lt;small&gt;auth, check, documents, guides, health,&lt;br/&gt;history, insights, settings, users, watch,&lt;br/&gt;screenshots, api-specs&lt;/small&gt;"]
 
+  index --&gt;|загружает| app
+  app --&gt;|маршрутизирует| router
+  router --&gt;|роутер вызывает| render
+  router --&gt; shared
+  shared --&gt; i18n
+  sections --&gt;|используют state и api| shared
+  render --&gt;|ответы сервера, оболочка| shared</code></pre>
 <p>Ответственность каждого модуля и его объем в строках показывает таблица ниже.</p>
 <table>
 <thead>
@@ -2252,6 +2262,8 @@ SVG-спрайт на 32 иконки. Шаблонов в HTML нет, вся �
       <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="../../javascripts/nav.js"></script>
+      
+        <script src="../../javascripts/mermaid.mjs" type="module"></script>
       
     
   </body>

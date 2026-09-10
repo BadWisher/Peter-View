@@ -27,12 +27,24 @@ SVG-спрайт на 32 иконки. Шаблонов в HTML нет, вся �
 
 ## Модули и граф зависимостей
 
-Схема взаимных вызовов модулей приведена ниже.
+```mermaid
+flowchart TB
+  index["index.html<br/><small>каркас, SVG-спрайт</small>"]
+  app["app.js<br/><small>точка входа</small>"]
+  router["router.js<br/><small>хеш-роутер, назначает хуки<br/>bindShell, renderApp</small>"]
+  render["renderX()<br/><small>рендер разделов</small>"]
+  shared["shared.js<br/><small>state, api(), оболочка, тосты</small>"]
+  i18n["i18n.js<br/><small>словари ru и en</small>"]
+  sections["12 модулей разделов<br/><small>auth, check, documents, guides, health,<br/>history, insights, settings, users, watch,<br/>screenshots, api-specs</small>"]
 
-<figure>
-  <img src="../../diagrams/frontend-graph.svg" alt="Граф зависимостей ES-модулей фронтенда: index.html загружает app.js, app.js маршрутизирует через router.js к рендерам разделов, router.js обращается к shared.js, shared.js к i18n.js, модули разделов используют shared.js" loading="lazy">
-  <figcaption>Модули фронтенда и направления вызовов. app.js назначает shared.js хуки bindShell и renderApp, поэтому связь с хуками идет вверх по схеме.</figcaption>
-</figure>
+  index -->|загружает| app
+  app -->|маршрутизирует| router
+  router -->|роутер вызывает| render
+  router --> shared
+  shared --> i18n
+  sections -->|используют state и api| shared
+  render -->|ответы сервера, оболочка| shared
+```
 
 Ответственность каждого модуля и его объем в строках показывает таблица ниже.
 

@@ -1908,12 +1908,12 @@ health-эндпоинты, логи контейнеров и встроенна
 Статус каждого компонента лежит в теле JSON. Для пробы живости этот путь не
 подходит из-за веса и требования авторизации, он служит диагностикой.</p>
 <p>Простейший watchdog на хосте выглядит так.</p>
-<pre><code class="language-bash">while true; do
-  curl -fsS --max-time 5 http://localhost:3080/api/health &gt;/dev/null || \
-    echo &quot;$(date) Peter View недоступен&quot;
-  sleep 60
-done
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="k">while</span><span class="w"> </span>true<span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<span class="w">  </span>curl<span class="w"> </span>-fsS<span class="w"> </span>--max-time<span class="w"> </span><span class="m">5</span><span class="w"> </span>http://localhost:3080/api/health<span class="w"> </span>&gt;/dev/null<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"</span><span class="k">$(</span>date<span class="k">)</span><span class="s2"> Peter View недоступен"</span>
+<span class="w">  </span>sleep<span class="w"> </span><span class="m">60</span>
+<span class="k">done</span>
+</code></pre></div>
 <h2 id="проверки-готовности-контейнеров">Проверки готовности контейнеров<a class="headerlink" href="#проверки-готовности-контейнеров" title="Permanent link">&para;</a></h2>
 <p>Docker сам отслеживает здоровье контейнеров параметрами healthcheck из
 compose-файла.</p>
@@ -1929,9 +1929,9 @@ compose-файла.</p>
 внешних алертов мониторьте именно статус health, а не наличие процесса.</p>
 <h2 id="логи">Логи<a class="headerlink" href="#логи" title="Permanent link">&para;</a></h2>
 <p>Логи смотрят двумя командами.</p>
-<pre><code class="language-bash">make logs                      # все три сервиса, в режиме follow
-docker compose logs -f backend # только приложение
-</code></pre>
+<div class="highlight"><pre><span></span><code>make<span class="w"> </span>logs<span class="w">                      </span><span class="c1"># все три сервиса, в режиме follow</span>
+docker<span class="w"> </span>compose<span class="w"> </span>logs<span class="w"> </span>-f<span class="w"> </span>backend<span class="w"> </span><span class="c1"># только приложение</span>
+</code></pre></div>
 <p>Формат лога backend задан в <code>app/main.py</code> строкой
 <code>logging.basicConfig(level=logging.INFO, ...)</code> и имеет вид
 <code>%(asctime)s %(name)s %(levelname)s %(message)s</code>, уровень INFO. Полезные
@@ -2098,6 +2098,8 @@ docker compose logs -f backend # только приложение
       <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="../../javascripts/nav.js"></script>
+      
+        <script src="../../javascripts/mermaid.mjs" type="module"></script>
       
     
   </body>

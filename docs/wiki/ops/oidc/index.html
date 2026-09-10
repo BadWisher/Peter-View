@@ -1892,12 +1892,12 @@
 <h2 id="конфигурация">Конфигурация<a class="headerlink" href="#конфигурация" title="Permanent link">&para;</a></h2>
 <p>Все настройки OIDC читаются из <code>.env</code> и в интерфейсе не редактируются. После
 изменения файла перезапустите стек.</p>
-<pre><code class="language-text">OIDC_ISSUER=https://sso.example.ru/realms/corp
+<div class="highlight"><pre><span></span><code>OIDC_ISSUER=https://sso.example.ru/realms/corp
 OIDC_CLIENT_ID=peterview
 OIDC_CLIENT_SECRET=&lt;секрет клиента&gt;
 OIDC_REDIRECT_URI=https://peterview.example.ru/api/auth/oidc/callback
 OIDC_ADMIN_GROUPS=docs-admins,platform-team
-</code></pre>
+</code></pre></div>
 <p>Назначение переменных показывает таблица.</p>
 <table>
 <thead>
@@ -2136,6 +2136,8 @@ OIDC_ADMIN_GROUPS=docs-admins,platform-team
       <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="../../javascripts/nav.js"></script>
+      
+        <script src="../../javascripts/mermaid.mjs" type="module"></script>
       
     
   </body>

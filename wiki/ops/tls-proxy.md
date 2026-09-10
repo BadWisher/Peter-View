@@ -10,12 +10,15 @@ TLS. Разделение сознательное: сертификат, пол
 
 ## Эталонная схема
 
-На схеме показан путь запроса от браузера до контейнера.
+```mermaid
+flowchart LR
+  browser["браузер<br/><small>адрес сервиса</small>"]
+  proxy["внешний nginx или Caddy<br/><small>расшифровка и прокси</small>"]
+  front["контейнер frontend<br/><small>nginx внутри docker</small>"]
 
-<figure>
-  <img src="../../diagrams/tls-path.svg" alt="Путь запроса: браузер по порту 443, внешний nginx или Caddy на хосте, далее на адрес 127.0.0.1:3080 в контейнер frontend" loading="lazy">
-  <figcaption>Единственная точка, доступная снаружи это порт 443 внешнего прокси. Порт 3080 контейнера frontend опубликован только на localhost и наружу не смотрит.</figcaption>
-</figure>
+  browser -->|https, порт 443, TLS| proxy
+  proxy -->|http, localhost:3080| front
+```
 
 Внешний прокси принимает соединение по HTTPS на порту 443, расшифровывает его и
 передает запрос на порт 3080 localhost, где опубликован nginx контейнера

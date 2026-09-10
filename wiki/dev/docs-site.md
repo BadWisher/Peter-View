@@ -17,16 +17,16 @@
 
 | Путь | Назначение |
 |---|---|
-| `mkdocs.yml` | конфигурация сборки: каталог `docs_dir: wiki`, тема Material, язык `ru`, палитра teal, плагины `search` и `redirects`, расширения `admonition`, `tables` и `toc` с permalink |
+| `mkdocs.yml` | конфигурация сборки: каталог `docs_dir: wiki`, тема Material, язык `ru`, палитра teal, плагины `search` и `redirects`, расширения `admonition`, `tables`, `superfences` с блоками `mermaid` и `toc` с permalink |
 | `wiki/index.md` | главная страница вики |
 | `wiki/users/` | раздел [**User Guide**](../users/quickstart.md), 14 страниц |
 | `wiki/arch/` | раздел [**Архитектура**](../arch/overview.md), 9 страниц |
 | `wiki/dev/` | раздел [**Developer Guide**](setup.md), 8 страниц |
 | `wiki/ops/` | раздел [**Implementation Guide**](../ops/deploy.md), 10 страниц |
-| `wiki/screenshots/` | 14 изображений интерфейса в формате PNG |
-| `wiki/diagrams/` | 6 схем в формате SVG, генерируются `scripts/gen_diagrams.py` |
+| `wiki/screenshots/` | 23 изображения интерфейса в формате PNG |
 | `wiki/stylesheets/extra.css` | дополнительные стили темы |
 | `wiki/javascripts/nav.js` | правки поведения навигации |
+| `wiki/javascripts/mermaid.mjs` | загрузка и инициализация Mermaid |
 | `docs/wiki/` | собранная вики, закоммичена как артефакт для локального просмотра и истории |
 
 Файлы `landing/`, `docs/preview/` и `docs/screenshots/` относятся к лендингу
@@ -51,11 +51,10 @@ mkdocs build          # проверка ошибок сборки без зап
 `[Разбор](review.md)` и `[HTTP API](../dev/api.md)`. MkDocs сам превращает их
 в адреса сайта и прерывает сборку ошибкой на битой ссылке, поэтому проверять
 разрешимость ссылок отдельно не требуется. Изображения из `wiki/screenshots/`
-ссылаются как `screenshots/02-check.png` со страниц корня и как
-`../screenshots/02-check.png` из подкаталогов, схемы из `wiki/diagrams/` по
-той же схеме. Схемы не правятся вручную: исходный текст лежит в
-`scripts/gen_diagrams.py`, после его правки запускается `python3
-scripts/gen_diagrams.py`, и он перезаписывает все файлы в `wiki/diagrams/`.
+ссылаются как `screenshots/16-review-findings.png` со страниц корня и как
+`../../screenshots/16-review-findings.png` из подкаталогов. Схемы рисуются на
+Mermaid прямо в markdown-файлах в блоках ` ```mermaid ` и не требуют внешних
+файлов: Material для MkDocs рендерит их в браузере.
 
 Обновлять собранную копию в `docs/wiki/` на каждую правку не обязательно. CI
 собирает сайт с нуля из `wiki/` на push в ветку **main**: workflow

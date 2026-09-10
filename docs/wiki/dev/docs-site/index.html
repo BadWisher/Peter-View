@@ -2023,7 +2023,7 @@
 <tbody>
 <tr>
 <td><code>mkdocs.yml</code></td>
-<td>конфигурация сборки: каталог <code>docs_dir: wiki</code>, тема Material, язык <code>ru</code>, палитра teal, плагины <code>search</code> и <code>redirects</code>, расширения <code>admonition</code>, <code>tables</code> и <code>toc</code> с permalink</td>
+<td>конфигурация сборки: каталог <code>docs_dir: wiki</code>, тема Material, язык <code>ru</code>, палитра teal, плагины <code>search</code> и <code>redirects</code>, расширения <code>admonition</code>, <code>tables</code>, <code>superfences</code> с блоками <code>mermaid</code> и <code>toc</code> с permalink</td>
 </tr>
 <tr>
 <td><code>wiki/index.md</code></td>
@@ -2047,11 +2047,7 @@
 </tr>
 <tr>
 <td><code>wiki/screenshots/</code></td>
-<td>14 изображений интерфейса в формате PNG</td>
-</tr>
-<tr>
-<td><code>wiki/diagrams/</code></td>
-<td>6 схем в формате SVG, генерируются <code>scripts/gen_diagrams.py</code></td>
+<td>23 изображения интерфейса в формате PNG</td>
 </tr>
 <tr>
 <td><code>wiki/stylesheets/extra.css</code></td>
@@ -2060,6 +2056,10 @@
 <tr>
 <td><code>wiki/javascripts/nav.js</code></td>
 <td>правки поведения навигации</td>
+</tr>
+<tr>
+<td><code>wiki/javascripts/mermaid.mjs</code></td>
+<td>загрузка и инициализация Mermaid</td>
 </tr>
 <tr>
 <td><code>docs/wiki/</code></td>
@@ -2075,19 +2075,18 @@
 <h2 id="локальный-цикл-правок">Локальный цикл правок<a class="headerlink" href="#локальный-цикл-правок" title="Permanent link">&para;</a></h2>
 <p>Для работы с документацией нужна установленная тема MkDocs. Дальнейшие
 команды запускаются из корня репозитория и описаны в шагах ниже.</p>
-<pre><code class="language-bash">pip install mkdocs-material mkdocs-redirects
-mkdocs serve          # http://127.0.0.1:8000 с перезагрузкой по wiki/
-mkdocs build          # проверка ошибок сборки без запуска сервера
-</code></pre>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>mkdocs-material<span class="w"> </span>mkdocs-redirects
+mkdocs<span class="w"> </span>serve<span class="w">          </span><span class="c1"># http://127.0.0.1:8000 с перезагрузкой по wiki/</span>
+mkdocs<span class="w"> </span>build<span class="w">          </span><span class="c1"># проверка ошибок сборки без запуска сервера</span>
+</code></pre></div>
 <p>Ссылки между страницами пишутся относительными и с суффиксом <code>.md</code>, например
 <code>[Разбор](review.md)</code> и <code>[HTTP API](../dev/api.md)</code>. MkDocs сам превращает их
 в адреса сайта и прерывает сборку ошибкой на битой ссылке, поэтому проверять
 разрешимость ссылок отдельно не требуется. Изображения из <code>wiki/screenshots/</code>
-ссылаются как <code>screenshots/02-check.png</code> со страниц корня и как
-<code>../screenshots/02-check.png</code> из подкаталогов, схемы из <code>wiki/diagrams/</code> по
-той же схеме. Схемы не правятся вручную: исходный текст лежит в
-<code>scripts/gen_diagrams.py</code>, после его правки запускается <code>python3
-scripts/gen_diagrams.py</code>, и он перезаписывает все файлы в <code>wiki/diagrams/</code>.</p>
+ссылаются как <code>screenshots/16-review-findings.png</code> со страниц корня и как
+<code>../../screenshots/16-review-findings.png</code> из подкаталогов. Схемы рисуются на
+Mermaid прямо в markdown-файлах в блоках <code>```mermaid</code> и не требуют внешних
+файлов: Material для MkDocs рендерит их в браузере.</p>
 <p>Обновлять собранную копию в <code>docs/wiki/</code> на каждую правку не обязательно. CI
 собирает сайт с нуля из <code>wiki/</code> на push в ветку <strong>main</strong>: workflow
 <code>pages.yml</code> вызывает <code>mkdocs build --site-dir site/wiki</code>, затем добавляет
@@ -2223,41 +2222,41 @@ scripts/gen_diagrams.py</code>, и он перезаписывает все фа
 показывает текст до правки и после нее.</p>
 <p>Артефакт это стенограмма вместо предложения и ссылка, вклеенная вместо члена
 предложения.</p>
-<pre><code class="language-text">Развёртывание один хост, три контейнера, наружу опубликован только порт nginx.
+<div class="highlight"><pre><span></span><code>Развёртывание один хост, три контейнера, наружу опубликован только порт nginx.
 Детали compose и образов Стек.
-</code></pre>
+</code></pre></div>
 <p>Исправленный вариант содержит сказуемые и вписывает ссылку в фразу.</p>
-<pre><code class="language-text">Сервис развертывается на одном хосте в составе трех контейнеров. Единственная
+<div class="highlight"><pre><span></span><code>Сервис развертывается на одном хосте в составе трех контейнеров. Единственная
 точка доступа снаружи это порт nginx. Состав файлов compose и конфигурацию
 образов смотрите в разделе [**Стек контейнеров**](../ops/stack.md).
-</code></pre>
+</code></pre></div>
 <p>Артефакт это фамильярное обращение и разговорные глаголы.</p>
-<pre><code class="language-text">Если нужно просто проверить текст, берите Быстрый старт и не лезьте в исходники.
+<div class="highlight"><pre><span></span><code>Если нужно просто проверить текст, берите Быстрый старт и не лезьте в исходники.
 Эта страница про рабочий цикл: склонировал, поднял, поправил, прогнал тесты.
-</code></pre>
+</code></pre></div>
 <p>Исправленный вариант описывает адресатов и цикл нейтральными формулировками.</p>
-<pre><code class="language-text">Для проверки текста без изменения кода достаточно раздела [**Первые шаги**](../users/quickstart.md).
+<div class="highlight"><pre><span></span><code>Для проверки текста без изменения кода достаточно раздела [**Первые шаги**](../users/quickstart.md).
 Эта страница описывает рабочий цикл разработчика: клонирование репозитория,
 запуск окружения, правка кода, прогон тестов.
-</code></pre>
+</code></pre></div>
 <p>Артефакт это заголовок-интрига над списком без вводной фразы.</p>
-<pre><code class="language-text">## Чего сервис не делает
+<div class="highlight"><pre><span></span><code>## Чего сервис не делает
 
 - Не переводит тексты.
-</code></pre>
+</code></pre></div>
 <p>Исправленный вариант носит описательный заголовок и переходит к содержимому
 прозой.</p>
-<pre><code class="language-text">## Границы применимости
+<div class="highlight"><pre><span></span><code>## Границы применимости
 
 Сервис не выполняет перевод текстов на другой язык. Он не генерирует контент
 с нуля и проверяет только готовый текст.
-</code></pre>
+</code></pre></div>
 <p>Артефакт это разговорное название секции.</p>
-<pre><code class="language-text">### Как устроена проверка в двух словах
-</code></pre>
+<div class="highlight"><pre><span></span><code>### Как устроена проверка в двух словах
+</code></pre></div>
 <p>Исправленный вариант называет содержимое напрямую.</p>
-<pre><code class="language-text">### Устройство проверки текста
-</code></pre>
+<div class="highlight"><pre><span></span><code>### Устройство проверки текста
+</code></pre></div>
 <h2 id="границы-верхних-разделов">Границы верхних разделов<a class="headerlink" href="#границы-верхних-разделов" title="Permanent link">&para;</a></h2>
 <p>Четыре раздела вики разделяют материал по аудитории, и границы между ними
 зафиксированы. Перечисленные ниже правила разрешают спор о том, куда
@@ -2379,6 +2378,8 @@ scripts/gen_diagrams.py</code>, и он перезаписывает все фа
       <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="../../javascripts/nav.js"></script>
+      
+        <script src="../../javascripts/mermaid.mjs" type="module"></script>
       
     
   </body>

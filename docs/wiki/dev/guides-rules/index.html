@@ -1951,25 +1951,25 @@
 <h2 id="поля-записи-реестра">Поля записи реестра<a class="headerlink" href="#поля-записи-реестра" title="Permanent link">&para;</a></h2>
 <p>Каждый элемент списка <code>RULES</code> в <code>style_guide_registry.py</code> устроен как словарь
 ниже.</p>
-<pre><code class="language-python">{
-  &quot;id&quot;: &quot;RuStyleGuide.Dash_EmDash&quot;,
-  &quot;section&quot;: &quot;Пунктуация / Тире&quot;,
-  &quot;group&quot;: &quot;Пунктуация&quot;,              # одна из 5 групп интерфейса
-  &quot;name&quot;: &quot;Длинное тире&quot;,
-  &quot;rule&quot;: &quot;Не использовать em-dash...&quot;,
-  &quot;generalization&quot;: &quot;...&quot;,            # как применять, для модели
-  &quot;engine&quot;: &quot;vale&quot;,                   # vale | python | manual
-  &quot;automation&quot;: &quot;automatic&quot;,          # automatic | partial | manual
-  &quot;severity&quot;: &quot;error&quot;,                # error | warning | suggestion
-  &quot;good_examples&quot;: [&quot;...&quot;], &quot;bad_examples&quot;: [&quot;...&quot;],
-  # служебные (для подбора правил и разрешения конфликтов):
-  &quot;categories&quot;: [...], &quot;tasks&quot;: [&quot;proofreading&quot;], &quot;scope&quot;: &quot;all&quot;,
-  &quot;priority&quot;: 90,                     # error 90, warning 60, suggestion 40
-  &quot;machine_verifiable&quot;: True,         # находка не идет к верификатору
-  &quot;relationships&quot;: {&quot;supersedes&quot;: [...]}, &quot;conflict_family&quot;: &quot;...&quot;,
-  &quot;constraints&quot;: {&quot;forbidden_chars&quot;: [&quot;—&quot;], &quot;required_chars&quot;: [&quot;–&quot;]},
-}
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+  <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"RuStyleGuide.Dash_EmDash"</span><span class="p">,</span>
+  <span class="s2">"section"</span><span class="p">:</span> <span class="s2">"Пунктуация / Тире"</span><span class="p">,</span>
+  <span class="s2">"group"</span><span class="p">:</span> <span class="s2">"Пунктуация"</span><span class="p">,</span>              <span class="c1"># одна из 5 групп интерфейса</span>
+  <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Длинное тире"</span><span class="p">,</span>
+  <span class="s2">"rule"</span><span class="p">:</span> <span class="s2">"Не использовать em-dash..."</span><span class="p">,</span>
+  <span class="s2">"generalization"</span><span class="p">:</span> <span class="s2">"..."</span><span class="p">,</span>            <span class="c1"># как применять, для модели</span>
+  <span class="s2">"engine"</span><span class="p">:</span> <span class="s2">"vale"</span><span class="p">,</span>                   <span class="c1"># vale | python | manual</span>
+  <span class="s2">"automation"</span><span class="p">:</span> <span class="s2">"automatic"</span><span class="p">,</span>          <span class="c1"># automatic | partial | manual</span>
+  <span class="s2">"severity"</span><span class="p">:</span> <span class="s2">"error"</span><span class="p">,</span>                <span class="c1"># error | warning | suggestion</span>
+  <span class="s2">"good_examples"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"..."</span><span class="p">],</span> <span class="s2">"bad_examples"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"..."</span><span class="p">],</span>
+  <span class="c1"># служебные (для подбора правил и разрешения конфликтов):</span>
+  <span class="s2">"categories"</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">],</span> <span class="s2">"tasks"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"proofreading"</span><span class="p">],</span> <span class="s2">"scope"</span><span class="p">:</span> <span class="s2">"all"</span><span class="p">,</span>
+  <span class="s2">"priority"</span><span class="p">:</span> <span class="mi">90</span><span class="p">,</span>                     <span class="c1"># error 90, warning 60, suggestion 40</span>
+  <span class="s2">"machine_verifiable"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>         <span class="c1"># находка не идет к верификатору</span>
+  <span class="s2">"relationships"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"supersedes"</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">]},</span> <span class="s2">"conflict_family"</span><span class="p">:</span> <span class="s2">"..."</span><span class="p">,</span>
+  <span class="s2">"constraints"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"forbidden_chars"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"—"</span><span class="p">],</span> <span class="s2">"required_chars"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"–"</span><span class="p">]},</span>
+<span class="p">}</span>
+</code></pre></div>
 <p>Поле <code>constraints</code> не косметика. Модуль <code>llm/schemas.py</code> выбрасывает замечание
 модели, если ее собственная правка нарушает ограничение правила: например,
 модель предложила длинное тире там, где требуется среднее, или внесла букву ё в
@@ -1991,14 +1991,14 @@ vale-записей включаются 45 (условие <code>automation != 
 <h2 id="формат-vale-стилей">Формат Vale-стилей<a class="headerlink" href="#формат-vale-стилей" title="Permanent link">&para;</a></h2>
 <p>Файл <code>.vale.ini</code> в каталоге <code>backend/vale</code> включает стиль <code>RuStyleGuide</code>.
 Пример файла стиля стандартен для Vale и показан ниже.</p>
-<pre><code class="language-yaml">extends: existence
-message: &quot;Убедитесь, что аббревиатура расшифрована при первом использовании.&quot;
-level: suggestion
-nonword: true
-raw:
-  - '\b[А-ЯЁ]{2,}\b'
-exceptions: [IP, URL, HTTP, ...]
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="nt">extends</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">existence</span>
+<span class="nt">message</span><span class="p">:</span><span class="w"> </span><span class="s">"Убедитесь,</span><span class="nv"> </span><span class="s">что</span><span class="nv"> </span><span class="s">аббревиатура</span><span class="nv"> </span><span class="s">расшифрована</span><span class="nv"> </span><span class="s">при</span><span class="nv"> </span><span class="s">первом</span><span class="nv"> </span><span class="s">использовании."</span>
+<span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">suggestion</span>
+<span class="nt">nonword</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="nt">raw</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">'\b[А-ЯЁ]{2,}\b'</span>
+<span class="nt">exceptions</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">IP</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">URL</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">HTTP</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">...</span><span class="p p-Indicator">]</span>
+</code></pre></div>
 <p>Модуль <code>vale_runner.py</code> запускает бинарь с параметром <code>--output JSON</code> на
 временном файле и забирает сообщения и позиции. После Vale идут
 Python-постфильтры, потому что регулярные выражения Vale не различают контекст.
@@ -2182,6 +2182,8 @@ JSON-схемой в шаблоне; менять поля можно тольк
       <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="../../javascripts/nav.js"></script>
+      
+        <script src="../../javascripts/mermaid.mjs" type="module"></script>
       
     
   </body>

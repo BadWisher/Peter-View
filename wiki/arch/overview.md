@@ -26,14 +26,44 @@ Peter View это веб-сервис проверки русскоязычны�
 
 ## Состав блоков
 
-Схема блоков и их взаимодействие приведены на диаграмме ниже. Диаграмма
-читается сверху вниз: от браузера к контейнерам и внешним зависимостям.
+```mermaid
+flowchart TB
+  browser["Браузер<br/><small>SPA на vanilla JS, без сборки</small>"]
+  nginx["Frontend-контейнер: nginx<br/><small>раздает статику, проксирует /api/ на backend:8000</small>"]
+  backend["Backend: FastAPI<br/><small>один процесс uvicorn, asyncio</small>"]
 
-<figure>
-  <img src="../../diagrams/overview.svg" alt="Схема контейнеров Peter View: браузер, frontend-контейнер nginx, backend FastAPI с модулями routers, checker, llm, подсистемами и данными, контейнер LanguageTool и внешние зависимости" loading="lazy">
-  <figcaption>Блоки сервиса и связи между ними. Пунктиром отмечены обращения к контейнеру LanguageTool и внешним зависимостям: endpoint модели и провайдеру OIDC.</figcaption>
-</figure>
+  subgraph mods["Модули backend"]
+    routers["routers/<br/><small>HTTP-слой: маршруты, роли, флаги разделов</small>"]
+    checker["checker.py<br/><small>фасад детерминированных движков</small>"]
+    lt["lt_client.py<br/><small>клиент LanguageTool</small>"]
+    vale["vale_runner.py<br/><small>подпроцесс Vale</small>"]
+    morph["custom_checks.py<br/><small>морфология на pymorphy3 и razdel</small>"]
+    reg["style_guide_registry.py<br/><small>реестр правил</small>"]
+    llm["llm/ конвейер вычитки моделью<br/><small>documents, pipeline_v2, workers,<br/>evidence, client, jobs</small>"]
+    subsys["Прикладные подсистемы<br/><small>repo_store, api_specs, watch, shot_templates</small>"]
+    data["Данные<br/><small>/app/data (JSON + SQLite) на томе backend-data</small>"]
+  end
 
+  langtool["LanguageTool-контейнер<br/><small>JVM, русская модель, только сеть docker</small>"]
+  ext["Внешние зависимости<br/><small>endpoint модели (OpenAI-совместимый),<br/>провайдер OIDC</small>"]
+
+  browser -->|http и https| nginx --> backend
+  backend --> routers
+  routers --> checker
+  routers --> llm
+  checker --> lt
+  checker --> vale
+  checker --> morph
+  checker --> reg
+  backend --> subsys
+  subsys --> data
+  checker --> data
+  llm --> data
+  lt -.->|запросы к движку| langtool
+  llm -.->|HTTP-вызовы| ext
+  backend -.->|OIDC| ext
+
+```
 ## Контейнеры и сеть
 
 Сервис развертывается на одном хосте в составе трех контейнеров. Единственная
